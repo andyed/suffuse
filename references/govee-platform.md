@@ -2,6 +2,8 @@
 
 Use only the documented public Developer Platform. This repository is unofficial and is not affiliated with Govee.
 
+For community LAN, MQTT, MCP, and BLE implementations that can inform or eventually back this skill, see [ecosystem.md](ecosystem.md). The current CLI and MCP server use only the public endpoints below.
+
 ## Public endpoints used
 
 - Discover devices: `GET https://openapi.api.govee.com/router/api/v1/user/devices`

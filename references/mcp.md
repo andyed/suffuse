@@ -2,6 +2,8 @@
 
 `mcp/server.mjs` is a local stdio MCP server built with the official MCP v2 TypeScript SDK. It exposes focused tools for palette listing, score validation, device inspection, scene discovery, compilation, apply, and restore.
 
+The server is the stable agent-facing authoring and safety facade, not a new device transport for its own sake. Existing Govee MCP servers and the mature `govee2mqtt` bridge are compared in [ecosystem.md](ecosystem.md). Keep tool and `LightScore` contracts independent of the execution provider so an opt-in MQTT or LAN backend can be added later without changing agent workflows.
+
 ## Safety defaults
 
 - The server inherits `GOVEE_API_KEY` from its process environment; no tool accepts a key.
