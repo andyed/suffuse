@@ -43,11 +43,15 @@ export function capability(device, type, instance) {
   return list.find(item => item?.type === type && item?.instance === instance) || null;
 }
 
-export function segmentIndices(segmentCapability) {
+function segmentField(segmentCapability) {
   const fields = segmentCapability?.parameters?.fields;
-  const field = Array.isArray(fields)
-    ? fields.find(item => item?.fieldName === 'segment')
+  return Array.isArray(fields)
+    ? fields.find(item => item?.fieldName === 'segment') || null
     : null;
+}
+
+export function segmentIndices(segmentCapability) {
+  const field = segmentField(segmentCapability);
   if (!field) return { indices: [], source: 'missing' };
 
   if (Array.isArray(field.options)) {
@@ -68,6 +72,19 @@ export function segmentIndices(segmentCapability) {
     indices: Array.from({ length: max - min + 1 }, (_, offset) => min + offset),
     source: 'elementRange'
   };
+}
+
+export function segmentArrayLimits(segmentCapability) {
+  const field = segmentField(segmentCapability);
+  if (!field) return { min: 1, max: MAX_SEGMENTS };
+  const declaredMin = integer(field?.size?.min);
+  const declaredMax = integer(field?.size?.max);
+  const min = declaredMin ?? 1;
+  const max = declaredMax ?? MAX_SEGMENTS;
+  if (min < 1 || max < min || max > MAX_SEGMENTS) {
+    throw new GoveeSkillError('Segment capability has invalid per-command array limits', 'invalid-segment-limits');
+  }
+  return { min, max };
 }
 
 export function summarizeDevice(device, { showIdentifiers = false } = {}) {
@@ -198,6 +215,23 @@ function partitionSegments(indices, bands) {
   });
 }
 
+function chunkSegments(indices, limits) {
+  const chunks = [];
+  for (let index = 0; index < indices.length; index += limits.max) {
+    chunks.push(indices.slice(index, index + limits.max));
+  }
+  const last = chunks.at(-1);
+  if (last && last.length < limits.min) {
+    const previous = chunks.at(-2);
+    const needed = limits.min - last.length;
+    if (!previous || previous.length - needed < limits.min) {
+      throw new GoveeSkillError('Authored band cannot satisfy the device segment-array minimum', 'invalid-segment-partition');
+    }
+    last.unshift(...previous.splice(previous.length - needed, needed));
+  }
+  return chunks;
+}
+
 function controlOperation(device, type, instance, value, label) {
   return {
     label,
@@ -257,14 +291,19 @@ export function compileLightScore(scoreInput, device) {
     const domain = segmentIndices(segmentColor);
     if (segmentColor && domain.indices.length) {
       const partitions = partitionSegments(domain.indices, score.look.bands);
+      const limits = segmentArrayLimits(segmentColor);
       score.look.bands.forEach((band, index) => {
-        operations.push(controlOperation(
-          device,
-          TYPES.segment,
-          'segmentedColorRgb',
-          { segment: partitions[index], rgb: rgbInteger(band.color) },
-          `gradient-band:${index + 1}`
-        ));
+        const chunks = chunkSegments(partitions[index], limits);
+        chunks.forEach((segment, chunkIndex) => {
+          const suffix = chunks.length > 1 ? `:part:${chunkIndex + 1}` : '';
+          operations.push(controlOperation(
+            device,
+            TYPES.segment,
+            'segmentedColorRgb',
+            { segment, rgb: rgbInteger(band.color) },
+            `gradient-band:${index + 1}${suffix}`
+          ));
+        });
       });
     } else {
       const reason = segmentColor

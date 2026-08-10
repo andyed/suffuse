@@ -7,6 +7,7 @@ import {
   compileLightScore,
   devicesFromDocument,
   redactPlan,
+  segmentArrayLimits,
   segmentIndices,
   selectDevice,
   validateLightScore
@@ -36,6 +37,28 @@ test('compiles every advertised segment into ordered gradient bands', async () =
     Array.from({ length: 12 }, (_, index) => index)
   );
   assert.deepEqual(bands.map(operation => operation.payload.capability.value.segment.length), [3, 3, 3, 3]);
+});
+
+test('splits authored bands to honor the advertised per-command segment maximum', async () => {
+  const devices = devicesFromDocument(await fixture('segmented-device.json'));
+  const score = await fixture('dusk-gradient.score.json');
+  const segment = devices[0].capabilities.find(item => item.instance === 'segmentedColorRgb');
+  segment.parameters.fields[0] = {
+    fieldName: 'segment',
+    dataType: 'Array',
+    size: { min: 1, max: 3 },
+    elementRange: { min: 0, max: 14 }
+  };
+  assert.deepEqual(segmentArrayLimits(segment), { min: 1, max: 3 });
+
+  const plan = compileLightScore(score, devices[0]);
+  const bands = plan.operations.filter(operation => operation.label.startsWith('gradient-band'));
+  assert.equal(bands.length, 7);
+  assert.ok(bands.every(operation => operation.payload.capability.value.segment.length <= 3));
+  assert.deepEqual(
+    bands.flatMap(operation => operation.payload.capability.value.segment),
+    Array.from({ length: 15 }, (_, index) => index)
+  );
 });
 
 test('uses an explicitly declared solid fallback without calling it a gradient', async () => {

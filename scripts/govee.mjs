@@ -97,11 +97,18 @@ async function apiRequest(path, { method = 'GET', body } = {}) {
     } catch {
       throw new GoveeSkillError(`Govee returned non-JSON HTTP ${response.status}`, 'invalid-response');
     }
-    const serviceCode = Number(document?.code);
+    const hasServiceCode = document?.code !== undefined && document?.code !== null;
+    const serviceCode = hasServiceCode ? Number(document.code) : null;
     if (!response.ok || (Number.isFinite(serviceCode) && serviceCode !== 200)) {
-      const status = response.status || serviceCode;
+      const status = response.ok && Number.isFinite(serviceCode) ? serviceCode : response.status;
       const code = status === 401 ? 'invalid-api-key' : status === 429 ? 'rate-limited' : 'platform-error';
-      throw new GoveeSkillError(`Govee request failed (${status || 'unknown status'})`, code);
+      const serviceMessage = String(document?.message ?? document?.msg ?? '').trim();
+      const details = [
+        `HTTP ${response.status}`,
+        Number.isFinite(serviceCode) ? `service ${serviceCode}` : null,
+        serviceMessage || null
+      ].filter(Boolean).join(', ');
+      throw new GoveeSkillError(`Govee request failed (${details})`, code);
     }
     return document;
   } catch (error) {

@@ -31,7 +31,7 @@ Use the capabilities returned for the selected installed device. Relevant instan
 - `devices.capabilities.segment_color_setting` / `segmentedBrightness`
 - `devices.capabilities.dynamic_scene` / `lightScene`, `diyScene`, or `snapshot`
 
-For `segmentedColorRgb`, use only segment indices explicitly returned in the capability's `segment` field. Govee responses have used both `options` and `elementRange`. If the instance is present but its segment domain is absent, report that the command cannot be compiled safely.
+For `segmentedColorRgb`, use only segment indices explicitly returned in the capability's `segment` field. Govee responses have used both `options` and `elementRange`. Honor `segment.size.min` and `segment.size.max` for every control request; split one authored color band across multiple requests when necessary. If the instance is present but its segment domain or declared array limits are unsafe, report that the command cannot be compiled safely.
 
 ## Published rate limits
 

@@ -55,4 +55,4 @@ A `LightScore` is the portable authored intent. It contains no API key or stable
 - Declare fallbacks deliberately. An empty fallback list means fail rather than change the artistic form.
 - Use scenes by advertised option name. Never invent a scene identifier.
 
-The compiler emits one segmented-color operation per band. It partitions every advertised segment exactly once and records the final execution mode.
+The compiler partitions every advertised segment exactly once and records the final execution mode. A band may compile to multiple operations when the device advertises a per-command `segment.size.max` smaller than that band.
