@@ -155,6 +155,24 @@ test('compiles a named bundled palette and records its provenance', async () => 
   assert.equal(output.operations.filter(operation => operation.label.startsWith('gradient-band')).length, 4);
 });
 
+test('compiles an inline recipe and records its normalized palette evidence', async () => {
+  const root = new URL('..', import.meta.url);
+  const { stdout } = await execFileAsync(process.execPath, [
+    'scripts/govee.mjs',
+    'compile',
+    '--score',
+    'tests/fixtures/dusk-recipe.score.json',
+    '--capabilities',
+    'tests/fixtures/segmented-device.json'
+  ], { cwd: root });
+  const output = JSON.parse(stdout);
+  assert.equal(output.executionMode, 'gradient');
+  assert.equal(output.paletteRecipe.space, 'oklch');
+  assert.deepEqual(output.paletteDiagnostics.gamutMappedBands, []);
+  assert.deepEqual(output.paletteDiagnostics.warnings, []);
+  assert.equal(output.operations.filter(operation => operation.label.startsWith('gradient-band')).length, 4);
+});
+
 test('apply refuses fixture data even when a write flag is supplied', async () => {
   const root = new URL('..', import.meta.url);
   await assert.rejects(execFileAsync(process.execPath, [

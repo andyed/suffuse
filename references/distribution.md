@@ -4,8 +4,8 @@ The repository root is the canonical Agent Skill. Do not maintain separate instr
 
 ## Discovery targets
 
-- Codex: user `~/.agents/skills/ai-govee-lights` or project `.agents/skills/ai-govee-lights`.
-- Claude Code: user `~/.claude/skills/ai-govee-lights` or project `.claude/skills/ai-govee-lights`.
+- Codex: user `~/.agents/skills/suffuse` or project `.agents/skills/suffuse`.
+- Claude Code: user `~/.claude/skills/suffuse` or project `.claude/skills/suffuse`.
 - OpenClaw: it reads the shared user and project `.agents/skills` roots. The managed installer deliberately shares that link with Codex.
 
 The repository also includes a Claude skills-directory plugin manifest. Claude Code can load the root `SKILL.md` as its single skill and start the bundled `.mcp.json` server. Codex and OpenClaw use the standard Agent Skill directly.

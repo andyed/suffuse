@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "name": "Perceptual dusk gradient",
+  "target": {
+    "sku": "H0001",
+    "name": "Fixture Downlights"
+  },
+  "power": "on",
+  "look": {
+    "kind": "gradient",
+    "brightness": 45,
+    "recipe": {
+      "topology": "sequential",
+      "space": "oklch",
+      "anchors": ["#24134F", "#F2A65A"],
+      "huePath": "shorter",
+      "bands": 4,
+      "lightnessCurve": "rising",
+      "chromaCurve": "free",
+      "safeguards": {
+        "adjacentSimilarity": "warn",
+        "cvdCollapse": "warn"
+      }
+    }
+  },
+  "fallback": ["solid"],
+  "restore": { "mode": "capture" }
+}

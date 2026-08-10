@@ -1,6 +1,6 @@
 # Govee control ecosystem
 
-This skill is an agent-facing authoring and safety layer, not a claim that no Govee control software already exists. Reuse mature transports and operational patterns where they fit, while keeping the `LightScore`, palette compiler, evidence receipt, and explicit write gates as the stable contract presented to agents.
+Suffuse is an agent-facing intent compiler and safety layer, not a claim that no lighting-control software already exists. Reuse mature transports and operational patterns where they fit, while keeping the vendor-neutral `LightScore`, perceptual palette compiler, evidence receipt, and explicit write gates as the stable contract presented to agents.
 
 These are implementation references, not runtime dependencies or endorsements.
 
@@ -24,7 +24,7 @@ Keep one agent-facing MCP and CLI contract in this repository. The contract owns
 - redacted evidence receipts and best-effort restore;
 - truthful reporting of fallback and visible device evidence.
 
-Treat device transports as providers behind that contract. The current provider is the documented Govee Developer Platform.
+Treat device transports as providers behind that contract. The current provider is the documented Govee Developer Platform. A future Hue provider should compile the same authored intent into Hue-native gradients, grouped lights, or scenes rather than leaking Hue resources into `LightScore`.
 
 ### Build on `govee2mqtt` through an adapter; do not fork it
 

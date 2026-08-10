@@ -34,7 +34,8 @@ A `LightScore` is the portable authored intent. It contains no API key or stable
 - `look.kind`: `"gradient"`, `"solid"`, or `"scene"`.
 - `look.brightness`: Optional integer from 0 through 100.
 - `look.palette`: For gradients, an exact name from the selected palette catalog.
-- `look.bands`: Alternatively, 3-5 ordered inline bands. Each band has `color` as `#RRGGBB` and optional positive `weight`. Do not combine it with `look.palette`.
+- `look.bands`: Alternatively, 3-5 ordered inline bands. Each band has `color` as `#RRGGBB` and optional positive `weight`.
+- `look.recipe`: Alternatively, a sequential OKLCH palette recipe as specified in [palettes.md](palettes.md). Use exactly one of `look.palette`, `look.bands`, or `look.recipe`.
 - `look.color`: Required for a solid look as `#RRGGBB`.
 - `look.scene`: Required for a scene look. Match an advertised scene option name.
 - `look.sceneInstance`: Optional `lightScene`, `diyScene`, or `snapshot`; omit to search all advertised scene instances.
@@ -47,9 +48,10 @@ A `LightScore` is the portable authored intent. It contains no API key or stable
 - Preserve spatial order. The first band maps to the lowest advertised segment positions and the last to the highest.
 - Use weights for unequal spatial bands, not for brightness.
 - Prefer a named catalog palette when the look should be reused across agents or rooms.
+- Prefer a recipe when interpolation and diagnostics should be reproducible; prefer explicit bands when every authored swatch must remain exact.
 - Prefer 3 bands for decisive looks and 4-5 for more nuanced gradients.
 - Keep adjacent colors distinguishable after diffusion. Avoid near-identical bands that consume requests without creating a visible boundary.
 - Declare fallbacks deliberately. An empty fallback list means fail rather than change the artistic form.
 - Use scenes by advertised option name. Never invent a scene identifier.
 
-The compiler partitions every advertised segment exactly once and records the final execution mode. A band may compile to multiple operations when the device advertises a per-command `segment.size.max` smaller than that band.
+The palette stage resolves recipes to concrete bands before device compilation. Its adjacent-distance, gamut, curve, and simulated color-vision diagnostics are advisory and are copied into the plan. The device compiler then partitions every advertised segment exactly once and records the final execution mode. A band may compile to multiple operations when the device advertises a per-command `segment.size.max` smaller than that band.

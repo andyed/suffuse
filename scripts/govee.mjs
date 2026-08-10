@@ -402,7 +402,7 @@ const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(pro
 if (invokedDirectly) {
   main().catch(error => {
     const code = error instanceof GoveeSkillError ? error.code : 'unexpected-error';
-    process.stderr.write(`ai-govee-lights [${code}]: ${error.message}\n`);
+    process.stderr.write(`suffuse [${code}]: ${error.message}\n`);
     process.exitCode = 1;
   });
 }

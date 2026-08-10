@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "palettes": [
     {
       "name": "dusk",
@@ -10,6 +10,23 @@
         { "color": "#D05B58", "weight": 1 },
         { "color": "#F2A65A", "weight": 1 }
       ]
+    },
+    {
+      "name": "dusk-perceptual",
+      "description": "A perceptually even violet-nightfall to ember-gold progression.",
+      "recipe": {
+        "topology": "sequential",
+        "space": "oklch",
+        "anchors": ["#24134F", "#F2A65A"],
+        "huePath": "shorter",
+        "bands": 4,
+        "lightnessCurve": "rising",
+        "chromaCurve": "free",
+        "safeguards": {
+          "adjacentSimilarity": "warn",
+          "cvdCollapse": "warn"
+        }
+      }
     },
     {
       "name": "sunset-embers",

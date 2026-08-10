@@ -1,22 +1,19 @@
 ---
-name: ai-govee-lights
-description: Author, inspect, compile, dry-run, apply, and restore capability-aware Govee lighting through the official Developer Platform API. Use when an agent needs to discover Govee lights; create or manage custom 3-5-band palettes and LightScores; compile capability-gated segmented gradients; select native or DIY scenes; expose safe local MCP tools; diagnose unavailable effects; or install one managed skill for Codex, Claude Code, and OpenClaw without relying on undocumented private APIs.
-license: MIT
-metadata:
-  version: "0.3.0"
+name: suffuse
+description: Compile atmospheric and spatial lighting intent into capability-safe provider operations. Use when an agent needs to author perceptually informed 3-5-band palettes or LightScores; inspect, preview, apply, or restore Govee lights; select native or DIY scenes; expose safe local MCP tools; diagnose unavailable effects; or install one managed lighting skill for Codex, Claude Code, and OpenClaw.
 ---
 
-# AI Govee Lights
+# Suffuse
 
-Treat the installed device's advertised capabilities as truth. Translate creative intent into a small `LightScore`, compile it deterministically, preview the resulting operations, and perform writes only when the user explicitly requested a device change.
+Act as a compiler for atmospheric and spatial intent, not as a device driver. Translate creative intent into a small `LightScore`, compile it deterministically against the installed device's advertised capabilities, preview the resulting operations, and perform writes only when the user explicitly requested a device change.
 
-This is an unofficial community skill and is not affiliated with or endorsed by Govee.
+The current execution provider is Govee's documented Developer Platform. Provider-specific MCP tools retain `govee_` names until another provider is implemented. This is an unofficial community project and is not affiliated with or endorsed by Govee.
 
 ## Follow the control workflow
 
 1. Establish whether the request is palette authoring, read-only inspection, a compiled preview, or a device write.
 2. Inspect the exact installed device before promising segments, scenes, or restoration.
-3. Read [references/palettes.md](references/palettes.md) and [references/light-score.md](references/light-score.md) when authoring or revising a palette or score.
+3. Read [references/color-theory.md](references/color-theory.md), [references/palettes.md](references/palettes.md), and [references/light-score.md](references/light-score.md) when authoring or revising a palette or score.
 4. Compile the score against the returned capability document. Never infer capability support from a SKU or product page.
 5. Show a redacted dry run unless the user already gave a direct imperative to change the lights.
 6. For a write, use `--confirm-write` and save the receipt to a private path. Segment writes also require `--confirm-segments` until visible independence has been established.
@@ -84,7 +81,7 @@ node scripts/govee.mjs restore \
 
 ## Author gradients honestly
 
-For the preferred spatial result, author 3-5 ordered bands directly or name a validated palette catalog entry. Compile them only when the selected device advertises `devices.capabilities.segment_color_setting` / `segmentedColorRgb` and supplies an explicit segment domain. If the device also advertises `devices.capabilities.toggle` / `gradientToggle`, enable it before sending segment colors. If the capability or domain is absent, use only fallbacks declared by the score.
+For the preferred spatial result, author 3-5 ordered bands directly, name a validated palette catalog entry, or compile a constrained OKLCH recipe. Recipes make interpolation, hue travel, and diagnostics reproducible; explicit hex bands remain first-class and are never silently regenerated. Compile either form only when the selected device advertises `devices.capabilities.segment_color_setting` / `segmentedColorRgb` and supplies an explicit segment domain. If the device also advertises `devices.capabilities.toggle` / `gradientToggle`, enable it before sending segment colors. If the capability or domain is absent, use only fallbacks declared by the score.
 
 Treat API acceptance and visible rendering as separate evidence. A `200` response proves only that Govee accepted the request. It does not prove that individual pucks or bulbs rendered distinct colors. Record the firmware context and visible result before calling a device segment-verified.
 

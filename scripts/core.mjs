@@ -374,10 +374,16 @@ export function compileLightScore(scoreInput, device) {
   }
 
   prependCommonOperations(score, device, operations);
+  const paletteDiagnostics = score?.look?.paletteDiagnostics ?? null;
+  if (Array.isArray(paletteDiagnostics?.warnings)) {
+    warnings.push(...paletteDiagnostics.warnings.map(warning => `Palette: ${warning.message}`));
+  }
   return {
     version: 1,
     scoreName: score.name,
     paletteName: text(score?.look?.palette) || null,
+    paletteRecipe: score?.look?.recipe ?? null,
+    paletteDiagnostics,
     requestedMode: score.look.kind,
     executionMode,
     target: {

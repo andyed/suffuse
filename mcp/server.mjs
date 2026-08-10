@@ -18,7 +18,7 @@ import {
 
 const execFileAsync = promisify(execFile);
 const CLI_PATH = fileURLToPath(new URL('../scripts/govee.mjs', import.meta.url));
-const VERSION = '0.3.0';
+const VERSION = '0.4.0';
 const OUTPUT_SCHEMA = z.object({ result: z.unknown() });
 
 export const MCP_TOOL_METADATA = Object.freeze([
@@ -60,7 +60,7 @@ async function runCli(args) {
 }
 
 async function withPrivateScore(score, callback) {
-  const directory = await mkdtemp(join(tmpdir(), 'ai-govee-lights-mcp-'));
+  const directory = await mkdtemp(join(tmpdir(), 'suffuse-mcp-'));
   const path = join(directory, 'score.private.json');
   try {
     await writeFile(path, `${JSON.stringify(score, null, 2)}\n`, { mode: 0o600, flag: 'wx' });
@@ -85,7 +85,7 @@ function requireAbsoluteReceipt(path) {
 
 export async function createMcpServer() {
   const server = new McpServer(
-    { name: 'ai-govee-lights', version: VERSION },
+    { name: 'suffuse', version: VERSION },
     {
       instructions: 'Start with read-only inspection and compilation. Never claim a gradient from a scene or solid fallback. Physical writes are disabled unless GOVEE_MCP_ALLOW_WRITES=1 and each call confirms the write; segment writes need a second explicit confirmation and visual verification.'
     }
@@ -193,7 +193,7 @@ export async function createMcpServer() {
 
 async function main() {
   if (process.argv.includes('--describe')) {
-    process.stdout.write(`${JSON.stringify({ name: 'ai-govee-lights', version: VERSION, tools: MCP_TOOL_METADATA }, null, 2)}\n`);
+    process.stdout.write(`${JSON.stringify({ name: 'suffuse', version: VERSION, tools: MCP_TOOL_METADATA }, null, 2)}\n`);
     return;
   }
   const server = await createMcpServer();
@@ -203,7 +203,7 @@ async function main() {
 const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (invokedDirectly) {
   main().catch(error => {
-    process.stderr.write(`ai-govee-lights-mcp: ${error.message}\n`);
+    process.stderr.write(`suffuse-mcp: ${error.message}\n`);
     process.exitCode = 1;
   });
 }

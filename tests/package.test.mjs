@@ -7,6 +7,8 @@ import { promisify } from 'node:util';
 import test from 'node:test';
 import { createMcpServer, MCP_TOOL_METADATA, requireWriteGate } from '../mcp/server.mjs';
 import {
+  compilePaletteRecipe,
+  diagnosePaletteBands,
   loadPaletteCatalog,
   materializePaletteScore,
   summarizePalettes
@@ -21,7 +23,33 @@ test('resolves a named palette into a valid 3-5-band score', async () => {
   const resolved = materializePaletteScore(score, catalog);
   assert.equal(resolved.look.palette, 'dusk');
   assert.equal(resolved.look.bands.length, 4);
-  assert.equal(summarizePalettes(catalog).length, 3);
+  assert.equal(summarizePalettes(catalog).length, 4);
+});
+
+test('compiles a deterministic perceptual dusk recipe with advisory diagnostics', () => {
+  const resolved = compilePaletteRecipe({
+    topology: 'sequential',
+    space: 'oklch',
+    anchors: ['#24134F', '#F2A65A'],
+    huePath: 'shorter',
+    bands: 4,
+    lightnessCurve: 'rising',
+    chromaCurve: 'free'
+  });
+  assert.deepEqual(resolved.bands.map(band => band.color), [
+    '#24134F', '#733568', '#C06265', '#F2A65A'
+  ]);
+  assert.deepEqual(resolved.diagnostics.gamutMappedBands, []);
+  assert.deepEqual(resolved.diagnostics.warnings, []);
+});
+
+test('warns when adjacent authored bands are perceptually similar', () => {
+  const diagnostics = diagnosePaletteBands([
+    { color: '#222222' },
+    { color: '#232323' },
+    { color: '#FFFFFF' }
+  ]);
+  assert.ok(diagnostics.warnings.some(warning => warning.code === 'adjacent-similarity'));
 });
 
 test('palette CLI is local, read-only, and lists colors', async () => {
@@ -30,10 +58,24 @@ test('palette CLI is local, read-only, and lists colors', async () => {
   assert.equal(output.readOnly, true);
   assert.equal(output.source, 'bundled');
   assert.ok(output.palettes.some(palette => palette.name === 'dusk' && palette.colors.length === 4));
+  assert.ok(output.palettes.some(palette => (
+    palette.name === 'dusk-perceptual'
+    && palette.source === 'recipe'
+    && palette.colors.join(',') === '#24134F,#733568,#C06265,#F2A65A'
+  )));
+});
+
+test('package and skill expose the Suffuse identity', async () => {
+  const packageDocument = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  const skill = await (await import('node:fs/promises')).readFile(new URL('../SKILL.md', import.meta.url), 'utf8');
+  assert.equal(packageDocument.name, 'suffuse');
+  assert.equal(packageDocument.version, '0.4.0');
+  assert.match(skill, /^---\nname: suffuse\n/);
+  assert.doesNotMatch(skill.split('---')[1], /\n(?:license|metadata):/);
 });
 
 test('managed installer deduplicates shared Codex and OpenClaw paths', async () => {
-  const home = await mkdtemp(join(tmpdir(), 'ai-govee-lights-home-'));
+  const home = await mkdtemp(join(tmpdir(), 'suffuse-home-'));
   try {
     const common = ['--target', 'all', '--scope', 'user', '--home', home];
     const planned = JSON.parse((await execFileAsync(process.execPath, ['scripts/manage.mjs', 'plan', ...common], { cwd: root })).stdout);

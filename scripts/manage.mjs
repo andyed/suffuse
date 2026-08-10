@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { GoveeSkillError } from './core.mjs';
 import { loadPaletteCatalog } from './palettes.mjs';
 
-const SKILL_NAME = 'ai-govee-lights';
+const SKILL_NAME = 'suffuse';
 const SOURCE_ROOT = fileURLToPath(new URL('..', import.meta.url));
 const TARGETS = new Set(['codex', 'claude', 'openclaw', 'all']);
 const SCOPES = new Set(['user', 'project']);
@@ -130,7 +130,8 @@ async function doctor(args) {
     skill: { ok: true, source },
     apiKey: { configured: !!String(process.env.GOVEE_API_KEY ?? '').trim(), valueExposed: false },
     mcpWrites: { enabled: process.env.GOVEE_MCP_ALLOW_WRITES === '1' },
-    palettes: { ok: false }
+    palettes: { ok: false },
+    runtimeDependencies: { ok: false }
   };
   try {
     const catalog = await loadPaletteCatalog(join(source, 'assets', 'palettes.json'));
@@ -139,12 +140,15 @@ async function doctor(args) {
     checks.palettes = { ok: false, error: error.message };
   }
   try {
-    await access(join(source, 'node_modules', '@modelcontextprotocol', 'server', 'package.json'));
-    checks.mcp = { ok: true };
+    await Promise.all([
+      access(join(source, 'node_modules', '@modelcontextprotocol', 'server', 'package.json')),
+      access(join(source, 'node_modules', 'culori', 'package.json'))
+    ]);
+    checks.runtimeDependencies = { ok: true, packages: ['@modelcontextprotocol/server', 'culori'] };
   } catch {
-    checks.mcp = { ok: false, action: 'Run npm install in the skill repository.' };
+    checks.runtimeDependencies = { ok: false, action: 'Run npm install in the skill repository.' };
   }
-  checks.ok = checks.node.ok && checks.skill.ok && checks.palettes.ok && checks.mcp.ok;
+  checks.ok = checks.node.ok && checks.skill.ok && checks.palettes.ok && checks.runtimeDependencies.ok;
   return checks;
 }
 
@@ -155,7 +159,7 @@ async function mcpConfig(args) {
     source,
     readOnlyDefault: true,
     codexToml: [
-      '[mcp_servers.ai_govee_lights]',
+      '[mcp_servers.suffuse]',
       'command = "node"',
       `args = [${JSON.stringify(server)}]`,
       'env_vars = ["GOVEE_API_KEY", "GOVEE_MCP_ALLOW_WRITES"]',
@@ -185,6 +189,6 @@ async function main() {
 
 main().catch(error => {
   const code = error instanceof GoveeSkillError ? error.code : 'unexpected-error';
-  process.stderr.write(`ai-govee-lights-manage [${code}]: ${error.message}\n`);
+  process.stderr.write(`suffuse-manage [${code}]: ${error.message}\n`);
   process.exitCode = 1;
 });

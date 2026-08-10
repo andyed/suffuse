@@ -1,13 +1,13 @@
 {
-  "name": "ai-govee-lights",
-  "version": "0.3.0",
-  "description": "Unofficial capability-aware Govee lighting Agent Skill",
+  "name": "suffuse",
+  "version": "0.4.0",
+  "description": "Perceptually informed compiler for atmospheric and spatial lighting intent",
   "type": "module",
   "license": "MIT",
   "bin": {
-    "ai-govee-lights": "scripts/govee.mjs",
-    "ai-govee-lights-manage": "scripts/manage.mjs",
-    "ai-govee-lights-mcp": "mcp/server.mjs"
+    "suffuse": "scripts/govee.mjs",
+    "suffuse-manage": "scripts/manage.mjs",
+    "suffuse-mcp": "mcp/server.mjs"
   },
   "files": [
     ".claude-plugin/",
@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",
+    "culori": "^4.0.2",
     "zod": "^4.4.3"
   }
 }
