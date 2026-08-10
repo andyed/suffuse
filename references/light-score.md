@@ -16,12 +16,7 @@ A `LightScore` is the portable authored intent. It contains no API key or stable
   "look": {
     "kind": "gradient",
     "brightness": 45,
-    "bands": [
-      { "color": "#24134F", "weight": 1 },
-      { "color": "#6D245F", "weight": 1 },
-      { "color": "#D05B58", "weight": 1 },
-      { "color": "#F2A65A", "weight": 1 }
-    ],
+    "palette": "dusk",
     "fallbackScene": "Sunset"
   },
   "fallback": ["scene", "solid"],
@@ -38,7 +33,8 @@ A `LightScore` is the portable authored intent. It contains no API key or stable
 - `power`: `"on"`, `"off"`, or `"unchanged"`.
 - `look.kind`: `"gradient"`, `"solid"`, or `"scene"`.
 - `look.brightness`: Optional integer from 0 through 100.
-- `look.bands`: For gradients, 3-5 ordered bands. Each band has `color` as `#RRGGBB` and optional positive `weight`.
+- `look.palette`: For gradients, an exact name from the selected palette catalog.
+- `look.bands`: Alternatively, 3-5 ordered inline bands. Each band has `color` as `#RRGGBB` and optional positive `weight`. Do not combine it with `look.palette`.
 - `look.color`: Required for a solid look as `#RRGGBB`.
 - `look.scene`: Required for a scene look. Match an advertised scene option name.
 - `look.sceneInstance`: Optional `lightScene`, `diyScene`, or `snapshot`; omit to search all advertised scene instances.
@@ -50,6 +46,7 @@ A `LightScore` is the portable authored intent. It contains no API key or stable
 
 - Preserve spatial order. The first band maps to the lowest advertised segment positions and the last to the highest.
 - Use weights for unequal spatial bands, not for brightness.
+- Prefer a named catalog palette when the look should be reused across agents or rooms.
 - Prefer 3 bands for decisive looks and 4-5 for more nuanced gradients.
 - Keep adjacent colors distinguishable after diffusion. Avoid near-identical bands that consume requests without creating a visible boundary.
 - Declare fallbacks deliberately. An empty fallback list means fail rather than change the artistic form.

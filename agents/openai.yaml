@@ -1,4 +1,4 @@
 interface:
   display_name: "AI Govee Lights"
-  short_description: "Author and safely control Govee lighting"
-  default_prompt: "Use $ai-govee-lights to inspect my Govee devices and author a capability-safe lighting look."
+  short_description: "Author palettes and safely control Govee lights"
+  default_prompt: "Use $ai-govee-lights to author a custom dusk palette, inspect my Govee device, and compile a capability-safe preview."

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "name": "Dusk catalog gradient",
+  "target": {
+    "sku": "H0001",
+    "name": "Fixture Downlights"
+  },
+  "power": "on",
+  "look": {
+    "kind": "gradient",
+    "brightness": 45,
+    "palette": "dusk",
+    "fallbackScene": "Sunset"
+  },
+  "fallback": ["scene", "solid"],
+  "restore": { "mode": "capture" }
+}

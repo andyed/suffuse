@@ -2,6 +2,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { chmod, readFile, writeFile } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
 import {
   GoveeSkillError,
   compileLightScore,
@@ -14,6 +15,11 @@ import {
   summarizeDevices,
   validateControlOperation
 } from './core.mjs';
+import {
+  loadPaletteCatalog,
+  materializePaletteScore,
+  summarizePalettes
+} from './palettes.mjs';
 
 const BASE_URL = 'https://openapi.api.govee.com';
 const PATHS = Object.freeze({
@@ -29,8 +35,11 @@ const TIMEOUT_MS = 10_000;
 function usage() {
   return `Usage:
   govee.mjs inspect [--sku SKU] [--name NAME] [--fixture FILE] [--show-identifiers]
-  govee.mjs compile --score FILE --capabilities FILE [--output FILE] [--show-identifiers]
-  govee.mjs apply --score FILE [--confirm-write --receipt FILE]
+  govee.mjs scenes --sku SKU [--name NAME] [--instance lightScene|diyScene]
+  govee.mjs palettes [--name NAME] [--catalog FILE]
+  govee.mjs compile --score FILE --capabilities FILE [--catalog FILE] [--output FILE]
+  govee.mjs apply --score FILE [--catalog FILE] [--confirm-write --receipt FILE]
+                   [--confirm-segments]
   govee.mjs restore --receipt FILE --confirm-write
 
 GOVEE_API_KEY is required for live commands. Writes require --confirm-write.`;
@@ -45,7 +54,7 @@ function parseArgs(argv) {
       continue;
     }
     const key = token.slice(2);
-    if (['confirm-write', 'show-identifiers'].includes(key)) {
+    if (['confirm-write', 'confirm-segments', 'show-identifiers'].includes(key)) {
       args[key] = true;
       continue;
     }
@@ -147,8 +156,13 @@ async function querySceneCatalog(device, path) {
 }
 
 async function enrichDeviceForScore(device, score) {
-  if (score?.look?.kind !== 'scene') return device;
-  const instance = score.look.sceneInstance;
+  const directScene = score?.look?.kind === 'scene';
+  const sceneFallback = score?.look?.kind === 'gradient'
+    && Array.isArray(score?.fallback)
+    && score.fallback.includes('scene')
+    && String(score?.look?.fallbackScene ?? '').trim();
+  if (!directScene && !sceneFallback) return device;
+  const instance = directScene ? score.look.sceneInstance : null;
   const documents = [];
   if (!instance || instance === 'lightScene') {
     documents.push(await querySceneCatalog(device, PATHS.scenes));
@@ -200,8 +214,50 @@ async function inspect(args) {
   });
 }
 
-async function compile(args) {
+async function palettes(args) {
+  const catalog = await loadPaletteCatalog(args.catalog);
+  const available = summarizePalettes(catalog);
+  const selected = args.name
+    ? available.filter(palette => palette.name.toLowerCase() === String(args.name).trim().toLowerCase())
+    : available;
+  if (args.name && !selected.length) throw new GoveeSkillError(`Unknown palette: ${args.name}`, 'unknown-palette');
+  printJson({ readOnly: true, source: args.catalog ? 'custom' : 'bundled', palettes: selected });
+}
+
+async function scenes(args) {
+  const device = selectDevice(await discoverDevices(), { sku: args.sku, name: args.name });
+  const requested = args.instance;
+  if (requested && !['lightScene', 'diyScene'].includes(requested)) {
+    throw new GoveeSkillError('scenes --instance must be lightScene or diyScene', 'invalid-arguments');
+  }
+  const documents = [];
+  if (!requested || requested === 'lightScene') documents.push(await querySceneCatalog(device, PATHS.scenes));
+  if (!requested || requested === 'diyScene') documents.push(await querySceneCatalog(device, PATHS.diyScenes));
+  const enriched = mergeDeviceCapabilities(device, documents);
+  const grouped = new Map();
+  for (const item of enriched.capabilities ?? []) {
+    if (item?.type !== 'devices.capabilities.dynamic_scene') continue;
+    if (!['lightScene', 'diyScene'].includes(item?.instance)) continue;
+    const names = grouped.get(item.instance) ?? new Set();
+    (item?.parameters?.options ?? []).map(option => option?.name).filter(Boolean).forEach(name => names.add(name));
+    grouped.set(item.instance, names);
+  }
+  const catalogs = [...grouped].map(([instance, names]) => ({ instance, scenes: [...names] }));
+  printJson({
+    readOnly: true,
+    target: { sku: device.sku, device: redactIdentifier(device.device) },
+    catalogs
+  });
+}
+
+async function loadScoreWithPalette(args) {
   const score = await loadJson(args.score, 'score');
+  const catalog = await loadPaletteCatalog(args.catalog);
+  return materializePaletteScore(score, catalog);
+}
+
+async function compile(args) {
+  const score = await loadScoreWithPalette(args);
   const devices = devicesFromDocument(await loadJson(args.capabilities, 'capabilities'));
   const plan = compileLightScore(score, selectDevice(devices, score.target));
   if (args.output) {
@@ -214,7 +270,7 @@ async function compile(args) {
 
 async function apply(args) {
   if (args.fixture) throw new GoveeSkillError('apply never accepts fixture data', 'fixture-write-blocked');
-  const score = await loadJson(args.score, 'score');
+  const score = await loadScoreWithPalette(args);
   let device = selectDevice(await discoverDevices(), score.target);
   device = await enrichDeviceForScore(device, score);
   const plan = compileLightScore(score, device);
@@ -224,6 +280,13 @@ async function apply(args) {
     return;
   }
   if (!args.receipt) throw new GoveeSkillError('A private --receipt path is required for writes', 'missing-receipt');
+  const segmentedWrite = plan.operations.some(operation => operation.payload.capability.instance === 'segmentedColorRgb');
+  if (segmentedWrite && !args['confirm-segments']) {
+    throw new GoveeSkillError(
+      'Segment writes require --confirm-segments because advertised support still needs visual verification',
+      'segment-write-not-confirmed'
+    );
+  }
 
   // Reserve the receipt before touching a physical device. This fails closed if the path
   // already exists and leaves a useful prepared record if the process exits unexpectedly.
@@ -247,7 +310,6 @@ async function apply(args) {
     }
   }
   const restoreOperations = stateDocument ? restoreOperationsFromState(device, stateDocument) : [];
-  const segmentedWrite = plan.operations.some(operation => operation.payload.capability.instance === 'segmentedColorRgb');
   const sceneWrite = plan.operations.some(operation => operation.payload.capability.type === 'devices.capabilities.dynamic_scene');
   const restoreCoverage = {
     mode: plan.restoreMode,
@@ -328,14 +390,30 @@ async function main() {
     return;
   }
   if (command === 'inspect') return inspect(args);
+  if (command === 'scenes') return scenes(args);
+  if (command === 'palettes') return palettes(args);
   if (command === 'compile') return compile(args);
   if (command === 'apply') return apply(args);
   if (command === 'restore') return restore(args);
   throw new GoveeSkillError(`Unknown command: ${command}`, 'invalid-command');
 }
 
-main().catch(error => {
-  const code = error instanceof GoveeSkillError ? error.code : 'unexpected-error';
-  process.stderr.write(`ai-govee-lights [${code}]: ${error.message}\n`);
-  process.exitCode = 1;
-});
+const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (invokedDirectly) {
+  main().catch(error => {
+    const code = error instanceof GoveeSkillError ? error.code : 'unexpected-error';
+    process.stderr.write(`ai-govee-lights [${code}]: ${error.message}\n`);
+    process.exitCode = 1;
+  });
+}
+
+export {
+  apiRequest,
+  discoverDevices,
+  enrichDeviceForScore,
+  executeOperations,
+  loadJson,
+  querySceneCatalog,
+  queryState,
+  writePrivateJson
+};

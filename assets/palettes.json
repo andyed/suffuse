@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "palettes": [
+    {
+      "name": "dusk",
+      "description": "Violet nightfall through ember gold.",
+      "bands": [
+        { "color": "#24134F", "weight": 1 },
+        { "color": "#6D245F", "weight": 1 },
+        { "color": "#D05B58", "weight": 1 },
+        { "color": "#F2A65A", "weight": 1 }
+      ]
+    },
+    {
+      "name": "sunset-embers",
+      "description": "Deep plum, warm coral, and a narrow amber edge.",
+      "bands": [
+        { "color": "#28113B", "weight": 1.2 },
+        { "color": "#6B1F4B", "weight": 1 },
+        { "color": "#C33C54", "weight": 1 },
+        { "color": "#F27A4A", "weight": 0.8 },
+        { "color": "#FFD27A", "weight": 0.6 }
+      ]
+    },
+    {
+      "name": "aurora-tide",
+      "description": "Inky blue into cyan and soft green.",
+      "bands": [
+        { "color": "#111A4A", "weight": 1 },
+        { "color": "#174F78", "weight": 1 },
+        { "color": "#20A6A1", "weight": 1 },
+        { "color": "#8CE0A1", "weight": 1 }
+      ]
+    }
+  ]
+}

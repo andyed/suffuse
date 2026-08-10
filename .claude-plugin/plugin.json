@@ -1,0 +1,9 @@
+{
+  "name": "ai-govee-lights",
+  "description": "Author and safely control capability-aware Govee lighting",
+  "version": "0.3.0",
+  "author": {
+    "name": "Andy Edmonds"
+  },
+  "license": "MIT"
+}

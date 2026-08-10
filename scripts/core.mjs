@@ -377,6 +377,7 @@ export function compileLightScore(scoreInput, device) {
   return {
     version: 1,
     scoreName: score.name,
+    paletteName: text(score?.look?.palette) || null,
     requestedMode: score.look.kind,
     executionMode,
     target: {
