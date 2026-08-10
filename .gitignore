@@ -1,0 +1,8 @@
+.DS_Store
+.env
+.env.*
+node_modules/
+coverage/
+receipts/
+*.receipt.json
+*.private.json

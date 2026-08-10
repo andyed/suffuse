@@ -1,0 +1,17 @@
+{
+  "name": "ai-govee-lights",
+  "version": "0.1.0",
+  "description": "Unofficial capability-aware Govee lighting Agent Skill",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "ai-govee-lights": "scripts/govee.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test",
+    "inspect:fixture": "node scripts/govee.mjs inspect --fixture tests/fixtures/segmented-device.json --sku H0001"
+  }
+}

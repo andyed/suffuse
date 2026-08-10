@@ -1,0 +1,16 @@
+{
+  "code": 200,
+  "data": [
+    {
+      "sku": "H0002",
+      "device": "11:22:33:44:55:66:77:88",
+      "deviceName": "Fixture Lamp",
+      "type": "devices.types.light",
+      "capabilities": [
+        { "type": "devices.capabilities.on_off", "instance": "powerSwitch" },
+        { "type": "devices.capabilities.range", "instance": "brightness" },
+        { "type": "devices.capabilities.color_setting", "instance": "colorRgb" }
+      ]
+    }
+  ]
+}

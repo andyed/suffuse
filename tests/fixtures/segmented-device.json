@@ -1,0 +1,48 @@
+{
+  "code": 200,
+  "data": [
+    {
+      "sku": "H0001",
+      "device": "AA:BB:CC:DD:EE:FF:00:11",
+      "deviceName": "Fixture Downlights",
+      "type": "devices.types.light",
+      "capabilities": [
+        {
+          "type": "devices.capabilities.on_off",
+          "instance": "powerSwitch",
+          "parameters": { "dataType": "ENUM", "options": [{ "name": "off", "value": 0 }, { "name": "on", "value": 1 }] }
+        },
+        {
+          "type": "devices.capabilities.range",
+          "instance": "brightness",
+          "parameters": { "dataType": "INTEGER", "range": { "min": 0, "max": 100, "precision": 1 } }
+        },
+        {
+          "type": "devices.capabilities.color_setting",
+          "instance": "colorRgb",
+          "parameters": { "dataType": "INTEGER", "range": { "min": 0, "max": 16777215, "precision": 1 } }
+        },
+        {
+          "type": "devices.capabilities.segment_color_setting",
+          "instance": "segmentedColorRgb",
+          "parameters": {
+            "dataType": "STRUCT",
+            "fields": [
+              {
+                "fieldName": "segment",
+                "dataType": "Array",
+                "options": [{ "value": 0 }, { "value": 1 }, { "value": 2 }, { "value": 3 }, { "value": 4 }, { "value": 5 }, { "value": 6 }, { "value": 7 }, { "value": 8 }, { "value": 9 }, { "value": 10 }, { "value": 11 }]
+              },
+              { "fieldName": "rgb", "dataType": "INTEGER", "range": { "min": 0, "max": 16777215 } }
+            ]
+          }
+        },
+        {
+          "type": "devices.capabilities.dynamic_scene",
+          "instance": "lightScene",
+          "parameters": { "dataType": "ENUM", "options": [{ "name": "Sunset", "value": { "paramId": 1, "id": 2 } }] }
+        }
+      ]
+    }
+  ]
+}

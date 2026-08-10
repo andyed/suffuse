@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "name": "Dusk gradient",
+  "target": { "sku": "H0001", "name": "Fixture Downlights" },
+  "power": "on",
+  "look": {
+    "kind": "gradient",
+    "brightness": 45,
+    "bands": [
+      { "color": "#24134F", "weight": 1 },
+      { "color": "#6D245F", "weight": 1 },
+      { "color": "#D05B58", "weight": 1 },
+      { "color": "#F2A65A", "weight": 1 }
+    ],
+    "fallbackScene": "Sunset"
+  },
+  "fallback": ["scene", "solid"],
+  "restore": { "mode": "capture" }
+}
