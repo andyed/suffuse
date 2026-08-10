@@ -39,6 +39,24 @@ export function devicesFromDocument(document) {
   throw new GoveeSkillError('Capability document does not contain a device array', 'invalid-capabilities');
 }
 
+export function capabilitiesFromDocument(document) {
+  if (Array.isArray(document)) return document;
+  if (Array.isArray(document?.payload?.capabilities)) return document.payload.capabilities;
+  if (Array.isArray(document?.data?.capabilities)) return document.data.capabilities;
+  throw new GoveeSkillError('Capability document does not contain a capability array', 'invalid-capabilities');
+}
+
+export function mergeDeviceCapabilities(device, documents = []) {
+  const additions = documents.flatMap(capabilitiesFromDocument);
+  return {
+    ...device,
+    capabilities: [
+      ...(Array.isArray(device?.capabilities) ? device.capabilities : []),
+      ...additions
+    ]
+  };
+}
+
 export function capability(device, type, instance) {
   const list = Array.isArray(device?.capabilities) ? device.capabilities : [];
   return list.find(item => item?.type === type && item?.instance === instance) || null;

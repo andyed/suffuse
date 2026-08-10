@@ -52,6 +52,8 @@ Preview against live capabilities. This remains read-only because `--confirm-wri
 node scripts/govee.mjs apply --score /private/path/look.score.json
 ```
 
+For scene looks, live apply resolves `lightScene` and `diyScene` names through Govee's dedicated scene catalogs before compiling. Do not substitute an invented identifier when a name is absent.
+
 Apply after an explicit user request and retain an evidence/restore receipt:
 
 ```bash

@@ -1,0 +1,22 @@
+{
+  "requestId": "fixture-request",
+  "msg": "success",
+  "code": 200,
+  "payload": {
+    "sku": "H0001",
+    "device": "AA:BB:CC:DD:EE:FF:00:11",
+    "capabilities": [
+      {
+        "type": "devices.capabilities.dynamic_scene",
+        "instance": "lightScene",
+        "parameters": {
+          "dataType": "ENUM",
+          "options": [
+            { "name": "Sunset Glow", "value": { "paramId": 4282, "id": 3855 } },
+            { "name": "Aurora", "value": { "paramId": 4284, "id": 3857 } }
+          ]
+        }
+      }
+    ]
+  }
+}

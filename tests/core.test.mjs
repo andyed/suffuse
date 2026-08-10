@@ -6,6 +6,7 @@ import test from 'node:test';
 import {
   compileLightScore,
   devicesFromDocument,
+  mergeDeviceCapabilities,
   redactPlan,
   segmentArrayLimits,
   segmentIndices,
@@ -73,6 +74,17 @@ test('uses an explicitly declared solid fallback without calling it a gradient',
   assert.equal(plan.executionMode, 'solid-fallback');
   assert.match(plan.warnings[0], /not advertised/);
   assert.equal(plan.operations.at(-1).payload.capability.instance, 'colorRgb');
+});
+
+test('merges a dedicated dynamic-scene catalog before compiling an exact scene name', async () => {
+  const devices = devicesFromDocument(await fixture('segmented-device.json'));
+  const scenes = await fixture('dynamic-scenes.json');
+  const score = await fixture('sunset-glow.score.json');
+  const device = mergeDeviceCapabilities(devices[0], [scenes]);
+  const plan = compileLightScore(score, device);
+  assert.equal(plan.executionMode, 'scene');
+  const scene = plan.operations.find(operation => operation.label === 'scene:Sunset Glow');
+  assert.deepEqual(scene.payload.capability.value, { paramId: 4282, id: 3855 });
 });
 
 test('fails when segmentedColorRgb lacks a safe index domain and no fallback exists', async () => {

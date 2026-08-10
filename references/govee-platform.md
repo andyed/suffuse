@@ -32,6 +32,8 @@ Use the capabilities returned for the selected installed device. Relevant instan
 - `devices.capabilities.segment_color_setting` / `segmentedBrightness`
 - `devices.capabilities.dynamic_scene` / `lightScene`, `diyScene`, or `snapshot`
 
+Device discovery contains only a smaller static scene set. Resolve live `lightScene` names through `/device/scenes` and `diyScene` names through `/device/diy-scenes`, then merge those returned capability options before compiling a scene command.
+
 For `segmentedColorRgb`, use only segment indices explicitly returned in the capability's `segment` field. Govee responses have used both `options` and `elementRange`. Honor `segment.size.min` and `segment.size.max` for every control request; split one authored color band across multiple requests when necessary. If the instance is present but its segment domain or declared array limits are unsafe, report that the command cannot be compiled safely.
 
 If `gradientToggle` is advertised, enable it before sending segmented colors. Some devices accept segment payloads while rendering them as whole-fixture colors when gradient mode is not active. The state endpoint may return an empty value for this toggle, so visual confirmation remains necessary.

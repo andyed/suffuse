@@ -6,6 +6,7 @@ import {
   GoveeSkillError,
   compileLightScore,
   devicesFromDocument,
+  mergeDeviceCapabilities,
   redactIdentifier,
   redactPlan,
   restoreOperationsFromState,
@@ -18,7 +19,9 @@ const BASE_URL = 'https://openapi.api.govee.com';
 const PATHS = Object.freeze({
   devices: '/router/api/v1/user/devices',
   state: '/router/api/v1/device/state',
-  control: '/router/api/v1/device/control'
+  control: '/router/api/v1/device/control',
+  scenes: '/router/api/v1/device/scenes',
+  diyScenes: '/router/api/v1/device/diy-scenes'
 });
 const WRITE_INTERVAL_MS = 550;
 const TIMEOUT_MS = 10_000;
@@ -133,6 +136,29 @@ async function queryState(device) {
   });
 }
 
+async function querySceneCatalog(device, path) {
+  return apiRequest(path, {
+    method: 'POST',
+    body: {
+      requestId: randomUUID(),
+      payload: { sku: device.sku, device: device.device }
+    }
+  });
+}
+
+async function enrichDeviceForScore(device, score) {
+  if (score?.look?.kind !== 'scene') return device;
+  const instance = score.look.sceneInstance;
+  const documents = [];
+  if (!instance || instance === 'lightScene') {
+    documents.push(await querySceneCatalog(device, PATHS.scenes));
+  }
+  if (!instance || instance === 'diyScene') {
+    documents.push(await querySceneCatalog(device, PATHS.diyScenes));
+  }
+  return documents.length ? mergeDeviceCapabilities(device, documents) : device;
+}
+
 const wait = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
 
 async function executeOperations(operations) {
@@ -189,7 +215,8 @@ async function compile(args) {
 async function apply(args) {
   if (args.fixture) throw new GoveeSkillError('apply never accepts fixture data', 'fixture-write-blocked');
   const score = await loadJson(args.score, 'score');
-  const device = selectDevice(await discoverDevices(), score.target);
+  let device = selectDevice(await discoverDevices(), score.target);
+  device = await enrichDeviceForScore(device, score);
   const plan = compileLightScore(score, device);
 
   if (!args['confirm-write']) {
@@ -221,12 +248,14 @@ async function apply(args) {
   }
   const restoreOperations = stateDocument ? restoreOperationsFromState(device, stateDocument) : [];
   const segmentedWrite = plan.operations.some(operation => operation.payload.capability.instance === 'segmentedColorRgb');
+  const sceneWrite = plan.operations.some(operation => operation.payload.capability.type === 'devices.capabilities.dynamic_scene');
   const restoreCoverage = {
     mode: plan.restoreMode,
-    complete: plan.restoreMode === 'capture' && !segmentedWrite && restoreOperations.length > 0,
+    complete: plan.restoreMode === 'capture' && !segmentedWrite && !sceneWrite && restoreOperations.length > 0,
     capturedInstances: restoreOperations.map(operation => operation.payload.capability.instance),
     warning: stateWarning || (segmentedWrite
       ? 'Prior per-segment colors may not be queryable; restoration is partial unless an advertised snapshot is used.'
+      : sceneWrite ? 'Prior dynamic scene selection may not be queryable; restoration covers only returned device state.'
       : restoreOperations.length ? null : 'No queryable restore operations were captured.')
   };
 

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "name": "Sunset Glow",
+  "target": { "sku": "H0001", "name": "Fixture Downlights" },
+  "power": "on",
+  "look": {
+    "kind": "scene",
+    "scene": "Sunset Glow",
+    "sceneInstance": "lightScene"
+  },
+  "fallback": [],
+  "restore": { "mode": "capture" }
+}
