@@ -71,7 +71,7 @@ node scripts/govee.mjs restore \
 
 ## Author gradients honestly
 
-For the preferred spatial result, author 3-5 ordered bands. Compile them only when the selected device advertises `devices.capabilities.segment_color_setting` / `segmentedColorRgb` and supplies an explicit segment domain. If the capability or domain is absent, use only fallbacks declared by the score.
+For the preferred spatial result, author 3-5 ordered bands. Compile them only when the selected device advertises `devices.capabilities.segment_color_setting` / `segmentedColorRgb` and supplies an explicit segment domain. If the device also advertises `devices.capabilities.toggle` / `gradientToggle`, enable it before sending segment colors. If the capability or domain is absent, use only fallbacks declared by the score.
 
 Do not describe a solid-color fallback as a gradient. Do not describe scene replay as arbitrary per-light control. Record the selected execution mode in the result.
 

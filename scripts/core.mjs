@@ -1,5 +1,6 @@
 const TYPES = Object.freeze({
   power: 'devices.capabilities.on_off',
+  toggle: 'devices.capabilities.toggle',
   range: 'devices.capabilities.range',
   color: 'devices.capabilities.color_setting',
   segment: 'devices.capabilities.segment_color_setting',
@@ -292,6 +293,15 @@ export function compileLightScore(scoreInput, device) {
     if (segmentColor && domain.indices.length) {
       const partitions = partitionSegments(domain.indices, score.look.bands);
       const limits = segmentArrayLimits(segmentColor);
+      if (capability(device, TYPES.toggle, 'gradientToggle')) {
+        operations.push(controlOperation(
+          device,
+          TYPES.toggle,
+          'gradientToggle',
+          1,
+          'gradient:on'
+        ));
+      }
       score.look.bands.forEach((band, index) => {
         const chunks = chunkSegments(partitions[index], limits);
         chunks.forEach((segment, chunkIndex) => {
@@ -415,6 +425,7 @@ export function validateControlOperation(operation) {
   const instance = text(operation?.payload?.capability?.instance);
   const allowed = new Set([
     `${TYPES.power}:powerSwitch`,
+    `${TYPES.toggle}:gradientToggle`,
     `${TYPES.range}:brightness`,
     `${TYPES.color}:colorRgb`,
     `${TYPES.color}:colorTemperatureK`,

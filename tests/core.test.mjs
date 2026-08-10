@@ -37,6 +37,10 @@ test('compiles every advertised segment into ordered gradient bands', async () =
     Array.from({ length: 12 }, (_, index) => index)
   );
   assert.deepEqual(bands.map(operation => operation.payload.capability.value.segment.length), [3, 3, 3, 3]);
+  const toggleIndex = plan.operations.findIndex(operation => operation.label === 'gradient:on');
+  const firstBandIndex = plan.operations.findIndex(operation => operation.label.startsWith('gradient-band'));
+  assert.ok(toggleIndex >= 0 && toggleIndex < firstBandIndex);
+  assert.equal(plan.operations[toggleIndex].payload.capability.value, 1);
 });
 
 test('splits authored bands to honor the advertised per-command segment maximum', async () => {
