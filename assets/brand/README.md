@@ -28,3 +28,10 @@ Suffuse is a real-time music-lighting engine.
 This is intentionally a repository-scale identity: one mark, the project name,
 the existing dusk palette, and a consistent editorial voice. It does not define
 app-store, social, or commercial brand systems.
+
+## Open Graph card
+
+`suffuse-og.svg` is the editable 1200×630 source. The checked-in
+`suffuse-og-1200x630.png` is the upload asset for GitHub's repository social
+preview and other Open Graph surfaces. It leads with the two core surfaces—MCP
+server and Agent Skill—while keeping the mark and palette unchanged.

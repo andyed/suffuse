@@ -1,11 +1,11 @@
 ---
 name: suffuse
-description: Compile atmospheric and spatial lighting intent into capability-safe provider operations. Use when an agent needs to author perceptually informed 3-5-band palettes or LightScores; inspect, preview, apply, or restore Govee lights; select native or DIY scenes; expose safe local MCP tools; diagnose unavailable effects; or install one managed lighting skill for Codex, Claude Code, and OpenClaw.
+description: Control Govee lighting through a capability-safe MCP server and Agent Skill. Use when an agent needs to inspect devices, discover scenes, compile a read-only plan, apply or restore a LightScore with explicit write gates, diagnose unavailable effects, author optional perceptual palettes, or install one managed lighting tool for Codex, Claude Code, and OpenClaw.
 ---
 
 # Suffuse
 
-Act as a compiler for atmospheric and spatial intent, not as a device driver. Translate creative intent into a small `LightScore`, compile it deterministically against the installed device's advertised capabilities, preview the resulting operations, and perform writes only when the user explicitly requested a device change.
+Use this Skill with the local MCP server as the two agent-facing parts of Govee lighting control. The Skill supplies the workflow and judgment; MCP supplies the typed tools and runtime gates. Inspect the installed device, translate intent into a small `LightScore`, compile it deterministically against advertised capabilities, preview the resulting operations, and perform writes only when the user explicitly requested a device change. The CLI is shared infrastructure beneath both surfaces; perceptual palette authoring is optional.
 
 The current execution provider is Govee's documented Developer Platform. Provider-specific MCP tools retain `govee_` names until another provider is implemented. This is an unofficial community project and is not affiliated with or endorsed by Govee.
 
@@ -23,7 +23,7 @@ Read [references/govee-platform.md](references/govee-platform.md) for endpoints,
 
 ## Use the deterministic CLI
 
-Requires Node.js 20 or newer. Live reads and writes require network access and `GOVEE_API_KEY`. The CLI reads the key only from the process environment and never accepts it as a command-line argument.
+Requires Node.js 20 or newer. `GOVEE_API_KEY` unlocks discovery of the account's supported devices, their fresh capabilities and queryable state, their native and DIY scenes, and authenticated control requests. The key does not authorize a Suffuse write by itself. The CLI reads it only from the process environment and never accepts it as a command-line argument.
 
 List bundled custom palettes without credentials:
 

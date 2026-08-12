@@ -1,7 +1,7 @@
 {
   "name": "suffuse",
   "version": "0.4.0",
-  "description": "Perceptually informed compiler for atmospheric and spatial lighting intent",
+  "description": "MCP server and Agent Skill for capability-safe Govee lighting control",
   "type": "module",
   "license": "MIT",
   "author": "Andy Edmonds",
@@ -14,10 +14,11 @@
     "url": "https://github.com/andyed/suffuse/issues"
   },
   "keywords": [
+    "mcp",
+    "mcp-server",
     "agent-skill",
     "govee",
     "lighting",
-    "mcp",
     "smart-home"
   ],
   "bin": {

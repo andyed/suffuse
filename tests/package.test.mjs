@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { lstat, mkdtemp, readlink, rm } from 'node:fs/promises';
+import { lstat, mkdtemp, readFile, readlink, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
@@ -71,17 +71,29 @@ test('package and skill expose the Suffuse identity', async () => {
   const readme = await (await import('node:fs/promises')).readFile(new URL('../README.md', import.meta.url), 'utf8');
   assert.equal(packageDocument.name, 'suffuse');
   assert.equal(packageDocument.version, '0.4.0');
+  assert.match(packageDocument.description, /MCP server and Agent Skill/);
   assert.equal(packageDocument.repository.url, 'git+https://github.com/andyed/suffuse.git');
   assert.match(skill, /^---\nname: suffuse\n/);
   assert.doesNotMatch(skill.split('---')[1], /\n(?:license|metadata):/);
   assert.match(readme, /<h1 align="center">Suffuse<\/h1>/);
   assert.match(readme, /assets\/brand\/suffuse-mark\.svg/);
+  assert.match(readme, /An MCP server and Agent Skill for safe Govee control/);
+  assert.ok(readme.indexOf('## MCP \+ Agent Skill') < readme.indexOf('## Optional palette authoring'));
+  assert.match(readme, /What the Govee API key unlocks/);
+  assert.match(readme, /key authenticates Govee cloud access; it does \*\*not\*\* enable physical writes/);
   assert.match(readme, /https:\/\/psychodeli\.com/);
   assert.match(readme, /https:\/\/apps\.apple\.com\/us\/app\/psychodeli\/id6782244331/);
   assert.match(readme, /Android \| Closed test:/);
   assert.match(readme, /https:\/\/groups\.google\.com\/g\/psychodeli-testers/);
   assert.match(readme, /https:\/\/play\.google\.com\/apps\/testing\/com\.psychodeli\.android/);
   assert.match(readme, /Desktop apps \| Closed beta/);
+});
+
+test('ships an exact 1200x630 Open Graph card', async () => {
+  const png = await readFile(new URL('../assets/brand/suffuse-og-1200x630.png', import.meta.url));
+  assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
+  assert.equal(png.readUInt32BE(16), 1200);
+  assert.equal(png.readUInt32BE(20), 630);
 });
 
 test('managed installer deduplicates shared Codex and OpenClaw paths', async () => {

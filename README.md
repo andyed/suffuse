@@ -4,63 +4,121 @@
 
 <h1 align="center">Suffuse</h1>
 
-<p align="center"><strong>Give AI agents a safe language for spatial lighting.</strong></p>
+<p align="center"><strong>An MCP server and Agent Skill for safe Govee control.</strong></p>
 
-Suffuse translates atmospheric intent such as “make the room feel like dusk”
-into deterministic, capability-safe lighting operations. The repository
-includes the `LightScore` format, a CLI, an Agent Skill, and a local MCP server.
+Suffuse gives AI agents two complementary control surfaces for Govee lights: a
+local MCP server with typed tools, and an Agent Skill that supplies the workflow
+for using those tools safely. Together they cover inspection, planning, control,
+evidence, and restoration.
 
-The first execution provider uses Govee's documented Developer Platform.
-Suffuse is an unofficial community project and is not affiliated with or
-endorsed by Govee.
+Both surfaces keep credentials out of tool arguments, begin with read-only
+inspection, and require explicit confirmation before an agent can change a
+physical device. A deterministic CLI and the portable `LightScore` format are
+their shared infrastructure. Perceptual palettes and color-theory helpers are
+optional authoring tools, not the core product.
 
-## The control problem
+Suffuse uses Govee's documented Developer Platform. It is an unofficial
+community project and is not affiliated with or endorsed by Govee.
 
-Installed devices expose different capabilities by model and firmware. An
-accepted API request does not prove visible output, and a gradient cannot be
-compiled for a fixture that reports only solid color.
+## MCP + Agent Skill
 
-Suffuse treats lighting as a compilation and evidence problem:
-
-1. author a small, portable lighting score;
-2. inspect the exact installed device;
-3. compile only against advertised capabilities;
-4. preview redacted operations before writing;
-5. double-gate physical changes;
-6. retain an evidence and restoration receipt.
-
-It does not turn a cloud API into a frame-rate renderer. High-rate music- or
-screen-reactive lighting belongs in a dedicated local runtime.
-
-## Psychodeli+
-
-Suffuse grew out of Room Lights for [Psychodeli+](https://psychodeli.com), a
-live music visualizer that lets compatible Govee lights join the same evolving
-palette as the screen.
-
-| Platform | Current availability |
+| Surface | Role |
 | --- | --- |
-| iPhone and iPad | [Available on the App Store](https://apps.apple.com/us/app/psychodeli/id6782244331) |
-| Android | Closed test: join the [psychodeli-testers Google Group](https://groups.google.com/g/psychodeli-testers), then [opt in through Google Play](https://play.google.com/apps/testing/com.psychodeli.android) |
-| Desktop apps | Closed beta |
-| Web | Product information at [psychodeli.com](https://psychodeli.com) |
+| MCP server | Exposes seven typed tools over local stdio and enforces the runtime write gates |
+| Agent Skill | Teaches Codex, Claude Code, and OpenClaw when to inspect, compile, confirm, apply, restore, and report incomplete evidence |
 
-Suffuse is a separate developer tool, not the real-time Psychodeli+ rendering
-engine. Both projects compile against observed device capabilities, bound
-command rates, distinguish API acceptance from visible results, and report what
-can and cannot be restored.
+### What the Govee API key unlocks
 
-## Components
+A Govee Developer API key turns Suffuse from an offline authoring and test
+package into a live, account-aware lighting interface. It lets the local MCP
+server ask Govee which supported devices belong to the account, what each
+installed device can do, its current queryable state, and which scenes it can
+run.
 
-| Component | Role |
+| Without a key | With a key |
 | --- | --- |
-| `LightScore` | Provider-neutral JSON for solid looks, named scenes, and ordered 3-5-band palettes |
-| Palette compiler | Resolves named palettes, exact authored bands, or reproducible OKLCH recipes with diagnostics |
-| Capability planner | Resolves segment domains, per-command limits, scene catalogs, and declared fallbacks before control |
-| CLI | Inspects, compiles, previews, applies, and restores |
-| MCP server | Exposes typed agent tools; read-only unless the server and individual call enable writes |
-| Agent Skill | Shares one checkout across Codex, Claude Code, and OpenClaw |
-| Receipts | Redact output and record best-effort restoration coverage |
+| Validate `LightScore` documents | Discover the account's supported Govee devices |
+| List bundled optional palettes | Inspect capabilities reported by the installed unit and firmware |
+| Compile and test against fixtures | Read current queryable state and native or DIY scene catalogs |
+| Inspect MCP metadata and install the Agent Skill | Compile against live hardware, then apply or restore when separately authorized |
+
+The key authenticates Govee cloud access; it does **not** enable physical writes
+by itself. Suffuse still requires its server-level write switch, confirmation on
+the individual tool call, and a private restoration receipt.
+
+Apply in Govee Home under **Settings → Apply for API Key**, then submit the
+requested information. Generating a replacement key invalidates older active
+keys for the same account, so update every service that uses the old key.
+
+### MCP tools
+
+| Tool | What it does | Default |
+| --- | --- | --- |
+| `govee_inspect_devices` | Reads installed devices and advertised capabilities, with household identifiers redacted | Read-only |
+| `govee_list_scenes` | Reads native or DIY scene names for one exact device | Read-only |
+| `govee_validate_score` | Validates lighting intent locally | Read-only |
+| `govee_compile_score` | Discovers the selected device and returns a redacted execution plan | Read-only |
+| `govee_apply_score` | Applies a compiled look and writes a private restore receipt | Write-gated |
+| `govee_restore` | Restores the queryable prior state from a receipt | Write-gated |
+| `govee_list_palettes` | Lists the optional bundled palettes without contacting Govee | Read-only |
+
+Inspect the MCP metadata without starting a connection:
+
+```bash
+node mcp/server.mjs --describe
+```
+
+Run the local stdio server:
+
+```bash
+GOVEE_API_KEY="your-private-key" node mcp/server.mjs
+```
+
+Configure an MCP client to run `node` with the absolute path to
+`mcp/server.mjs`, forwarding `GOVEE_API_KEY` from the client process environment.
+Do not put the key in checked-in MCP configuration. See
+[the MCP reference](references/mcp.md) for connection and deployment boundaries.
+
+### Install the Agent Skill
+
+Preview the managed discovery links:
+
+```bash
+node scripts/manage.mjs plan --target all --scope user
+```
+
+Install links while keeping this checkout as the single source of truth:
+
+```bash
+node scripts/manage.mjs install --target all --scope user
+node scripts/manage.mjs doctor
+```
+
+See [cross-agent distribution](references/distribution.md) for project-scoped
+installation and conservative removal.
+
+## Safety model
+
+The normal MCP connection cannot change a light. Physical writes require both:
+
+- `GOVEE_MCP_ALLOW_WRITES=1` in the server process; and
+- `confirmWrite: true` on the individual tool call.
+
+Every write also requires an absolute private receipt path. Experimental segment
+operations require a third acknowledgement, `confirmSegments: true`, until that
+exact unit and firmware have visibly demonstrated independent segment control.
+
+This separates five facts that device-control tools often blur together:
+
+1. the intent an agent authored;
+2. the capabilities an installed device advertised;
+3. the operations Suffuse compiled;
+4. the requests Govee accepted; and
+5. what the hardware visibly rendered.
+
+An accepted API request is not treated as proof of visible output. Restoration
+is reported as partial when Govee exposes global state but not the previous
+per-segment arrangement.
 
 ## Quick start
 
@@ -71,44 +129,24 @@ git clone https://github.com/andyed/suffuse.git
 cd suffuse
 npm install
 npm test
+node mcp/server.mjs --describe
 ```
 
-List bundled palettes without credentials:
+Store the Govee Developer API key outside the repository and expose it only
+through the process environment. Never paste it into a score, receipt, command
+argument, issue, or chat transcript.
+
+Node 20+ can load a private environment file directly:
 
 ```bash
-node scripts/govee.mjs palettes
+node --env-file=/private/path/govee.env mcp/server.mjs
 ```
 
-Inspect and compile entirely against fixtures:
+## LightScore and CLI
 
-```bash
-node scripts/govee.mjs inspect \
-  --fixture tests/fixtures/segmented-device.json --sku H0001
-
-node scripts/govee.mjs compile \
-  --score tests/fixtures/dusk-gradient.score.json \
-  --capabilities tests/fixtures/segmented-device.json
-```
-
-## Connect a Govee account
-
-Live reads require a Govee Developer API key. Apply for the key through the
-Govee Home app, store it outside the repository, and expose it only through the
-process environment. Never paste a key into a score, receipt, command argument,
-issue, or chat transcript.
-
-```bash
-export GOVEE_API_KEY="your-private-key"
-node scripts/govee.mjs inspect --sku H608B
-```
-
-If the key lives in a private environment file, Node 20+ can load it directly:
-
-```bash
-node --env-file=/private/path/govee.env scripts/govee.mjs inspect --sku H608B
-```
-
-## Author a LightScore
+MCP tools exchange a provider-neutral `LightScore` rather than raw Govee
+commands. A score targets a device by SKU or name and describes power, brightness,
+color, a named scene, or an ordered gradient plus declared fallbacks.
 
 ```json
 {
@@ -132,91 +170,77 @@ node --env-file=/private/path/govee.env scripts/govee.mjs inspect --sku H608B
 
 The score contains no API key or stable device identifier. Compilation fails if
 the target is ambiguous or no advertised capability or declared fallback can
-safely express the requested look. See
-[the LightScore reference](references/light-score.md) for the complete schema.
+safely express the request. See
+[the LightScore reference](references/light-score.md) for the schema.
 
-## Preview, apply, and restore
-
-`apply` is a read-only capability check and redacted preview unless the explicit
-write gate is present:
+The CLI is useful for diagnostics, fixtures, and direct inspection of the layer
+underneath MCP:
 
 ```bash
+node scripts/govee.mjs inspect --sku H608B
+
+node scripts/govee.mjs compile \
+  --score tests/fixtures/dusk-gradient.score.json \
+  --capabilities tests/fixtures/segmented-device.json
+
 node scripts/govee.mjs apply --score /private/path/look.score.json
 ```
 
-After a direct request to change the physical lights, apply with a private
-receipt path:
+The last command remains a redacted preview because `--confirm-write` is absent.
+After a direct request to change the lights:
 
 ```bash
 node scripts/govee.mjs apply \
   --score /private/path/look.score.json \
   --confirm-write \
   --receipt /private/path/look.receipt.json
-```
 
-Experimental segment writes require the additional `--confirm-segments` gate
-until visible independence has been established for that unit and firmware.
-
-Restore the queryable prior state:
-
-```bash
 node scripts/govee.mjs restore \
   --receipt /private/path/look.receipt.json \
   --confirm-write
 ```
 
-Restoration can be partial: Govee may report global power, brightness, and color
-without exposing the previous per-segment arrangement. Suffuse reports that gap
-instead of promising bit-for-bit recovery.
+## Optional palette authoring
 
-## Use it as an Agent Skill
-
-Preview managed discovery links:
-
-```bash
-node scripts/manage.mjs plan --target all --scope user
-```
-
-Install links for Codex, Claude Code, and OpenClaw:
+Suffuse can resolve named palettes, preserve exact authored 3-5-band colors, or
+compile constrained OKLCH recipes with gamut and adjacency diagnostics. These
+helpers make an agent's color choices reproducible; they are not required for
+device inspection, scene control, solid colors, apply, or restore.
 
 ```bash
-node scripts/manage.mjs install --target all --scope user
-node scripts/manage.mjs doctor
+node scripts/govee.mjs palettes
 ```
 
-The repository root remains the single source of truth. See
-[cross-agent distribution](references/distribution.md) for project-scoped
-installation and conservative removal.
+See [palette authoring](references/palettes.md) and
+[color theory](references/color-theory.md) when a task actually needs custom
+color work.
 
-## Use the MCP server
+## Psychodeli+
 
-Inspect the tool metadata without starting a live connection:
+Suffuse grew out of Room Lights for [Psychodeli+](https://psychodeli.com), a
+live music visualizer that lets compatible Govee lights join the screen's
+evolving palette.
 
-```bash
-node mcp/server.mjs --describe
-```
+| Platform | Current availability |
+| --- | --- |
+| iPhone and iPad | [Available on the App Store](https://apps.apple.com/us/app/psychodeli/id6782244331) |
+| Android | Closed test: join the [psychodeli-testers Google Group](https://groups.google.com/g/psychodeli-testers), then [opt in through Google Play](https://play.google.com/apps/testing/com.psychodeli.android) |
+| Desktop apps | Closed beta |
+| Web | Product information at [psychodeli.com](https://psychodeli.com) |
 
-The server exposes tools for palette listing, score validation, device and scene
-inspection, compilation, apply, and restore. Physical writes require both:
-
-- `GOVEE_MCP_ALLOW_WRITES=1` on the server process; and
-- `confirmWrite: true` on the individual tool call.
-
-Segment operations additionally require `confirmSegments: true`. Keep a normal
-agent connection read-only and create a separate write-enabled connection only
-when physical control is intended. See [the MCP reference](references/mcp.md).
+Suffuse is a separate developer tool, not the real-time Psychodeli+ rendering
+engine. High-rate music- or screen-reactive lighting belongs in a dedicated
+local runtime, not a cloud API request loop.
 
 ## Evidence and boundaries
 
 - Compile against fresh device capabilities; never promise a feature from a SKU
   or marketing page alone.
-- A successful API response proves request acceptance, not visible rendering.
 - The public API can activate advertised DIY scenes but does not document
   creating or uploading arbitrary DIY effects.
 - Suffuse does not scrape Govee Home or reproduce private authentication.
-- Suffuse is not a real-time music or screen renderer.
 - The current provider is Govee. `LightScore` keeps vendor resources out of
-  authored intent so another provider can implement the same contract.
+  authored intent so another provider can implement the same MCP contract.
 
 One recorded H608B result is negative: the device advertised segmented color
 and accepted correctly chunked requests but did not visibly render independent
@@ -233,21 +257,16 @@ npm run mcp:describe
 npm pack --dry-run
 ```
 
-Contributions must preserve capability-driven compilation, redacted output,
-explicit write gates, receipts for physical changes, and the distinction between
-API success and visible evidence. New providers should implement the existing
-agent-facing contract rather than adding vendor concepts to `LightScore`.
-
-The repository mark and its deliberately small identity system are documented
-in [assets/brand](assets/brand/README.md).
+Contributions must preserve typed MCP contracts, capability-driven compilation,
+redacted output, explicit write gates, receipts for physical changes, and the
+distinction between API acceptance and visible evidence.
 
 Before adding another Govee transport, check
 [the ecosystem notes](references/ecosystem.md). Prefer an explicit adapter to
 silently forking or reimplementing mature work such as `govee2mqtt`.
 
-For sensitive reports, follow [SECURITY.md](SECURITY.md). Do not open a public
-issue containing an API key, household device identifier, private receipt, or
-network details.
+The repository identity is documented in [assets/brand](assets/brand/README.md).
+For sensitive reports, follow [SECURITY.md](SECURITY.md).
 
 ## License
 

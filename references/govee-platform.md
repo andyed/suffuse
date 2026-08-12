@@ -14,8 +14,13 @@ For community LAN, MQTT, MCP, and BLE implementations that can inform or eventua
 
 Send the API key only as the `Govee-API-Key` request header. Apply for it through the Govee Home app. Do not put it in a score, receipt, command-line argument, fixture, or committed file.
 
+The key turns local authoring into account-aware operation: device discovery, fresh installed-device capabilities, current queryable state, scene discovery, and authenticated control requests. It does not enable Suffuse writes by itself; the MCP and CLI confirmation gates still apply.
+
+As of May 15, 2026, generating a new Govee API key immediately invalidates older active keys for the same account. Update every application or service using the old key when rotating it.
+
 Official documentation:
 
+- https://developer.govee.com/reference/apply-you-govee-api-key
 - https://developer.govee.com/reference/get-you-devices
 - https://developer.govee.com/reference/get-devices-status
 - https://developer.govee.com/reference/control-you-devices

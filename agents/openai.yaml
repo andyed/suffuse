@@ -1,4 +1,4 @@
 interface:
   display_name: "Suffuse"
-  short_description: "Compile atmospheric color intent into safe lighting"
-  default_prompt: "Use $suffuse to author a perceptual dusk palette, inspect my Govee device, and compile a capability-safe preview."
+  short_description: "Safe Govee control through MCP tools and an Agent Skill"
+  default_prompt: "Use $suffuse and its MCP tools to inspect my Govee device and compile a read-only, capability-safe preview before any physical change."
