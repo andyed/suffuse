@@ -7,19 +7,18 @@
 <p align="center"><strong>Give AI agents a safe language for spatial lighting.</strong></p>
 
 Suffuse translates atmospheric intent such as “make the room feel like dusk”
-into deterministic, capability-safe lighting operations. It provides one
-portable `LightScore` format, a CLI, an Agent Skill, and a local MCP server.
+into deterministic, capability-safe lighting operations. The repository
+includes the `LightScore` format, a CLI, an Agent Skill, and a local MCP server.
 
 The first execution provider uses Govee's documented Developer Platform.
 Suffuse is an unofficial community project and is not affiliated with or
 endorsed by Govee.
 
-## Why Suffuse exists
+## The control problem
 
-Giving an agent direct access to physical lights creates a deceptively hard
-control problem. Device capabilities vary by installed unit and firmware, an
-accepted API request is not proof of visible output, and a beautiful gradient
-prompt is not useful if the selected fixture can only render one solid color.
+Installed devices expose different capabilities by model and firmware. An
+accepted API request does not prove visible output, and a gradient cannot be
+compiled for a fixture that reports only solid color.
 
 Suffuse treats lighting as a compilation and evidence problem:
 
@@ -35,35 +34,33 @@ screen-reactive lighting belongs in a dedicated local runtime.
 
 ## Psychodeli+
 
-Suffuse grew from the device-control, palette, and restoration lessons learned
-while building Room Lights for [Psychodeli+](https://psychodeli.com), a live
-music visualizer that lets compatible Govee lights join the same evolving
+Suffuse grew out of Room Lights for [Psychodeli+](https://psychodeli.com), a
+live music visualizer that lets compatible Govee lights join the same evolving
 palette as the screen.
 
 | Platform | Current availability |
 | --- | --- |
 | iPhone and iPad | [Available on the App Store](https://apps.apple.com/us/app/psychodeli/id6782244331) |
-| Android | Closed beta; not yet a public Google Play release |
-| Web and desktop | Product information and downloads at [psychodeli.com](https://psychodeli.com) |
+| Android | Closed test: join the [psychodeli-testers Google Group](https://groups.google.com/g/psychodeli-testers), then [opt in through Google Play](https://play.google.com/apps/testing/com.psychodeli.android) |
+| Desktop apps | Closed beta |
+| Web | Product information at [psychodeli.com](https://psychodeli.com) |
 
 Suffuse is a separate developer tool, not the real-time Psychodeli+ rendering
-engine. The projects share hard-won principles: capability truth, local control
-where practical, bounded command rates, visible hardware evidence, and honest
-restoration semantics.
+engine. Both projects compile against observed device capabilities, bound
+command rates, distinguish API acceptance from visible results, and report what
+can and cannot be restored.
 
-## What it includes
+## Components
 
-- **LightScore** - a provider-neutral JSON format for solid looks, named scenes,
-  and ordered 3-5-band palettes.
-- **Perceptual palette compiler** - named palettes, exact authored bands, or
-  reproducible OKLCH recipes with diagnostics.
-- **Capability-safe planning** - segment domains, per-command limits, scene
-  catalogs, and declared fallbacks are resolved before control.
-- **Safe CLI** - inspect, compile, preview, apply, and restore.
-- **Local MCP server** - typed tools for agents, read-mostly by default.
-- **Managed Agent Skill** - one canonical checkout for Codex, Claude Code, and
-  OpenClaw.
-- **Evidence receipts** - redacted output plus best-effort restoration coverage.
+| Component | Role |
+| --- | --- |
+| `LightScore` | Provider-neutral JSON for solid looks, named scenes, and ordered 3-5-band palettes |
+| Palette compiler | Resolves named palettes, exact authored bands, or reproducible OKLCH recipes with diagnostics |
+| Capability planner | Resolves segment domains, per-command limits, scene catalogs, and declared fallbacks before control |
+| CLI | Inspects, compiles, previews, applies, and restores |
+| MCP server | Exposes typed agent tools; read-only unless the server and individual call enable writes |
+| Agent Skill | Shares one checkout across Codex, Claude Code, and OpenClaw |
+| Receipts | Redact output and record best-effort restoration coverage |
 
 ## Quick start
 
@@ -209,7 +206,7 @@ Segment operations additionally require `confirmSegments: true`. Keep a normal
 agent connection read-only and create a separate write-enabled connection only
 when physical control is intended. See [the MCP reference](references/mcp.md).
 
-## Evidence, limitations, and non-goals
+## Evidence and boundaries
 
 - Compile against fresh device capabilities; never promise a feature from a SKU
   or marketing page alone.
@@ -218,13 +215,13 @@ when physical control is intended. See [the MCP reference](references/mcp.md).
   creating or uploading arbitrary DIY effects.
 - Suffuse does not scrape Govee Home or reproduce private authentication.
 - Suffuse is not a real-time music or screen renderer.
-- The current provider is Govee. The `LightScore` contract is designed to allow
-  future providers without leaking vendor resources into authored intent.
+- The current provider is Govee. `LightScore` keeps vendor resources out of
+  authored intent so another provider can implement the same contract.
 
-The evidence ledger currently includes a useful negative result: one H608B
-advertised segmented color and accepted correctly chunked requests but did not
-visibly render independent colors. Its advertised `Sunset Glow` scene did render.
-See [device evidence](references/device-evidence.md) for the precise boundary.
+One recorded H608B result is negative: the device advertised segmented color
+and accepted correctly chunked requests but did not visibly render independent
+colors. Its advertised `Sunset Glow` scene did render. See
+[device evidence](references/device-evidence.md) for the precise boundary.
 
 ## Development
 
@@ -236,7 +233,7 @@ npm run mcp:describe
 npm pack --dry-run
 ```
 
-Contributions should preserve capability-driven compilation, redacted output,
+Contributions must preserve capability-driven compilation, redacted output,
 explicit write gates, receipts for physical changes, and the distinction between
 API success and visible evidence. New providers should implement the existing
 agent-facing contract rather than adding vendor concepts to `LightScore`.
@@ -244,9 +241,9 @@ agent-facing contract rather than adding vendor concepts to `LightScore`.
 The repository mark and its deliberately small identity system are documented
 in [assets/brand](assets/brand/README.md).
 
-Review [the ecosystem notes](references/ecosystem.md) before proposing another
-Govee transport. Mature projects such as `govee2mqtt` are better used through an
-explicit adapter than silently forked or reimplemented.
+Before adding another Govee transport, check
+[the ecosystem notes](references/ecosystem.md). Prefer an explicit adapter to
+silently forking or reimplementing mature work such as `govee2mqtt`.
 
 For sensitive reports, follow [SECURITY.md](SECURITY.md). Do not open a public
 issue containing an API key, household device identifier, private receipt, or

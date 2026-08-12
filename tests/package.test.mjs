@@ -78,7 +78,10 @@ test('package and skill expose the Suffuse identity', async () => {
   assert.match(readme, /assets\/brand\/suffuse-mark\.svg/);
   assert.match(readme, /https:\/\/psychodeli\.com/);
   assert.match(readme, /https:\/\/apps\.apple\.com\/us\/app\/psychodeli\/id6782244331/);
-  assert.match(readme, /Android \| Closed beta; not yet a public Google Play release/);
+  assert.match(readme, /Android \| Closed test:/);
+  assert.match(readme, /https:\/\/groups\.google\.com\/g\/psychodeli-testers/);
+  assert.match(readme, /https:\/\/play\.google\.com\/apps\/testing\/com\.psychodeli\.android/);
+  assert.match(readme, /Desktop apps \| Closed beta/);
 });
 
 test('managed installer deduplicates shared Codex and OpenClaw paths', async () => {
