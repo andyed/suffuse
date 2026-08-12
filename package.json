@@ -4,6 +4,22 @@
   "description": "Perceptually informed compiler for atmospheric and spatial lighting intent",
   "type": "module",
   "license": "MIT",
+  "author": "Andy Edmonds",
+  "homepage": "https://github.com/andyed/suffuse#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andyed/suffuse.git"
+  },
+  "bugs": {
+    "url": "https://github.com/andyed/suffuse/issues"
+  },
+  "keywords": [
+    "agent-skill",
+    "govee",
+    "lighting",
+    "mcp",
+    "smart-home"
+  ],
   "bin": {
     "suffuse": "scripts/govee.mjs",
     "suffuse-manage": "scripts/manage.mjs",
@@ -14,6 +30,8 @@
     ".mcp.json",
     "SKILL.md",
     "LICENSE",
+    "README.md",
+    "SECURITY.md",
     "agents/",
     "assets/",
     "mcp/",

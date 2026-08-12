@@ -68,10 +68,17 @@ test('palette CLI is local, read-only, and lists colors', async () => {
 test('package and skill expose the Suffuse identity', async () => {
   const packageDocument = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../package.json', import.meta.url), 'utf8'));
   const skill = await (await import('node:fs/promises')).readFile(new URL('../SKILL.md', import.meta.url), 'utf8');
+  const readme = await (await import('node:fs/promises')).readFile(new URL('../README.md', import.meta.url), 'utf8');
   assert.equal(packageDocument.name, 'suffuse');
   assert.equal(packageDocument.version, '0.4.0');
+  assert.equal(packageDocument.repository.url, 'git+https://github.com/andyed/suffuse.git');
   assert.match(skill, /^---\nname: suffuse\n/);
   assert.doesNotMatch(skill.split('---')[1], /\n(?:license|metadata):/);
+  assert.match(readme, /<h1 align="center">Suffuse<\/h1>/);
+  assert.match(readme, /assets\/brand\/suffuse-mark\.svg/);
+  assert.match(readme, /https:\/\/psychodeli\.com/);
+  assert.match(readme, /https:\/\/apps\.apple\.com\/us\/app\/psychodeli\/id6782244331/);
+  assert.match(readme, /Android \| Closed beta; not yet a public Google Play release/);
 });
 
 test('managed installer deduplicates shared Codex and OpenClaw paths', async () => {
