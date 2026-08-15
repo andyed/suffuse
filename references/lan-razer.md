@@ -44,8 +44,20 @@ read its silence as evidence the channel is unreal.
 3. **LedFx** — `ledfx/devices/govee.py` + `docs/devices/govee.md` (GPL-3.0). An
    independent implementation that agrees with OpenRGB, plus practical per-model
    behavior notes (matrix-device limits, default 40 fps). Same read-don't-copy rule.
-4. **SignalRGB's Govee Direct** and community addons — behavioral corroboration only
-   (which devices work, LED counts users configure); no protocol source.
+4. **LumiSync** — [`Minlor/LumiSync`](https://github.com/Minlor/LumiSync) (MIT), an
+   independent implementation with its own research writeup
+   (`docs/govee-lan-research-and-implementation.md`). Notable as a permissively
+   licensed peer: unlike the GPL sources above it could legally be copied — Suffuse's
+   implementation predates our awareness of it and was derived independently, but it is
+   a legitimate cross-check with no licence friction.
+5. **SignalRGB's Govee Direct** and the community `Govee.js` addon family — working
+   protocol source (the enable constant appears verbatim in a dozen small repos, most
+   unlicensed) and behavioral corroboration for device coverage and LED counts.
+
+A survey by the enable-packet fingerprint (base64 `uwABsQEK`, 2026-08-15) found ~36
+public files implementing this channel. None pair it with typed tools, write gates,
+receipts, or bounded holds — they are render loops. Suffuse's claim is not priority on
+the protocol; it is the safety contract around it.
 
 Suffuse's `scripts/lan.mjs` was written from the byte layout as protocol fact and
 verified against the published constants and against hardware. No GPL code was copied,
