@@ -191,6 +191,11 @@ export function validateLightScore(score) {
       if (band?.weight !== undefined && (!Number.isFinite(band.weight) || band.weight <= 0)) {
         throw new GoveeSkillError('Band weight must be a positive number', 'invalid-score');
       }
+      // `lightness` is spatial hierarchy; `weight` is spatial extent. Keeping them separate
+      // is what lets the palette stage conserve one while honouring the other.
+      if (band?.lightness !== undefined && (!Number.isFinite(band.lightness) || band.lightness <= 0)) {
+        throw new GoveeSkillError('Band lightness must be a positive number', 'invalid-score');
+      }
     }
   }
   if (kind === 'solid') rgbInteger(score.look.color);

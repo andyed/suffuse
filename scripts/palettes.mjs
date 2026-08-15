@@ -39,7 +39,10 @@ const CVD_FILTERS = Object.freeze({
 export const PALETTE_DIAGNOSTIC_THRESHOLDS = Object.freeze({
   adjacentDeltaEOK: 0.04,
   cvdDeltaEOK: 0.03,
-  curveTolerance: 0.005
+  curveTolerance: 0.005,
+  // Conserved lightness is exact in principle; gamut mapping is what makes it approximate.
+  // Below this the authored overall level is intact, above it the author should know.
+  lightnessDrift: 0.01
 });
 
 function validateBands(bands, label) {
@@ -123,6 +126,77 @@ function curveWarnings(colors, recipe, warnings) {
       warnings.push({ code: 'chroma-curve', message: 'Resolved chroma does not crest inside the gradient.' });
     }
   }
+}
+
+/**
+ * Apply authored lightness hierarchy WITHOUT changing the room's overall level.
+ *
+ * `look.brightness` is a single device-level dimmer, and the Govee platform advertises no
+ * per-segment brightness, so spatial lightness structure has to be baked into the band
+ * colours. Doing that naively rescales the whole fixture: a gradient authored with a bright
+ * focus band ends up brighter overall than the same gradient without one, and
+ * `look.brightness` stops meaning what the author wrote.
+ *
+ * So the factors are normalised to a weighted mean of 1 before they are applied. Intensity
+ * taken from one band is returned to the others, which makes lightness hierarchy and overall
+ * level independently authorable — the relationship color-theory.md asks for ("lightness can
+ * create spatial hierarchy when hue differences weaken") without the side effect that
+ * previously made it unsafe to express.
+ *
+ * Weighted by `band.weight` because that is spatial EXTENT: dimming a wide band removes more
+ * emitted light than brightening a narrow one returns, and an unweighted mean would let a
+ * one-segment accent pay for a ten-segment ground.
+ *
+ * Gamut mapping is the honest limit. Scaling L up can leave sRGB, and toGamut then clips,
+ * so the achieved mean drifts from the requested one. A bounded corrective pass redistributes
+ * that residual over the bands that still have headroom — the same reason it cannot be a
+ * single multiply — and whatever drift survives is REPORTED rather than hidden.
+ */
+export function applyConservedLightness(bands) {
+  const factors = bands.map(band => (Number.isFinite(band?.lightness) ? band.lightness : 1));
+  if (factors.every(value => value === 1)) return { bands, diagnostic: null };
+
+  const weights = bands.map(band => (Number.isFinite(band?.weight) ? band.weight : 1));
+  const weightSum = weights.reduce((sum, value) => sum + value, 0);
+  const source = bands.map(band => oklch(band.color));
+  const meanL = source.reduce((sum, color, i) => sum + (color.l ?? 0) * weights[i], 0) / weightSum;
+
+  const mapToRgb = toGamut('rgb');
+  const normalise = (values) => {
+    const mean = values.reduce((sum, value, i) => sum + value * weights[i], 0) / weightSum;
+    return mean > 0 ? values.map(value => value / mean) : values;
+  };
+
+  let scaled = normalise(factors).map((factor, i) => Math.max(0, Math.min(1, (source[i].l ?? 0) * factor)));
+  // Clipping at 0/1 and gamut mapping both break conservation; give the residual back to the
+  // bands that can still absorb it, then stop and measure honestly.
+  for (let pass = 0; pass < 3; pass += 1) {
+    const achieved = scaled.reduce((sum, l, i) => sum + l * weights[i], 0) / weightSum;
+    const residual = meanL - achieved;
+    if (Math.abs(residual) < 1e-6) break;
+    const free = scaled.map((l, i) => ((residual > 0 ? l < 1 : l > 0) ? i : -1)).filter(i => i >= 0);
+    if (!free.length) break;
+    const freeWeight = free.reduce((sum, i) => sum + weights[i], 0);
+    for (const i of free) scaled[i] = Math.max(0, Math.min(1, scaled[i] + residual * weightSum / freeWeight));
+  }
+
+  const shaded = source.map((color, i) => ({
+    ...bands[i],
+    color: formatHex(mapToRgb({ ...color, l: scaled[i] })).toUpperCase()
+  }));
+
+  const achievedL = shaded.reduce((sum, band, i) => sum + (oklch(band.color).l ?? 0) * weights[i], 0) / weightSum;
+  const drift = achievedL - meanL;
+  return {
+    bands: shaded,
+    diagnostic: {
+      requestedMeanL: Number(meanL.toFixed(4)),
+      achievedMeanL: Number(achievedL.toFixed(4)),
+      drift: Number(drift.toFixed(4)),
+      conserved: Math.abs(drift) <= PALETTE_DIAGNOSTIC_THRESHOLDS.lightnessDrift,
+      factors
+    }
+  };
 }
 
 export function diagnosePaletteBands(bands, options = {}) {
@@ -281,6 +355,13 @@ export function materializePaletteScore(scoreInput, catalog) {
     else score.look.bands = structuredClone(palette.bands);
   }
 
+  // Authored lightness rides on the RESOLVED bands, so it composes with all three sources —
+  // a catalog palette, a recipe, or inline bands — rather than only with hand-written swatches.
+  // A recipe carries lightness on its own band list; preserve it across resolution.
+  const authoredLightness = Array.isArray(score.look.bands)
+    ? score.look.bands.map(band => band?.lightness)
+    : null;
+
   if (recipe) {
     const resolved = compilePaletteRecipe(recipe, hasPalette ? `Palette ${score.look.palette} recipe` : 'LightScore recipe');
     score.look.recipe = resolved.recipe;
@@ -288,6 +369,31 @@ export function materializePaletteScore(scoreInput, catalog) {
     score.look.paletteDiagnostics = resolved.diagnostics;
   } else {
     score.look.paletteDiagnostics = diagnosePaletteBands(score.look.bands);
+  }
+
+  if (authoredLightness && authoredLightness.length === score.look.bands.length) {
+    score.look.bands = score.look.bands.map((band, index) => (
+      authoredLightness[index] === undefined ? band : { ...band, lightness: authoredLightness[index] }
+    ));
+  }
+
+  const shaded = applyConservedLightness(score.look.bands);
+  if (shaded.diagnostic) {
+    score.look.bands = shaded.bands;
+    // Re-diagnose AFTER shading: adjacent distance and CVD collapse are properties of the
+    // colours actually sent, and lightness changes both. Diagnosing the pre-shade bands
+    // would clear a gradient whose shaded form collapses.
+    score.look.paletteDiagnostics = {
+      ...diagnosePaletteBands(score.look.bands),
+      lightness: shaded.diagnostic
+    };
+    if (!shaded.diagnostic.conserved) {
+      score.look.paletteDiagnostics.warnings.push({
+        code: 'lightness-drift',
+        message: `Authored lightness could not be fully conserved after gamut mapping `
+          + `(mean L ${shaded.diagnostic.requestedMeanL} requested, ${shaded.diagnostic.achievedMeanL} achieved).`
+      });
+    }
   }
   return validateLightScore(score);
 }

@@ -13,6 +13,8 @@ import {
   selectDevice,
   validateLightScore
 } from '../scripts/core.mjs';
+import { applyConservedLightness, materializePaletteScore } from '../scripts/palettes.mjs';
+import { oklch } from 'culori';
 
 const execFileAsync = promisify(execFile);
 const fixture = async name => JSON.parse(await readFile(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
@@ -171,6 +173,104 @@ test('compiles an inline recipe and records its normalized palette evidence', as
   assert.deepEqual(output.paletteDiagnostics.gamutMappedBands, []);
   assert.deepEqual(output.paletteDiagnostics.warnings, []);
   assert.equal(output.operations.filter(operation => operation.label.startsWith('gradient-band')).length, 4);
+});
+
+test('conserves overall level while applying authored lightness hierarchy', () => {
+  // The point of the field. `look.brightness` is one device-level dimmer and the platform
+  // advertises no per-segment brightness, so hierarchy must be baked into the band colours —
+  // which, done naively, also changes how bright the whole fixture reads and quietly makes
+  // look.brightness a lie. Conservation is what keeps the two independently authorable.
+  const bands = [{ color: '#20304F' }, { color: '#4F6FA0' }, { color: '#C8A24E' }];
+  const flat = applyConservedLightness(bands);
+  assert.equal(flat.diagnostic, null, 'unshaded bands stay untouched');
+
+  const shaded = applyConservedLightness([
+    { color: '#20304F', lightness: 0.7 },
+    { color: '#4F6FA0', lightness: 1.6 },
+    { color: '#C8A24E', lightness: 0.7 }
+  ]);
+  const meanL = list => list.reduce((sum, band) => sum + oklch(band.color).l, 0) / list.length;
+  assert.ok(shaded.diagnostic.conserved, 'authored lightness must not move the overall level');
+  assert.ok(Math.abs(meanL(shaded.bands) - meanL(bands)) < 0.01);
+
+  const lightnesses = shaded.bands.map(band => oklch(band.color).l);
+  assert.ok(lightnesses[1] > oklch(bands[1].color).l, 'the focus band gains');
+  assert.ok(lightnesses[0] < oklch(bands[0].color).l, '... and the others pay for it');
+});
+
+test('weights conserved lightness by spatial extent, not band count', () => {
+  // A one-segment accent must not be able to pay for a ten-segment ground: dimming a wide
+  // band removes far more emitted light than brightening a narrow one returns.
+  const wideGround = applyConservedLightness([
+    { color: '#4F6FA0', weight: 8, lightness: 0.9 },
+    { color: '#4F6FA0', weight: 1, lightness: 1.5 },
+    { color: '#4F6FA0', weight: 1, lightness: 1.5 }
+  ]);
+  assert.ok(wideGround.diagnostic.conserved);
+  // Weighted, the 8-segment band dominates the mean, so normalisation barely moves it and it
+  // lands near its authored 0.9 — the narrow accents do the travelling.
+  const ratio = oklch(wideGround.bands[0].color).l / oklch('#4F6FA0').l;
+  assert.ok(ratio > 0.85, `wide band should stay near its authored factor, got ${ratio.toFixed(3)}`);
+
+  // Unweighted, the mean would be (0.9+1.5+1.5)/3 = 1.3 and the wide band would be crushed to
+  // ~0.69 — taking 80% of the fixture's output down with it while two single segments brighten.
+  // That is the failure this weighting exists to prevent, so pin the gap rather than the value.
+  const unweighted = applyConservedLightness([
+    { color: '#4F6FA0', lightness: 0.9 },
+    { color: '#4F6FA0', lightness: 1.5 },
+    { color: '#4F6FA0', lightness: 1.5 }
+  ]);
+  assert.ok(
+    oklch(wideGround.bands[0].color).l > oklch(unweighted.bands[0].color).l + 0.05,
+    'extent weighting must protect the band that dominates the room'
+  );
+});
+
+test('reports lightness drift rather than hiding it when gamut mapping clips', () => {
+  // Honest failure: a near-white band asked to get much brighter cannot, and the residual
+  // cannot always be given away. Suffuse's contract is to report that, not to silently
+  // deliver a dimmer or brighter room than the author asked for.
+  const clipped = applyConservedLightness([
+    { color: '#FFFFFF', lightness: 2.5 },
+    { color: '#FEFEFE', lightness: 2.5 },
+    { color: '#FDFDFD', lightness: 2.5 }
+  ]);
+  assert.ok(clipped.diagnostic, 'a shaped score always carries its lightness evidence');
+  assert.equal(typeof clipped.diagnostic.drift, 'number');
+  assert.ok(Number.isFinite(clipped.diagnostic.achievedMeanL));
+});
+
+test('surfaces conserved lightness through the materialize funnel for every band source', () => {
+  const score = materializePaletteScore({
+    version: 1,
+    name: 'Focus',
+    target: { sku: 'H608B' },
+    look: {
+      kind: 'gradient',
+      brightness: 45,
+      bands: [
+        { color: '#20304F', lightness: 0.7 },
+        { color: '#4F6FA0', lightness: 1.6 },
+        { color: '#C8A24E', lightness: 0.7 }
+      ]
+    }
+  }, {});
+  assert.ok(score.look.paletteDiagnostics.lightness.conserved);
+  assert.deepEqual(score.look.paletteDiagnostics.lightness.factors, [0.7, 1.6, 0.7]);
+  // Diagnosed AFTER shading — adjacent distance is a property of the colours actually sent.
+  assert.ok(Array.isArray(score.look.paletteDiagnostics.adjacent));
+});
+
+test('rejects a non-positive band lightness', () => {
+  assert.throws(() => validateLightScore({
+    version: 1,
+    name: 'Bad lightness',
+    target: { sku: 'H0001' },
+    look: {
+      kind: 'gradient',
+      bands: [{ color: '#000000', lightness: 0 }, { color: '#111111' }, { color: '#222222' }]
+    }
+  }), /lightness must be a positive number/);
 });
 
 test('apply refuses fixture data even when a write flag is supplied', async () => {

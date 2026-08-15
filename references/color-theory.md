@@ -6,6 +6,10 @@ Suffuse uses color theory to make authored relationships explicit and reproducib
 
 Start with the role of each band in the room: ground, transition, focus, or edge. A sequential gradient should have a readable direction. Lightness can create spatial hierarchy when hue differences weaken, and restrained chroma often preserves atmosphere better than maximizing every color.
 
+`band.lightness` is how that hierarchy is expressed, and it is deliberately conserving. The Govee platform advertises one device-level brightness and no per-segment brightness, so spatial lightness has to be baked into the band colors — which, done directly, also changes how bright the whole fixture reads. That coupling is what makes lightness hierarchy risky to author by hand: every attempt to give a focus band presence also raises the room. Normalizing the factors to a weighted mean of one breaks the coupling. Lightness taken from one band is returned to the others, so hierarchy and overall level become independently authorable, and `look.brightness` keeps meaning exactly what it says.
+
+The weighting is by spatial extent rather than band count, because a band's contribution to the room is proportional to how much of the fixture it occupies. A single-segment accent should not be able to pay for a ten-segment ground.
+
 The compiler currently implements sequential palettes because ordered downlights are the first product target. Diverging palettes need a meaningful center; qualitative palettes need categorical separation. Add those topologies only when their semantics are represented in the recipe rather than inferred from arbitrary swatches.
 
 ## Use OKLCH deliberately
