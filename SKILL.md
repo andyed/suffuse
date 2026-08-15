@@ -99,6 +99,18 @@ Use the agent to interpret text or images and author a `LightScore`. Use a dedic
 
 Do not scrape the Govee Home app, reproduce private authentication, or claim access to CogniGlow or AI Lighting Bot generation. Use those products only as interaction precedents unless Govee publishes a supported endpoint.
 
+## Paint per-LED over the LAN
+
+The `lan` commands reach devices on the local network without an API key, including per-LED painting on fixtures with a verified pixel profile. The workflow above still applies; these rules are additional, and each encodes a hardware-measured lesson:
+
+1. Scan first (`lan scan`) — it is read-only and reports which discovered fixtures support per-LED and whether their pixel count is hardware-verified. Multicast discovery is intermittent per device, so never conclude "no LAN support" from a short or partial scan.
+2. Author per-LED intent as an ordinary gradient LightScore. Bands compile to pixels in authored order; there is no arbitrary per-pixel array on purpose, because fixtures with fewer zones interpolate between stops the long way round the hue wheel, and band order is what keeps adjacent pixels adjacent in hue.
+3. Never claim a per-LED write rendered. The channel is mute — no acknowledgment, no queryable segment state. Results carry `verified: false`; only eyes (or the user) can confirm, and the skill must say so.
+4. Make duration explicit. A per-LED look reverts to the device's own effects roughly a minute after data stops. Use `--hold-seconds` for a bounded hold (default 900, max 14400) and tell the user when the look will end; use `lan release` to end it early.
+5. Never mix writers. While a hold is active, whole-device color writes to that fixture are refused — a whole-device command repaints every pixel and flattens the per-LED look. Release before switching modes.
+6. Restoration is whole-device only. `devStatus` is captured before the write and replayed by `restore`; a prior per-LED look is not queryable on any channel, and the receipt must say that rather than overclaim.
+7. If the reply port (UDP 4002) is held by another local controller, scanning and state capture fail loudly. Do not work around it with port sharing — two listeners silently steal each other's replies. Tell the user which process to quit, or pin the device with `--ip`.
+
 ## Handle unavailable credentials
 
 If `GOVEE_API_KEY` is absent, continue with score authoring, fixtures, compilation tests, and documentation. State that live device capability verification and writes remain pending. Never ask the user to paste a key into chat.

@@ -18,7 +18,7 @@ import {
 
 const execFileAsync = promisify(execFile);
 const CLI_PATH = fileURLToPath(new URL('../scripts/govee.mjs', import.meta.url));
-const VERSION = '0.4.0';
+const VERSION = '0.5.0';
 const OUTPUT_SCHEMA = z.object({ result: z.unknown() });
 
 export const MCP_TOOL_METADATA = Object.freeze([
@@ -28,7 +28,10 @@ export const MCP_TOOL_METADATA = Object.freeze([
   { name: 'govee_list_scenes', title: 'List Govee scenes', readOnly: true },
   { name: 'govee_compile_score', title: 'Compile a LightScore', readOnly: true },
   { name: 'govee_apply_score', title: 'Apply a LightScore', readOnly: false },
-  { name: 'govee_restore', title: 'Restore Govee lights', readOnly: false }
+  { name: 'govee_restore', title: 'Restore Govee lights', readOnly: false },
+  { name: 'govee_lan_scan', title: 'Scan the LAN for Govee devices', readOnly: true },
+  { name: 'govee_lan_paint', title: 'Paint a LightScore over LAN', readOnly: false },
+  { name: 'govee_lan_release', title: 'Release a held LAN device', readOnly: false }
 ]);
 
 function annotations(readOnly) {
@@ -186,6 +189,55 @@ export async function createMcpServer() {
     requireWriteGate(confirmWrite);
     requireAbsoluteReceipt(receiptPath);
     return result(await runCli(['restore', '--receipt', receiptPath, '--confirm-write']));
+  });
+
+  server.registerTool('govee_lan_scan', {
+    title: 'Scan the LAN for Govee devices',
+    description: 'Discover Govee devices on the local network without an API key. Reports which support per-LED painting and whether the pixel count is hardware-verified. Multicast is intermittent per device, so the scan always unicast-sweeps too; allow ~10 seconds.',
+    inputSchema: z.object({ subnet: z.string().optional(), timeoutMs: z.number().int().positive().optional() }),
+    outputSchema: OUTPUT_SCHEMA,
+    annotations: annotations(true)
+  }, async ({ subnet, timeoutMs }) => {
+    const args = ['lan', 'scan'];
+    if (subnet) args.push('--subnet', subnet);
+    if (timeoutMs) args.push('--timeout', String(timeoutMs));
+    return result(await runCli(args));
+  });
+
+  server.registerTool('govee_lan_paint', {
+    title: 'Paint a LightScore over LAN',
+    description: 'Apply a gradient or solid LightScore over the local network — keyless, per-LED on profiled fixtures. Gradients require confirmSegments: the per-LED channel never acknowledges, so the result is only verifiable by eye. holdSeconds bounds how long the look persists (default 900, max 14400) before the device returns to its own effects; while held, whole-device writes to it are refused rather than allowed to flatten the look.',
+    inputSchema: z.object({
+      score: z.unknown(),
+      confirmWrite: z.boolean(),
+      receiptPath: z.string(),
+      ip: z.string().optional(),
+      holdSeconds: z.number().int().nonnegative().optional(),
+      confirmSegments: z.boolean().optional()
+    }),
+    outputSchema: OUTPUT_SCHEMA,
+    annotations: annotations(false)
+  }, async ({ score, confirmWrite, receiptPath, ip, holdSeconds, confirmSegments }) => {
+    requireWriteGate(confirmWrite);
+    requireAbsoluteReceipt(receiptPath);
+    return result(await withPrivateScore(score, path => {
+      const args = ['lan', 'paint', '--score', path, '--confirm-write', '--receipt', receiptPath];
+      if (ip) args.push('--ip', ip);
+      if (holdSeconds !== undefined) args.push('--hold-seconds', String(holdSeconds));
+      if (confirmSegments === true) args.push('--confirm-segments');
+      return runCli(args);
+    }));
+  });
+
+  server.registerTool('govee_lan_release', {
+    title: 'Release a held LAN device',
+    description: 'End a per-LED hold early and hand the device back to its own effects. Holds also expire on their own at their recorded TTL.',
+    inputSchema: z.object({ ip: z.string(), confirmWrite: z.boolean() }),
+    outputSchema: OUTPUT_SCHEMA,
+    annotations: annotations(false)
+  }, async ({ ip, confirmWrite }) => {
+    requireWriteGate(confirmWrite);
+    return result(await runCli(['lan', 'release', '--ip', ip, '--confirm-write']));
   });
 
   return server;

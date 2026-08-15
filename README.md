@@ -24,7 +24,7 @@ community project and is not affiliated with or endorsed by Govee.
 
 | Surface | Role |
 | --- | --- |
-| MCP server | Exposes seven typed tools over local stdio and enforces the runtime write gates |
+| MCP server | Exposes ten typed tools over local stdio and enforces the runtime write gates |
 | Agent Skill | Teaches Codex, Claude Code, and OpenClaw when to inspect, compile, confirm, apply, restore, and report incomplete evidence |
 
 ### What the Govee API key unlocks
@@ -61,6 +61,9 @@ keys for the same account, so update every service that uses the old key.
 | `govee_apply_score` | Applies a compiled look and writes a private restore receipt | Write-gated |
 | `govee_restore` | Restores the queryable prior state from a receipt | Write-gated |
 | `govee_list_palettes` | Lists the optional bundled palettes without contacting Govee | Read-only |
+| `govee_lan_scan` | Discovers Govee devices on the local network, keyless, and reports per-LED support | Read-only |
+| `govee_lan_paint` | Paints a gradient or solid LightScore over the LAN, per-LED on verified fixtures | Write-gated |
+| `govee_lan_release` | Ends a per-LED hold early, returning the device to its own effects | Write-gated |
 
 Inspect the MCP metadata without starting a connection:
 
@@ -200,6 +203,62 @@ node scripts/govee.mjs restore \
   --confirm-write
 ```
 
+## LAN control — keyless, per-LED, bounded
+
+Suffuse 0.5 adds a local-network transport beside the cloud path: the documented
+LAN API (`scan`, `devStatus`, `colorwc`) plus the undocumented per-LED `razer`
+channel that Razer Synapse, Govee Desktop, SignalRGB and LedFx use. The same
+contract applies — LightScore in, write gates on, private receipt out — with a
+different wire underneath.
+
+```bash
+node scripts/govee.mjs lan scan
+node scripts/govee.mjs lan paint --score dusk.score.json --confirm-write \
+  --confirm-segments --receipt /private/receipts/dusk.json --hold-seconds 1800
+node scripts/govee.mjs lan release --ip 192.168.1.34 --confirm-write
+```
+
+What makes this path different, and how Suffuse holds the line on each:
+
+- **It is keyless.** No API key protects the user's lights on the LAN, so every
+  write sits behind the same `--confirm-write` gate as the cloud path, and
+  per-LED writes additionally require `--confirm-segments`.
+- **The per-LED channel is mute.** No acknowledgment, no queryable segment
+  state, no error surface — a malformed frame and a perfect one look identical
+  from the socket. Suffuse therefore validates everything before the wire
+  (encoder self-checks against independently published constants at every load;
+  the length field is 16-bit big-endian, which every prose description of this
+  protocol gets wrong), and reports `verified: false` on every per-LED result:
+  it claims what was sent, never that the device obeyed.
+- **The pixel count must match the fixture exactly.** A wrong count is silently
+  ignored and reads as an unsupported device, so only hardware-verified SKU
+  profiles compile to per-LED (H608B: 15 pixels, chase-verified). Unknown SKUs
+  refuse rather than guess.
+- **Gradient bands are the only per-LED authoring surface — deliberately.**
+  Bands compile to pixels in authored order, so adjacent pixels stay adjacent
+  in hue by construction. Fixtures with fewer zones than pixels interpolate
+  between supplied stops the long way round the hue wheel; an arbitrary-array
+  API would let an agent trip that without knowing. The schema makes it
+  inexpressible.
+- **Looks are bounded in time.** The hardware reverts to its own effects ~60s
+  after per-LED data stops (a dead-man, not a bug). `--hold-seconds` makes the
+  duration explicit: a detached keepalive maintains the look, then the device
+  hands itself back — default 15 minutes, hard cap 4 hours. An abandoned agent
+  session cannot hold a room indefinitely.
+- **Writers contend.** A whole-device color command repaints every pixel and
+  flattens a live per-LED look (measured; last writer wins). While a hold is
+  active, Suffuse refuses whole-device writes to that device with a structured
+  error instead of letting the two silently fight.
+- **Restore still works, keyless.** `devStatus` answers over LAN, so pre-write
+  whole-device state is captured into the receipt before painting, and
+  `restore` replays it. Prior *per-LED* looks are not queryable on any channel;
+  the receipt says so rather than overclaiming.
+
+This resolves the negative recorded below for the H608B: the cloud
+`segmentedColorRgb` path never rendered on it, but the same fixture paints 15
+independent pixels over LAN. The advertised capability and the reachable one
+are different surfaces.
+
 ## Optional palette authoring
 
 Suffuse can resolve named palettes, preserve exact authored 3-5-band colors, or
@@ -246,6 +305,10 @@ One recorded H608B result is negative: the device advertised segmented color
 and accepted correctly chunked requests but did not visibly render independent
 colors. Its advertised `Sunset Glow` scene did render. See
 [device evidence](references/device-evidence.md) for the precise boundary.
+**Resolved for the LAN path (2026-08-15):** the same fixture renders 15
+independent pixels over the local `razer` channel — verified by a discrete
+chase, every pixel individually lit. The cloud negative stands; the capability
+was real and the advertised route to it was not.
 
 ## Development
 

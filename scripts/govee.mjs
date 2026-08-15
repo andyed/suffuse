@@ -2,7 +2,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { chmod, readFile, writeFile } from 'node:fs/promises';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   GoveeSkillError,
   compileLightScore,
@@ -41,8 +41,14 @@ function usage() {
   govee.mjs apply --score FILE [--catalog FILE] [--confirm-write --receipt FILE]
                    [--confirm-segments]
   govee.mjs restore --receipt FILE --confirm-write
+  govee.mjs lan scan [--subnet 192.168.1] [--timeout MS]
+  govee.mjs lan paint --score FILE [--ip ADDR] [--hold-seconds N]
+                      [--confirm-write --receipt FILE --confirm-segments]
+  govee.mjs lan release --ip ADDR --confirm-write
+  govee.mjs lan holds
 
-GOVEE_API_KEY is required for live commands. Writes require --confirm-write.`;
+GOVEE_API_KEY is required for live cloud commands; lan commands are keyless.
+Writes require --confirm-write on every path, cloud or LAN.`;
 }
 
 function parseArgs(argv) {
@@ -365,6 +371,9 @@ async function restore(args) {
   if (receipt?.version !== 1 || !Array.isArray(receipt?.restoreOperations)) {
     throw new GoveeSkillError('Receipt has no valid restore operation list', 'invalid-receipt');
   }
+  // LAN receipts restore over LAN — releasing any hold first, then replaying the
+  // captured whole-device state via the documented colorwc channel.
+  if (receipt.transport === 'lan') return restoreLan(receipt, await import('./lan.mjs'));
   if (!receipt.restoreOperations.length) {
     throw new GoveeSkillError('Receipt contains no queryable state to restore', 'restore-unavailable');
   }
@@ -382,6 +391,225 @@ async function restore(args) {
   });
 }
 
+// ── LAN commands ─────────────────────────────────────────────────────────────
+// Same contract as the cloud path — score in, gates on, receipt out — with a
+// different wire. Everything transport-specific (razer encoding, holds, the
+// contention rule, why counts must match) lives in lan.mjs.
+
+async function lanCommand(args) {
+  const lan = await import('./lan.mjs');
+  const sub = args._[1];
+
+  if (sub === 'scan') {
+    const devices = await lan.lanScan({
+      timeoutMs: args.timeout ? Number(args.timeout) : undefined,
+      subnet: args.subnet ?? null
+    });
+    printJson({
+      devices: devices.map(device => ({
+        sku: device.sku,
+        ip: device.ip,
+        device: redactIdentifier(device.device),
+        perLed: device.razer ? { pixels: device.razer.pixels, blend: device.razer.blend, verified: device.razer.verified } : null
+      }))
+    });
+    return;
+  }
+
+  if (sub === 'holds') {
+    printJson({ holds: await lan.listHolds() });
+    return;
+  }
+
+  if (sub === 'release') {
+    if (!args.ip) throw new GoveeSkillError('lan release requires --ip', 'invalid-arguments');
+    if (!args['confirm-write']) throw new GoveeSkillError('lan release requires --confirm-write', 'write-not-confirmed');
+    const hold = await lan.releaseHold(args.ip);
+    printJson({ released: true, ip: args.ip, hadHold: !!hold });
+    return;
+  }
+
+  if (sub === 'hold-loop') {
+    // Internal: the detached keepalive spawned by `lan paint`. Not for direct use.
+    const colors = JSON.parse(Buffer.from(args.frame, 'base64').toString('utf8'));
+    await lan.runHoldLoop(args.ip, colors, Number(args.ttl));
+    return;
+  }
+
+  if (sub === 'paint') return lanPaint(args, lan);
+
+  throw new GoveeSkillError(`Unknown lan subcommand: ${sub ?? '(none)'}`, 'invalid-command');
+}
+
+async function lanPaint(args, lan) {
+  if (args.fixture) throw new GoveeSkillError('lan paint never accepts fixture data', 'fixture-write-blocked');
+  const score = await loadScoreWithPalette(args);
+  if (!['gradient', 'solid'].includes(score.look.kind)) {
+    throw new GoveeSkillError('lan paint supports gradient and solid looks; scenes are a cloud concept', 'unsupported-look');
+  }
+
+  // Resolve the device: explicit --ip, or a LAN scan matched on the score's target
+  // sku. The LAN has no device names — that's a cloud concept — so an ambiguous
+  // room (two lamps, same SKU) must be pinned by --ip rather than guessed at.
+  let ip = args.ip ?? null;
+  let sku = score.target?.sku ?? null;
+  if (!ip) {
+    const devices = (await lan.lanScan({})).filter(device => !sku || device.sku === sku);
+    if (!devices.length) throw new GoveeSkillError(`No LAN device found${sku ? ` for sku ${sku}` : ''}`, 'device-not-found');
+    if (devices.length > 1) {
+      throw new GoveeSkillError(
+        `Multiple LAN devices match (${devices.map(d => `${d.sku}@${d.ip}`).join(', ')}); pin one with --ip`,
+        'ambiguous-device'
+      );
+    }
+    ip = devices[0].ip;
+    sku = devices[0].sku ?? sku;
+  }
+
+  const profile = lan.razerProfile(sku);
+  const holdSeconds = lan.clampHoldSeconds(args['hold-seconds'] ? Number(args['hold-seconds']) : undefined);
+
+  // Compile: bands → per-LED for profiled fixtures, solid → documented colorwc.
+  const warnings = [];
+  let mode;
+  let pixels = null;
+  if (score.look.kind === 'gradient') {
+    if (!profile) {
+      throw new GoveeSkillError(
+        `No verified per-LED profile for sku ${sku ?? '(unknown)'}; a wrong pixel count is silently ignored by the device, so Suffuse refuses to guess. Use a solid look, or the cloud path.`,
+        'no-razer-profile'
+      );
+    }
+    if (!profile.verified) {
+      warnings.push(`The ${sku} pixel count (${profile.pixels}) is unverified; an interpolating fixture renders a plausible gradient at any count, so treat the layout as approximate.`);
+    }
+    pixels = lan.bandsToPixels(score.look.bands, profile.pixels);
+    mode = 'lan-per-led';
+  } else {
+    mode = 'lan-solid';
+  }
+
+  const plan = {
+    executionMode: mode,
+    target: { sku, ip },
+    pixels: pixels ? pixels.length : null,
+    holdSeconds: mode === 'lan-per-led' ? holdSeconds : null,
+    warnings
+  };
+
+  if (!args['confirm-write']) {
+    printJson({ dryRun: true, plan });
+    return;
+  }
+  if (!args.receipt) throw new GoveeSkillError('A private --receipt path is required for writes', 'missing-receipt');
+  if (mode === 'lan-per-led' && !args['confirm-segments']) {
+    throw new GoveeSkillError(
+      'Per-LED writes require --confirm-segments: the razer channel is mute, so nothing can verify the result but eyes',
+      'segment-write-not-confirmed'
+    );
+  }
+
+  // Reserve the receipt before touching the device — same fail-closed contract as apply().
+  await writePrivateJson(args.receipt, {
+    version: 1,
+    createdAt: new Date().toISOString(),
+    status: 'prepared',
+    transport: 'lan',
+    plan,
+    restoreOperations: [],
+    restoreCoverage: { mode: 'capture', complete: false, warning: 'State capture has not run.' }
+  });
+
+  // Keyless pre-write capture: devStatus answers over LAN (the razer channel does
+  // not, but we are reading the documented state BEFORE painting over it).
+  const captured = await lan.lanDevStatus(ip);
+  const restoreOperations = [];
+  if (captured) {
+    restoreOperations.push({ transport: 'lan', action: 'razer-disable', ip });
+    if (captured.color) {
+      restoreOperations.push({
+        transport: 'lan',
+        action: 'colorwc',
+        ip,
+        color: `#${[captured.color.r, captured.color.g, captured.color.b].map(v => Number(v ?? 0).toString(16).padStart(2, '0')).join('')}`,
+        brightness: Number.isFinite(captured.brightness) ? captured.brightness : null
+      });
+    }
+  }
+  const restoreCoverage = {
+    mode: 'capture',
+    complete: restoreOperations.length > 1,
+    warning: captured
+      ? 'devStatus reflects the whole-device state only; any prior per-LED look is not queryable and cannot be restored.'
+      : 'devStatus did not answer before the write; restoration will fall back to releasing the device to its own effects.'
+  };
+
+  if (mode === 'lan-per-led') {
+    await lan.lanPaintPixels(ip, pixels);
+    if (holdSeconds > 0) {
+      const { spawn } = await import('node:child_process');
+      const self = fileURLToPath(import.meta.url);
+      const child = spawn(process.execPath, [
+        self, 'lan', 'hold-loop',
+        '--ip', ip,
+        '--frame', Buffer.from(JSON.stringify(pixels)).toString('base64'),
+        '--ttl', String(holdSeconds)
+      ], { detached: true, stdio: 'ignore' });
+      child.unref();
+      await lan.writeHold(ip, { pid: child.pid, expiresAt: Date.now() + holdSeconds * 1000, label: score.name });
+    } else {
+      warnings.push('No hold requested: the device reverts to its own effects in roughly a minute (hardware dead-man).');
+    }
+  } else {
+    await lan.lanSetColor(ip, score.look.color, {
+      brightness: score.look.brightness ?? null
+    });
+  }
+
+  await writePrivateJson(args.receipt, {
+    version: 1,
+    createdAt: new Date().toISOString(),
+    status: 'applied',
+    transport: 'lan',
+    plan,
+    restoreOperations,
+    restoreCoverage
+  }, { overwrite: true });
+
+  printJson({
+    applied: true,
+    transport: 'lan',
+    executionMode: mode,
+    target: { sku, ip },
+    holdSeconds: plan.holdSeconds,
+    receipt: args.receipt,
+    restoreCoverage,
+    warnings,
+    // The channel is mute: report what was SENT, never that the device obeyed.
+    verified: false
+  });
+}
+
+async function restoreLan(receipt, lan) {
+  const operations = receipt.restoreOperations ?? [];
+  if (!operations.length) {
+    throw new GoveeSkillError('Receipt contains no queryable state to restore', 'restore-unavailable');
+  }
+  const outcomes = [];
+  for (const operation of operations) {
+    if (operation.action === 'razer-disable') {
+      await lan.releaseHold(operation.ip);
+      outcomes.push({ action: 'razer-disable', ip: operation.ip, sent: true });
+    } else if (operation.action === 'colorwc') {
+      await lan.lanSetColor(operation.ip, operation.color, { brightness: operation.brightness });
+      outcomes.push({ action: 'colorwc', ip: operation.ip, sent: true });
+    } else {
+      throw new GoveeSkillError(`Unknown LAN restore action: ${operation.action}`, 'invalid-receipt');
+    }
+  }
+  printJson({ restored: true, transport: 'lan', operationCount: outcomes.length, outcomes, warning: receipt?.restoreCoverage?.warning ?? null });
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const command = args._[0];
@@ -395,6 +623,7 @@ async function main() {
   if (command === 'compile') return compile(args);
   if (command === 'apply') return apply(args);
   if (command === 'restore') return restore(args);
+  if (command === 'lan') return lanCommand(args);
   throw new GoveeSkillError(`Unknown command: ${command}`, 'invalid-command');
 }
 

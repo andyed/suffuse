@@ -1,6 +1,6 @@
 {
   "name": "suffuse",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "MCP server and Agent Skill for capability-safe Govee lighting control",
   "type": "module",
   "license": "MIT",

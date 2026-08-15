@@ -1,0 +1,420 @@
+// LAN transport for Govee devices: documented local API (scan/devStatus/colorwc)
+// plus the undocumented `razer` per-LED channel used by Razer Synapse, Govee
+// Desktop, SignalRGB and LedFx.
+//
+// ── Why this exists ─────────────────────────────────────────────────────────
+// The cloud Developer Platform is rate-limited (~10 req/min) and cannot address
+// individual LEDs on most fixtures. The LAN API has no rate ceiling that
+// matters (razer measured at 40 Hz sustained with no device-side queue) and
+// reaches per-LED on RGBIC hardware. It is also keyless — which cuts both
+// ways: no auth gate protects the user's lights, so every write here sits
+// behind the same confirm gates as the cloud path.
+//
+// ── Provenance and licence ──────────────────────────────────────────────────
+// The razer byte layout below is stated as protocol FACT, re-derived and
+// hardware-verified (H608B, 2026-08-15); it is not copied from any GPL source.
+// Beware prose write-ups of this protocol: every published description states
+// the length field as a single byte. It is 16-bit big-endian — an
+// implementation built from a blog post works up to 84 LEDs and then silently
+// corrupts. assertRazerEncoderSane() below guards our own arithmetic.
+//
+// ── The three hardware lessons everything here encodes ──────────────────────
+// 1. The channel is MUTE. No replies, no error surface; devStatus never
+//    reflects per-LED state. A malformed frame and a perfect one are
+//    indistinguishable from the socket, so validation must happen before the
+//    wire and claims after a write must stay modest.
+// 2. The pixel count must MATCH the fixture. A wrong count is silently
+//    ignored and reads exactly like an unsupported device. Only verified
+//    SKU profiles may compile to per-LED.
+// 3. Writers CONTEND: a whole-device colorwc repaints every pixel and
+//    flattens a live per-LED look (measured — last writer wins). While a hold
+//    is active this module refuses colorwc to the same device.
+
+import dgram from 'node:dgram';
+import { readFile, writeFile, mkdir, rm, readdir } from 'node:fs/promises';
+import { homedir, networkInterfaces } from 'node:os';
+import { join } from 'node:path';
+import { GoveeSkillError, rgbInteger } from './core.mjs';
+
+const CMD_PORT = 4003;
+const SCAN_PORT = 4001;
+const REPLY_PORT = 4002;
+const MULTICAST_ADDR = '239.255.255.250';
+
+/** Documented-API pacing: colorwc drains at ~10-12 cmd/s and QUEUES (never drops). */
+export const COLORWC_MAX_HZ = 8;
+/** Razer channel: measured clean at 40 Hz; the true ceiling is above and unmeasured. */
+export const RAZER_MAX_HZ = 40;
+/** Re-arm cadence for held looks — well inside the device's ~60s dead-man window. */
+export const HOLD_PERIOD_MS = 20000;
+/** Default and ceiling for how long a held look may persist. Bounded by design:
+ * an abandoned agent session must not hold a room indefinitely. */
+export const HOLD_DEFAULT_SECONDS = 900;
+export const HOLD_MAX_SECONDS = 4 * 60 * 60;
+
+// ── Per-SKU spatial profiles ─────────────────────────────────────────────────
+// A SKU absent here is not per-LED addressable as far as Suffuse is concerned.
+// `verified` means the pixel count was confirmed against physical hardware by
+// a discrete chase (every pixel individually lit and counted); an unverified
+// profile compiles with a warning and only because interpolating fixtures
+// render any hue-adjacent stop list as a plausible gradient.
+export const RAZER_PROFILES = Object.freeze({
+  H608B: Object.freeze({ pixels: 15, blend: 'discrete', verified: true }),
+  H6047: Object.freeze({ pixels: 8, blend: 'interpolating', verified: false })
+});
+
+export function razerProfile(sku) {
+  return RAZER_PROFILES[String(sku ?? '').toUpperCase().trim()] ?? null;
+}
+
+// ── Razer frame encoding ────────────────────────────────────────────────────
+//   enable    BB 00 01 B1 01 0A
+//   disable   BB 00 01 B1 00 0B
+//   led data  BB <len_hi> <len_lo> B0 <mode> <count> (R G B)*count <xor>
+//             len = 2 + 3*count, counted AFTER the B0 byte, 16-BIT BIG-ENDIAN
+//             xor = XOR of every preceding byte
+// Wrapped as {"msg":{"cmd":"razer","data":{"pt":"<base64>"}}} to device:4003,
+// written with a trailing NUL.
+
+const xorAll = bytes => bytes.reduce((acc, b) => acc ^ b, 0);
+
+export function encodeRazerEnable(on) {
+  const pkt = [0xbb, 0x00, 0x01, 0xb1, on ? 0x01 : 0x00];
+  pkt.push(xorAll(pkt));
+  return Buffer.from(pkt);
+}
+
+export function encodeRazerFrame(colors) {
+  if (!Array.isArray(colors) || colors.length === 0) {
+    throw new GoveeSkillError('A razer frame requires at least one RGB triple', 'invalid-frame');
+  }
+  if (colors.length > 255) {
+    throw new GoveeSkillError('A razer frame carries at most 255 pixels', 'invalid-frame');
+  }
+  const len = 2 + 3 * colors.length;
+  const pkt = [0xbb, (len >> 8) & 0xff, len & 0xff, 0xb0, 0x01, colors.length];
+  for (const color of colors) {
+    for (const channel of color) {
+      const v = Math.round(channel);
+      if (!Number.isFinite(v) || v < 0 || v > 255) {
+        throw new GoveeSkillError('Razer pixel channels must be integers 0-255', 'invalid-frame');
+      }
+      pkt.push(v);
+    }
+  }
+  pkt.push(xorAll(pkt));
+  return Buffer.from(pkt);
+}
+
+/**
+ * The channel is mute, so construction time is the only error surface there is.
+ * Both constants are hardcoded in independent implementations, which makes them
+ * an external check on our length, checksum and byte order at once. The 86-LED
+ * probe would catch a single-byte length field (260 = 0x0104 truncates to 0x04).
+ */
+export function assertRazerEncoderSane() {
+  if (encodeRazerEnable(true).toString('hex') !== 'bb0001b1010a') {
+    throw new GoveeSkillError('razer enable encoding drifted', 'encoder-drift');
+  }
+  if (encodeRazerEnable(false).toString('hex') !== 'bb0001b1000b') {
+    throw new GoveeSkillError('razer disable encoding drifted', 'encoder-drift');
+  }
+  const wide = encodeRazerFrame(Array.from({ length: 86 }, () => [1, 2, 3]));
+  if (wide[1] !== 0x01 || wide[2] !== 0x04) {
+    throw new GoveeSkillError('razer length field is not 16-bit big-endian', 'encoder-drift');
+  }
+  return true;
+}
+
+// ── Bands → pixels ──────────────────────────────────────────────────────────
+
+/**
+ * Lay a LightScore gradient across a fixture's pixels. Pure, and the only
+ * per-LED authoring surface Suffuse exposes ON PURPOSE: band order is
+ * preserved, so adjacent pixels stay adjacent in authored intent and the
+ * interpolating-fixture rainbow trap (red beside blue lerps the long way
+ * round the hue wheel) cannot be expressed. Weights map to pixel counts by
+ * largest remainder, so the result is exactly `pixels` long — the count
+ * contract is lesson 2 above.
+ */
+export function bandsToPixels(bands, pixels) {
+  if (!Array.isArray(bands) || !bands.length) {
+    throw new GoveeSkillError('bandsToPixels requires at least one band', 'invalid-frame');
+  }
+  if (!Number.isInteger(pixels) || pixels < 1 || pixels > 255) {
+    throw new GoveeSkillError('pixels must be an integer 1-255', 'invalid-frame');
+  }
+  const weights = bands.map(band => (Number.isFinite(band?.weight) && band.weight > 0 ? band.weight : 1));
+  const total = weights.reduce((a, b) => a + b, 0);
+  const ideal = weights.map(w => (w / total) * pixels);
+  const counts = ideal.map(Math.floor);
+  let remaining = pixels - counts.reduce((a, b) => a + b, 0);
+  const order = ideal
+    .map((value, index) => ({ index, frac: value - Math.floor(value) }))
+    .sort((a, b) => b.frac - a.frac || a.index - b.index);
+  for (let i = 0; remaining > 0; i = (i + 1) % order.length, remaining--) {
+    counts[order[i].index] += 1;
+  }
+  const out = [];
+  bands.forEach((band, index) => {
+    const value = rgbInteger(band.color);
+    const rgb = [(value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff];
+    for (let i = 0; i < counts[index]; i++) out.push(rgb);
+  });
+  // Rounding can leave a zero-count band on tiny fixtures; the frame is still
+  // exactly `pixels` long, which is the contract that matters.
+  return out;
+}
+
+// ── Sockets ─────────────────────────────────────────────────────────────────
+
+function sendJson(socket, ip, port, message) {
+  // Trailing NUL matches the reference implementations; devices tolerate its
+  // absence on documented commands, but the razer parser is not documented and
+  // the byte is free.
+  const buffer = Buffer.concat([Buffer.from(JSON.stringify(message), 'utf8'), Buffer.from([0])]);
+  socket.send(buffer, port, ip);
+}
+
+/** Fire-and-forget socket for writes. Works even when another local controller
+ * owns the reply port, because no reply ever comes back on this channel. */
+async function openSendSocket() {
+  const socket = dgram.createSocket({ type: 'udp4' });
+  await new Promise((resolve, reject) => {
+    socket.once('error', reject);
+    socket.bind(0, resolve);
+  });
+  return socket;
+}
+
+/**
+ * Reply socket on :4002 — Govee devices answer scan/devStatus to that fixed
+ * port, not to the sender's source port. Deliberately NOT reuseAddr: sharing
+ * the port with another controller (the Psychodeli+ app, LedFx…) silently
+ * steals replies from one of the two. Failing loudly is the honest behaviour.
+ */
+async function openReplySocket() {
+  const socket = dgram.createSocket({ type: 'udp4' });
+  try {
+    await new Promise((resolve, reject) => {
+      socket.once('error', reject);
+      socket.bind(REPLY_PORT, resolve);
+    });
+  } catch (error) {
+    socket.close();
+    if (error?.code === 'EADDRINUSE') {
+      throw new GoveeSkillError(
+        'UDP :4002 is held by another local light controller; quit it, or pass --ip to skip discovery',
+        'reply-port-busy'
+      );
+    }
+    throw error;
+  }
+  return socket;
+}
+
+// ── Discovery and state ─────────────────────────────────────────────────────
+
+/**
+ * Multicast first, then a unicast sweep of the local /24 — ALWAYS both.
+ * Multicast reply behaviour is intermittent per device (APs drop the group,
+ * lamps rejoin lazily), so "answered multicast" says nothing about the others,
+ * and multicast silence must never be read as "no LAN support".
+ */
+export async function lanScan({ timeoutMs = 6000, subnet = null } = {}) {
+  const socket = await openReplySocket();
+  const found = new Map();
+  socket.on('message', (buffer, rinfo) => {
+    try {
+      const parsed = JSON.parse(buffer.toString('utf8').replace(/\0+$/, ''));
+      const data = parsed?.msg?.data;
+      if (parsed?.msg?.cmd === 'scan' && data?.device) {
+        found.set(data.device, {
+          device: data.device,
+          sku: data.sku ?? null,
+          ip: data.ip ?? rinfo.address,
+          wifiVersionSoft: data.wifiVersionSoft ?? null,
+          razer: razerProfile(data.sku)
+        });
+      }
+    } catch { /* not ours */ }
+  });
+
+  const scan = { msg: { cmd: 'scan', data: { account_topic: 'reserve' } } };
+  try {
+    socket.setBroadcast(true);
+    sendJson(socket, MULTICAST_ADDR, SCAN_PORT, scan);
+  } catch { /* multicast unavailable; the sweep still runs */ }
+
+  const base = subnet ?? localSubnet();
+  if (base) {
+    for (let host = 1; host <= 254; host++) {
+      sendJson(socket, `${base}.${host}`, SCAN_PORT, scan);
+      sendJson(socket, `${base}.${host}`, CMD_PORT, scan);
+      if (host % 32 === 0) await sleep(50);
+    }
+  }
+  await sleep(timeoutMs);
+  socket.close();
+  return [...found.values()];
+}
+
+function localSubnet() {
+  for (const addresses of Object.values(networkInterfaces())) {
+    for (const address of addresses ?? []) {
+      if (address.family === 'IPv4' && !address.internal) {
+        return address.address.split('.').slice(0, 3).join('.');
+      }
+    }
+  }
+  return null;
+}
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+/** Read onOff/brightness/color over LAN. This is the KEYLESS pre-write capture:
+ * unlike the razer channel, devStatus genuinely answers. Capture happens before
+ * any write — replies queue behind pending commands, so mid-write readback lies. */
+export async function lanDevStatus(ip, { timeoutMs = 3000 } = {}) {
+  const socket = await openReplySocket();
+  const state = await new Promise(resolve => {
+    const timer = setTimeout(() => resolve(null), timeoutMs);
+    socket.on('message', buffer => {
+      try {
+        const parsed = JSON.parse(buffer.toString('utf8').replace(/\0+$/, ''));
+        if (parsed?.msg?.cmd === 'devStatus') {
+          clearTimeout(timer);
+          resolve(parsed.msg.data ?? null);
+        }
+      } catch { /* not ours */ }
+    });
+    sendJson(socket, ip, CMD_PORT, { msg: { cmd: 'devStatus', data: {} } });
+  });
+  socket.close();
+  return state;
+}
+
+// ── Writes ──────────────────────────────────────────────────────────────────
+
+export async function lanSetColor(ip, color, { brightness = null } = {}) {
+  await refuseIfHeld(ip);
+  const socket = await openSendSocket();
+  const value = rgbInteger(color);
+  sendJson(socket, ip, CMD_PORT, {
+    msg: {
+      cmd: 'colorwc',
+      data: {
+        color: { r: (value >> 16) & 0xff, g: (value >> 8) & 0xff, b: value & 0xff },
+        colorTemInKelvin: 0
+      }
+    }
+  });
+  if (Number.isFinite(brightness)) {
+    await sleep(150); // stay far inside the documented channel's ~10-12 cmd/s drain
+    sendJson(socket, ip, CMD_PORT, { msg: { cmd: 'brightness', data: { value: Math.round(brightness) } } });
+  }
+  await sleep(100);
+  socket.close();
+}
+
+export async function lanPaintPixels(ip, colors) {
+  assertRazerEncoderSane();
+  const socket = await openSendSocket();
+  const wrap = pkt => ({ msg: { cmd: 'razer', data: { pt: pkt.toString('base64') } } });
+  sendJson(socket, ip, CMD_PORT, wrap(encodeRazerEnable(true)));
+  await sleep(150);
+  sendJson(socket, ip, CMD_PORT, wrap(encodeRazerFrame(colors)));
+  await sleep(100);
+  socket.close();
+}
+
+export async function lanRazerDisable(ip) {
+  const socket = await openSendSocket();
+  sendJson(socket, ip, CMD_PORT, { msg: { cmd: 'razer', data: { pt: encodeRazerEnable(false).toString('base64') } } });
+  await sleep(100);
+  socket.close();
+}
+
+// ── Holds ───────────────────────────────────────────────────────────────────
+// A razer look is ephemeral by hardware design: ~60s without LED data and the
+// device reverts to its own effects. Instead of hiding that, a hold makes the
+// duration explicit — a detached keepalive repaints every HOLD_PERIOD_MS until
+// its TTL, then the light hands itself back. Deleting the hold file releases
+// early. The hold file doubles as the contention lock (lesson 3).
+
+const HOLDS_DIR = join(homedir(), '.suffuse', 'holds');
+const holdPath = ip => join(HOLDS_DIR, `${ip.replaceAll('.', '-')}.json`);
+
+export function clampHoldSeconds(seconds) {
+  const value = Number.isFinite(seconds) ? seconds : HOLD_DEFAULT_SECONDS;
+  if (value <= 0) return 0;
+  return Math.min(value, HOLD_MAX_SECONDS);
+}
+
+export async function readHold(ip) {
+  try {
+    return JSON.parse(await readFile(holdPath(ip), 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+async function refuseIfHeld(ip) {
+  const hold = await readHold(ip);
+  if (hold && Date.now() < hold.expiresAt) {
+    throw new GoveeSkillError(
+      `Device ${ip} is held by a per-LED look until ${new Date(hold.expiresAt).toISOString()}; ` +
+      'a whole-device color write would repaint every pixel and flatten it (last writer wins). ' +
+      'Release the hold first.',
+      'device-held'
+    );
+  }
+}
+
+export async function writeHold(ip, { pid, expiresAt, label = null }) {
+  await mkdir(HOLDS_DIR, { recursive: true, mode: 0o700 });
+  await writeFile(holdPath(ip), `${JSON.stringify({ ip, pid, expiresAt, label }, null, 2)}\n`, { mode: 0o600 });
+}
+
+export async function releaseHold(ip) {
+  const hold = await readHold(ip);
+  await rm(holdPath(ip), { force: true });
+  if (hold?.pid) {
+    try { process.kill(hold.pid, 'SIGTERM'); } catch { /* already gone */ }
+  }
+  await lanRazerDisable(ip);
+  return hold;
+}
+
+export async function listHolds() {
+  try {
+    const files = await readdir(HOLDS_DIR);
+    const holds = [];
+    for (const file of files) {
+      try { holds.push(JSON.parse(await readFile(join(HOLDS_DIR, file), 'utf8'))); } catch { /* skip */ }
+    }
+    return holds;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The detached keepalive loop. Runs in its own process (spawned by the CLI),
+ * repaints until TTL or until the hold file disappears, then disables razer so
+ * the device returns to its own state. Exit is always a release.
+ */
+export async function runHoldLoop(ip, colors, ttlSeconds) {
+  const expiresAt = Date.now() + clampHoldSeconds(ttlSeconds) * 1000;
+  await writeHold(ip, { pid: process.pid, expiresAt });
+  try {
+    while (Date.now() < expiresAt) {
+      if (!(await readHold(ip))) return; // released externally; releaseHold sent the disable
+      await lanPaintPixels(ip, colors);
+      await sleep(Math.min(HOLD_PERIOD_MS, Math.max(0, expiresAt - Date.now())));
+    }
+  } finally {
+    await rm(holdPath(ip), { force: true });
+    await lanRazerDisable(ip);
+  }
+}

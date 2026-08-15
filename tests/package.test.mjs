@@ -70,7 +70,7 @@ test('package and skill expose the Suffuse identity', async () => {
   const skill = await (await import('node:fs/promises')).readFile(new URL('../SKILL.md', import.meta.url), 'utf8');
   const readme = await (await import('node:fs/promises')).readFile(new URL('../README.md', import.meta.url), 'utf8');
   assert.equal(packageDocument.name, 'suffuse');
-  assert.equal(packageDocument.version, '0.4.0');
+  assert.equal(packageDocument.version, '0.5.0');
   assert.match(packageDocument.description, /MCP server and Agent Skill/);
   assert.equal(packageDocument.repository.url, 'git+https://github.com/andyed/suffuse.git');
   assert.match(skill, /^---\nname: suffuse\n/);
@@ -127,7 +127,10 @@ test('MCP surface registers focused tools and keeps writes disabled by default',
     'govee_list_scenes',
     'govee_compile_score',
     'govee_apply_score',
-    'govee_restore'
+    'govee_restore',
+    'govee_lan_scan',
+    'govee_lan_paint',
+    'govee_lan_release'
   ]);
   const prior = process.env.GOVEE_MCP_ALLOW_WRITES;
   delete process.env.GOVEE_MCP_ALLOW_WRITES;
