@@ -298,6 +298,35 @@ Suffuse is a separate developer tool, not the real-time Psychodeli+ rendering
 engine. High-rate music- or screen-reactive lighting belongs in a dedicated
 local runtime, not a cloud API request loop.
 
+## Genealogy
+
+Two lineages meet here, and crediting both keeps the project honest about what
+it invented — which is neither the protocol nor the colour science, but the
+contract around them.
+
+**The per-LED channel** originated as a proprietary integration: Govee firmware
+implementing a private protocol for Razer Synapse's Chroma ecosystem, later
+used by Govee's own Desktop app. Adam Honse reverse-engineered it for
+[OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB/-/merge_requests/2172)
+(GPL-2.0-or-later, December 2023) — the write-up where the byte layout first
+became public. [LedFx](https://github.com/LedFx/LedFx) (GPL-3.0) implemented it
+independently for audio-reactive rendering; SignalRGB's community `Govee.js`
+addons spread it through the ambient-lighting scene; and
+[LumiSync](https://github.com/Minlor/LumiSync) (MIT) published its own research
+and a permissively licensed implementation. Suffuse's implementation was
+re-derived from the byte layout as protocol fact, hardware-verified, and adds
+what none of the roughly three dozen public implementations carry: typed tools,
+write gates, receipts, bounded holds, and evidence-classed claims. The full
+chain, with each claim tagged by its source, is
+[references/lan-razer.md](references/lan-razer.md).
+
+**The control discipline** comes from [Psychodeli+](https://psychodeli.com)'s
+Room Lights: a year of driving real fixtures over cloud, LAN, and BLE is where
+the hard lessons were measured — commands that queue rather than drop, devices
+that fail silently when a pixel count is wrong, writers that flatten each
+other's work, restores that cannot be captured on a mute channel. Suffuse is
+those lessons extracted, given a schema, and pointed at agents.
+
 ## Evidence and boundaries
 
 - Compile against fresh device capabilities; never promise a feature from a SKU
