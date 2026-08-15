@@ -259,6 +259,13 @@ This resolves the negative recorded below for the H608B: the cloud
 independent pixels over LAN. The advertised capability and the reachable one
 are different surfaces.
 
+The `razer` channel is **not documented by Govee or Razer** — it is a
+reverse-engineered protocol with no stability promise, and Suffuse's claims
+about it are tagged by evidence class in
+[references/lan-razer.md](references/lan-razer.md): what was verified on
+hardware, what is corroborated by independent implementations (OpenRGB, LedFx),
+and what remains a working guess.
+
 ## Optional palette authoring
 
 Suffuse can resolve named palettes, preserve exact authored 3-5-band colors, or
