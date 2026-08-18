@@ -7,3 +7,5 @@ receipts/
 *.receipt.json
 *.private.json
 verify/runs/
+__pycache__/
+*.pyc
