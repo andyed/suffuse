@@ -55,5 +55,8 @@
     "@modelcontextprotocol/server": "^2.0.0",
     "culori": "^4.0.2",
     "zod": "^4.4.3"
+  },
+  "optionalDependencies": {
+    "@stoprocent/noble": "^2.7.1"
   }
 }

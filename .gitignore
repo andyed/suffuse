@@ -9,3 +9,4 @@ receipts/
 verify/runs/
 __pycache__/
 *.pyc
+evals/cold-room/runs/

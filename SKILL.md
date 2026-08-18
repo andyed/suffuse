@@ -112,6 +112,17 @@ The `lan` commands reach devices on the local network without an API key, includ
 7. If the reply port (UDP 4002) is held by another local controller, scanning and state capture fail loudly. Do not work around it with port sharing — two listeners silently steal each other's replies. Tell the user which process to quit, or pin the device with `--ip`.
 8. For an unfamiliar SKU, consult the mined portfolio first (`node scripts/portfolio.mjs <SKU>`) — 371 SKUs of community priors with per-fact provenance. Read it under one rule: a mined positive is trustworthy, a mined negative is only "unknown" — vendor flags describe app support, not what the firmware accepts. Never tell the user their device "doesn't support" per-LED on the strength of a mined flag or absence from the portfolio.
 
+## Reach BLE-only hardware over Bluetooth
+
+The `ble` commands reach lamps the LAN structurally cannot (the H6009 class: cloud-listed, no LAN Control) — keyless and without Wi-Fi. The workflow above still applies; these rules are additional:
+
+1. Scan first (`ble scan`) — read-only. A lamp held by another central (the user's Govee Home app, another controller) stops advertising and will not appear; absence is not absence. Say that instead of concluding the lamp is gone.
+2. One-shot only. Connect, write, drain, disconnect — never hold a BLE session open: a connected central locks the user out of their own app. If the user wants a persistent look, BLE is the wrong wire; say so.
+3. There is no readback. Prior colour and brightness cannot be captured, so the receipt records a declared warm-white restore point and `restore` returns the lamp there — to a stated neutral, not to its previous look. Tell the user this before writing.
+4. Writes are unacknowledged (`verified: false`). Report what was sent; only eyes confirm.
+5. The colour opcode is per-device-class (verified on the RGBWW H6009; the widely documented RGB-only encoding is accepted and inert there). A lamp that powers and dims but ignores colour is the signature of a wrong opcode — file a compatibility report rather than retrying harder.
+6. The dependency is optional. If `@stoprocent/noble` is missing or the host lacks Bluetooth permission (macOS kills unsigned processes touching CoreBluetooth without a prompt — the responsible process, usually the terminal app, must hold the permission), relay the structured remediation from the error; every other Suffuse surface still works.
+
 ## Handle unavailable credentials
 
 If `GOVEE_API_KEY` is absent, continue with score authoring, fixtures, compilation tests, and documentation. State that live device capability verification and writes remain pending. Never ask the user to paste a key into chat.

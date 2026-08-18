@@ -31,7 +31,9 @@ export const MCP_TOOL_METADATA = Object.freeze([
   { name: 'govee_restore', title: 'Restore Govee lights', readOnly: false },
   { name: 'govee_lan_scan', title: 'Scan the LAN for Govee devices', readOnly: true },
   { name: 'govee_lan_paint', title: 'Paint a LightScore over LAN', readOnly: false },
-  { name: 'govee_lan_release', title: 'Release a held LAN device', readOnly: false }
+  { name: 'govee_lan_release', title: 'Release a held LAN device', readOnly: false },
+  { name: 'govee_ble_scan', title: 'Scan for Govee devices over Bluetooth', readOnly: true },
+  { name: 'govee_ble_set', title: 'Set a Govee device over Bluetooth', readOnly: false }
 ]);
 
 function annotations(readOnly) {
@@ -238,6 +240,44 @@ export async function createMcpServer() {
   }, async ({ ip, confirmWrite }) => {
     requireWriteGate(confirmWrite);
     return result(await runCli(['lan', 'release', '--ip', ip, '--confirm-write']));
+  });
+
+  server.registerTool('govee_ble_scan', {
+    title: 'Scan for Govee devices over Bluetooth',
+    description: 'Discover Govee BLE peripherals — keyless and Wi-Fi-free, the only local path to the H6009 class (cloud-listed, no LAN Control). Needs the optional @stoprocent/noble dependency and, on macOS, Bluetooth permission for the responsible process. A lamp currently held by another central (e.g. the Govee Home app) stops advertising and will not appear.',
+    inputSchema: z.object({ timeoutMs: z.number().int().positive().optional() }),
+    outputSchema: OUTPUT_SCHEMA,
+    annotations: annotations(true)
+  }, async ({ timeoutMs }) => {
+    const args = ['ble', 'scan'];
+    if (timeoutMs) args.push('--timeout', String(timeoutMs));
+    return result(await runCli(args));
+  });
+
+  server.registerTool('govee_ble_set', {
+    title: 'Set a Govee device over Bluetooth',
+    description: 'One-shot power/colour/brightness over BLE after explicit confirmation, with a private receipt. BLE has NO state readback: prior state cannot be captured, so the receipt records a declared warm-white restore point, and results report what was sent, never that the lamp obeyed. The connection is held only for the seconds the write takes.',
+    inputSchema: z.object({
+      id: z.string().optional(),
+      name: z.string().optional(),
+      power: z.boolean().optional(),
+      color: z.string().optional(),
+      brightness: z.number().int().min(1).max(100).optional(),
+      confirmWrite: z.boolean(),
+      receiptPath: z.string()
+    }).refine(value => value.id || value.name, 'id or name is required'),
+    outputSchema: OUTPUT_SCHEMA,
+    annotations: annotations(false)
+  }, async ({ id, name, power, color, brightness, confirmWrite, receiptPath }) => {
+    requireWriteGate(confirmWrite);
+    requireAbsoluteReceipt(receiptPath);
+    const args = ['ble', 'set', '--confirm-write', '--receipt', receiptPath];
+    if (id) args.push('--id', id);
+    if (name) args.push('--name', name);
+    if (power !== undefined) args.push('--power', power ? 'on' : 'off');
+    if (color) args.push('--color', color);
+    if (brightness !== undefined) args.push('--brightness', String(brightness));
+    return result(await runCli(args));
   });
 
   return server;

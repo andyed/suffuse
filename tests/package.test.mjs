@@ -130,7 +130,9 @@ test('MCP surface registers focused tools and keeps writes disabled by default',
     'govee_restore',
     'govee_lan_scan',
     'govee_lan_paint',
-    'govee_lan_release'
+    'govee_lan_release',
+    'govee_ble_scan',
+    'govee_ble_set'
   ]);
   const prior = process.env.GOVEE_MCP_ALLOW_WRITES;
   delete process.env.GOVEE_MCP_ALLOW_WRITES;

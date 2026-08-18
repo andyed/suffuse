@@ -46,9 +46,12 @@ function usage() {
                       [--confirm-write --receipt FILE --confirm-segments]
   govee.mjs lan release --ip ADDR --confirm-write
   govee.mjs lan holds
+  govee.mjs ble scan [--timeout MS]
+  govee.mjs ble set [--id ID | --name NAME] [--power on|off] [--color #RRGGBB]
+                    [--brightness 1-100] [--confirm-write --receipt FILE]
 
-GOVEE_API_KEY is required for live cloud commands; lan commands are keyless.
-Writes require --confirm-write on every path, cloud or LAN.`;
+GOVEE_API_KEY is required for live cloud commands; lan and ble commands are keyless.
+Writes require --confirm-write on every path, cloud, LAN or BLE.`;
 }
 
 function parseArgs(argv) {
@@ -374,6 +377,9 @@ async function restore(args) {
   // LAN receipts restore over LAN — releasing any hold first, then replaying the
   // captured whole-device state via the documented colorwc channel.
   if (receipt.transport === 'lan') return restoreLan(receipt, await import('./lan.mjs'));
+  // BLE receipts replay the DECLARED restore point — the channel has no
+  // readback, so this is a return to a stated neutral, not to prior state.
+  if (receipt.transport === 'ble') return restoreBle(receipt, await import('./ble.mjs'));
   if (!receipt.restoreOperations.length) {
     throw new GoveeSkillError('Receipt contains no queryable state to restore', 'restore-unavailable');
   }
@@ -590,6 +596,151 @@ async function lanPaint(args, lan) {
   });
 }
 
+// ── BLE commands ─────────────────────────────────────────────────────────────
+// Same contract again — gates on, receipt out — over the third wire. BLE is
+// keyless AND works with no Wi-Fi at all, which is why it exists here: the
+// H6009 class is cloud-listed but has no LAN Control, so this is its only
+// keyless path. Everything transport-specific (frames, the link contract, why
+// there is no readback) lives in ble.mjs and references/ble.md.
+
+async function bleCommand(args) {
+  const ble = await import('./ble.mjs');
+  const sub = args._[1];
+  try {
+    if (sub === 'scan') {
+      const devices = await ble.bleScanSummaries({
+        timeoutMs: args.timeout ? Number(args.timeout) : undefined
+      });
+      printJson({
+        devices,
+        note: 'A lamp held by another central (Govee Home app, another controller) stops advertising and will not appear.'
+      });
+      return;
+    }
+    if (sub === 'set') return await bleSetCommand(args, ble);
+    throw new GoveeSkillError(`Unknown ble subcommand: ${sub ?? '(none)'}`, 'invalid-command');
+  } finally {
+    // The native central keeps the event loop alive; a CLI must put it down.
+    ble.bleStop();
+  }
+}
+
+async function bleSetCommand(args, ble) {
+  const power = args.power === undefined ? null
+    : args.power === 'on' ? true
+    : args.power === 'off' ? false
+    : (() => { throw new GoveeSkillError('ble set --power must be on or off', 'invalid-arguments'); })();
+  const color = args.color ?? null;
+  const brightness = args.brightness === undefined ? null : Number(args.brightness);
+  if (brightness !== null && !(Number.isFinite(brightness) && brightness >= 1 && brightness <= 100)) {
+    throw new GoveeSkillError('ble set --brightness must be 1-100', 'invalid-arguments');
+  }
+  if (power === null && color === null && brightness === null) {
+    throw new GoveeSkillError('ble set requires at least one of --power, --color, --brightness', 'invalid-arguments');
+  }
+
+  const plan = {
+    executionMode: 'ble-one-shot',
+    target: { id: args.id ?? null, name: args.name ?? null },
+    channels: { power, color, brightness },
+    // Honest up front: nothing on this channel can confirm delivery, and prior
+    // state cannot be captured. Restoration returns to a declared warm white.
+    restorePoint: { declared: true, ...ble.BLE_RESTORE_POINT }
+  };
+
+  if (!args['confirm-write']) {
+    printJson({ dryRun: true, plan });
+    return;
+  }
+  if (!args.receipt) throw new GoveeSkillError('A private --receipt path is required for writes', 'missing-receipt');
+
+  const peripheral = await ble.bleResolve({
+    id: args.id ?? null,
+    name: args.name ?? null,
+    timeoutMs: args.timeout ? Number(args.timeout) : undefined
+  });
+  const summary = ble.peripheralSummary(peripheral);
+  plan.target = summary;
+
+  const restoreOperations = [{
+    transport: 'ble',
+    action: 'set',
+    id: summary.id,
+    name: summary.name,
+    power: true,
+    color: ble.BLE_RESTORE_POINT.color,
+    brightness: ble.BLE_RESTORE_POINT.brightness
+  }];
+  const restoreCoverage = {
+    mode: 'declared',
+    complete: false,
+    warning: 'BLE has no state readback: prior colour and brightness were not captured. '
+      + 'Restore returns the lamp to a declared warm white, not to its previous look.'
+  };
+
+  // Reserve the receipt before touching the device — same fail-closed contract
+  // as every other write path.
+  await writePrivateJson(args.receipt, {
+    version: 1,
+    createdAt: new Date().toISOString(),
+    status: 'prepared',
+    transport: 'ble',
+    plan,
+    restoreOperations,
+    restoreCoverage
+  });
+
+  const outcome = await ble.bleSet(peripheral, { power, color, brightness });
+
+  await writePrivateJson(args.receipt, {
+    version: 1,
+    createdAt: new Date().toISOString(),
+    status: 'applied',
+    transport: 'ble',
+    plan,
+    sent: outcome.sent,
+    restoreOperations,
+    restoreCoverage
+  }, { overwrite: true });
+
+  printJson({
+    applied: true,
+    transport: 'ble',
+    executionMode: 'ble-one-shot',
+    target: { sku: summary.sku, name: summary.name },
+    channels: plan.channels,
+    receipt: args.receipt,
+    restoreCoverage,
+    // Write-without-response resolves when the OS accepts the buffer. Report
+    // what was SENT, never that the lamp obeyed.
+    verified: false
+  });
+}
+
+async function restoreBle(receipt, ble) {
+  const operation = (receipt.restoreOperations ?? []).find(entry => entry.action === 'set');
+  if (!operation) {
+    throw new GoveeSkillError('Receipt contains no BLE restore operation', 'restore-unavailable');
+  }
+  try {
+    const peripheral = await ble.bleResolve({ id: operation.id, name: operation.name });
+    const outcome = await ble.bleSet(peripheral, {
+      power: operation.power ?? true,
+      color: operation.color,
+      brightness: operation.brightness
+    });
+    printJson({
+      restored: true,
+      transport: 'ble',
+      target: { name: operation.name },
+      sent: outcome.sent,
+      warning: receipt?.restoreCoverage?.warning ?? null
+    });
+  } finally {
+    ble.bleStop();
+  }
+}
+
 async function restoreLan(receipt, lan) {
   const operations = receipt.restoreOperations ?? [];
   if (!operations.length) {
@@ -624,6 +775,7 @@ async function main() {
   if (command === 'apply') return apply(args);
   if (command === 'restore') return restore(args);
   if (command === 'lan') return lanCommand(args);
+  if (command === 'ble') return bleCommand(args);
   throw new GoveeSkillError(`Unknown command: ${command}`, 'invalid-command');
 }
 

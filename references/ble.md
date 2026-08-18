@@ -1,10 +1,18 @@
 # Govee over Bluetooth LE — protocol knowledge
 
-Suffuse does not ship a BLE transport today. This page exists because the
-protocol knowledge was expensive to acquire — measured against physical
-hardware in the Psychodeli reference room (2026-08-08 → 2026-08-09) — and any
-future BLE adapter must honor it. Facts are tagged like
-[lan-razer.md](lan-razer.md): hardware-verified unless stated otherwise.
+Suffuse ships a one-shot BLE transport (`scripts/ble.mjs`, `ble scan` /
+`ble set`, MCP `govee_ble_scan` / `govee_ble_set`) built on the knowledge
+recorded here. The knowledge came first: it was expensive to acquire —
+measured against physical hardware in the Psychodeli reference room
+(2026-08-08 → 2026-08-09) — and the transport must honor every part of it.
+Facts are tagged like [lan-razer.md](lan-razer.md): hardware-verified unless
+stated otherwise.
+
+The shipped transport deliberately implements the ONE-SHOT subset only:
+scan → connect → write → drain → disconnect. Session semantics (keep-alive
+loop, reconnect ladder, sleep/wake recovery) are documented below because a
+future session mode needs them, but a process-per-command CLI cannot use them,
+and a held connection locks the owner's own app out of the lamp.
 
 Why BLE matters at all: **the LAN API cannot reach half the installed
 hardware.** The H6009 bulb appears in Govee's cloud supported-model list but
@@ -81,14 +89,26 @@ colour path on the tested SKUs.
 
 ## Host platform traps
 
-- **macOS TCC SIGABRTs adhoc-signed processes.** An unsigned/adhoc-signed
-  process touching CoreBluetooth is **killed, not prompted**
-  (`TCC_CRASHING_DUE_TO_PRIVACY_VIOLATION`, exit 134) — observed twice, via
-  Python `bleak` and via Electron's `navigator.bluetooth.requestDevice()`. A
-  `NSBluetoothAlwaysUsageDescription` string is necessary but not sufficient;
-  without a real code signature there is no prompt to approve, and System
-  Settings ▸ Privacy ▸ Bluetooth will never list the app. Sign the binary or
-  don't touch CoreBluetooth.
+- **macOS TCC attributes Bluetooth to the RESPONSIBLE PROCESS, and kills
+  rather than prompts when that grant is missing** (exit 134, SIGABRT,
+  `TCC_CRASHING_DUE_TO_PRIVACY_VIOLATION` in the crash report). Measured
+  2026-08-18 with this repo's own `ble scan`, same binary, same machine:
+  - launched from **Terminal.app** (Terminal holds the Bluetooth grant):
+    **works** — adhoc-signed Homebrew node is fine, because Terminal is the
+    responsible process;
+  - launched from inside a **Claude Code session**: **SIGABRT** — the crash
+    report names `claude` as the responsible process, and it has no Bluetooth
+    grant. Sandboxed or not made no difference.
+  So the remediation is not "sign node"; it is *run from a host that holds
+  (or can prompt for) the Bluetooth permission*. An agent driving this
+  transport from an unblessed host must delegate the command to a terminal
+  the user has granted (or can grant) Bluetooth. App-bundle hosts (Electron)
+  still need a real signature + entitlement — earlier failures via Python
+  `bleak` and Electron's `navigator.bluetooth` were this same attribution
+  rule seen from hosts that could never be granted. System Settings ▸
+  Privacy ▸ Bluetooth only lists apps that have successfully *requested*
+  access; a killed process never appears there, so there is nothing to
+  toggle.
 - **Web Bluetooth in Electron is a dead end** on current macOS: returns no
   devices while Chrome on the same machine works
   ([electron/electron#47046](https://github.com/electron/electron/issues/47046)).

@@ -24,7 +24,7 @@ community project and is not affiliated with or endorsed by Govee.
 
 | Surface | Role |
 | --- | --- |
-| MCP server | Exposes ten typed tools over local stdio and enforces the runtime write gates |
+| MCP server | Exposes twelve typed tools over local stdio and enforces the runtime write gates |
 | Agent Skill | Teaches Codex, Claude Code, and OpenClaw when to inspect, compile, confirm, apply, restore, and report incomplete evidence |
 
 ### What the Govee API key unlocks
@@ -64,6 +64,8 @@ keys for the same account, so update every service that uses the old key.
 | `govee_lan_scan` | Discovers Govee devices on the local network, keyless, and reports per-LED support | Read-only |
 | `govee_lan_paint` | Paints a gradient or solid LightScore over the LAN, per-LED on verified fixtures | Write-gated |
 | `govee_lan_release` | Ends a per-LED hold early, returning the device to its own effects | Write-gated |
+| `govee_ble_scan` | Discovers Govee peripherals over Bluetooth LE — keyless and Wi-Fi-free | Read-only |
+| `govee_ble_set` | One-shot power/colour/brightness over BLE with a declared restore point | Write-gated |
 
 Inspect the MCP metadata without starting a connection:
 
@@ -283,7 +285,7 @@ pixels despite Govee's own database saying `supportRazer: 0`). See
 | --- | --- | --- |
 | Cloud Platform API | Supported, needs a [Govee Developer key](https://developer.govee.com/) | Device/scene inspection, capability-aware compile, apply, restore — one-shot and rate-limited |
 | LAN (`colorwc` + `razer`) | Supported, **keyless** | Whole-device color and per-LED painting on profiled fixtures; 260 of the 371 portfolio SKUs advertise LAN support |
-| Bluetooth LE | **Not supported** — [#2](https://github.com/andyed/suffuse/issues/2) | — |
+| Bluetooth LE | Supported, **keyless**, one-shot | Power, colour, brightness on BLE-reachable lamps — the only local path to the H6009 class; needs the optional `@stoprocent/noble` dependency |
 
 **Where the effort goes.** Suffuse's centre of gravity is the keyless LAN
 path — per-LED `razer` painting against hardware-verified profiles — and the
@@ -295,33 +297,55 @@ least-exercised surface here; if something drifts, it will drift there first
 ([#3](https://github.com/andyed/suffuse/issues/3) tracks verifying it
 end-to-end against live devices — reports welcome).
 
-The BLE gap is real and worth being precise about. Some SKUs are BLE-only
-(six are flagged that way in the mined portfolio), and a larger class — the
-H6009 bulb is the reference example — is cloud-listed but has no LAN Control
-at all, so Suffuse can reach them only through the cloud API: with a key, at
-cloud latency, one shot at a time. There is no keyless or live path to that
-hardware here today. A native BLE transport is the highest-priority missing
-capability ([#2](https://github.com/andyed/suffuse/issues/2)).
+## BLE control — keyless, Wi-Fi-free, one-shot
 
-What Suffuse does have is the protocol homework, hardware-verified and
-recorded in [references/ble.md](references/ble.md) — GATT identifiers, the
-RGBWW `0x0D` colour opcode (the widely documented `0x02` is accepted and
-visibly inert), the keep-alive/serialization/settle contract, the no-readback
-restore rule, and the macOS code-signing trap — so a future adapter starts
-from measurements, not blog posts.
+Some SKUs are BLE-only (six are flagged that way in the mined portfolio), and
+a larger class — the H6009 bulb is the reference example — is cloud-listed but
+has no LAN Control at all. BLE is the only keyless path to that hardware, and
+it needs no Wi-Fi, no multicast, no /24 sweep. The transport implements the
+hardware-measured contract in [references/ble.md](references/ble.md): full
+service discovery with a connect settle, the RGBWW `0x0D` colour opcode (the
+widely documented `0x02` is accepted and visibly inert), a one-second settle
+after power-on (the lamp's controller boots and silently drops whatever
+arrives meanwhile), and a write drain before disconnect (tearing the link down
+immediately destroys the queued packet — measured).
 
-Until then, if you need BLE control now, use a project that ships it:
+```bash
+node scripts/govee.mjs ble scan
+node scripts/govee.mjs ble set --name H6009 --color '#ffb46e' --brightness 35 \
+  --confirm-write --receipt /private/receipts/lamp.json
+```
 
-- [homebridge-govee](https://github.com/homebridge-plugins/homebridge-govee) —
-  actively maintained; BLE control alongside cloud and LAN, inside Homebridge.
-- [chvolkmann/govee_btled](https://github.com/chvolkmann/govee_btled) —
-  working Python BLE bulb control, the closest analogue to a standalone
-  transport.
-- [egold555/Govee-Reverse-Engineering](https://github.com/egold555/Govee-Reverse-Engineering) —
-  per-model BLE opcode research, if you are building your own.
-- [wez/govee2mqtt](https://github.com/wez/govee2mqtt) — not direct BLE, but
-  its `ptReal` BLE-over-LAN tunnel reaches some BLE frames through the LAN
-  socket.
+The boundaries, each a hardware fact rather than a policy choice:
+
+- **One-shot only, on purpose.** A BLE lamp accepts one central at a time; a
+  held connection locks the owner's own Govee Home app out, and a connected
+  peripheral stops advertising. Suffuse borrows the lamp for the seconds a
+  write takes and hands it back. There are no BLE holds.
+- **No state readback exists.** The notify characteristic rejects reads on
+  real hardware, so prior state cannot be captured. The receipt records a
+  *declared* restore point (warm white) and says so honestly; `restore`
+  returns the lamp to that declared neutral, not to its previous look.
+- **Writes are unacknowledged.** Results report what was sent
+  (`verified: false`), never that the lamp obeyed — same honesty rule as the
+  per-LED LAN channel.
+- **The dependency is optional.** `@stoprocent/noble` is a native module; if
+  it is absent or cannot build, every other Suffuse surface keeps working and
+  the `ble` commands fail with a structured remediation. On macOS, Bluetooth
+  permission belongs to the *responsible process* (usually your terminal app)
+  — an unsigned process touching CoreBluetooth is killed without a prompt, not
+  asked. Dry-runs never touch the radio.
+- **Opcode claims are per-SKU.** The colour opcode is verified on the H6009
+  (RGBWW). Other SKUs are driven with the same frame on a stated assumption;
+  a lamp that powers and dims but ignores colour is the signature of a wrong
+  per-class opcode — file a compatibility report.
+
+Prior art, for BLE control embedded in a larger system or per-model opcode
+research: [homebridge-govee](https://github.com/homebridge-plugins/homebridge-govee),
+[chvolkmann/govee_btled](https://github.com/chvolkmann/govee_btled),
+[egold555/Govee-Reverse-Engineering](https://github.com/egold555/Govee-Reverse-Engineering),
+and [wez/govee2mqtt](https://github.com/wez/govee2mqtt)'s `ptReal`
+BLE-over-LAN tunnel.
 
 ## Optional palette authoring
 
@@ -399,8 +423,6 @@ and accepted correctly chunked requests but did not visibly render independent
 colors. Its advertised `Sunset Glow` scene did render. See
 [device evidence](references/device-evidence.md) for the precise boundary.
 
-Suffuse has no BLE transport — see "What Suffuse reaches" above for the
-precise boundary and for projects that ship BLE control today.
 **Resolved for the LAN path (2026-08-15):** the same fixture renders 15
 independent pixels over the local `razer` channel — verified by a discrete
 chase, every pixel individually lit. The cloud negative stands; the capability
