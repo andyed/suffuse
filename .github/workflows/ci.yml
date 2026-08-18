@@ -38,3 +38,23 @@ jobs:
 
       - name: Audit package contents
         run: npm pack --dry-run
+
+  verify-selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install analyzer dependencies
+        run: pip install numpy pillow
+
+      - name: Analyzer scores known synthetic answers (incl. negative cases)
+        run: python verify/selftest.py
+
+      - name: Driver parses
+        run: node --check verify/drive.mjs

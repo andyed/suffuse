@@ -95,6 +95,11 @@ is **not** verification — interpolating hardware renders a plausible gradient 
 pixel count, which is precisely how wrong counts hide. Community-sourced counts may
 enter as `verified: false` with their provenance named.
 
+The chase test is runnable: `verify/drive.mjs` plays it (with a camera-sync clapper
+and per-fixture calibration) and `verify/analyze.py` scores a phone recording of it
+into PASS / WEAK / FAIL — see [verify/README.md](../verify/README.md). A camera-scored
+chase PASS at the profile's pixel count is the promotion criterion.
+
 **Rule for mined vendor capability flags:** a mined *positive* is trustworthy; a mined
 *negative* is only "unknown," never "absent." The H612B taught this — Govee's own
 product database says `supportRazer: 0` for it, yet the LAN firmware renders 10

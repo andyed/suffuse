@@ -6,3 +6,4 @@ coverage/
 receipts/
 *.receipt.json
 *.private.json
+verify/runs/

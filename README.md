@@ -363,6 +363,15 @@ independent pixels over the local `razer` channel — verified by a discrete
 chase, every pixel individually lit. The cloud negative stands; the capability
 was real and the advertised route to it was not.
 
+Because the per-LED channel is mute, "verified" is a claim only a camera or an
+eye can make — so Suffuse ships the instrument: [verify/](verify/README.md) is
+a camera-in-the-loop harness that drives known patterns (sync clapper,
+per-fixture calibration, split, discrete chase, latency step) and scores a
+phone recording into PASS/WEAK/FAIL. It is how a contributor promotes a
+`RAZER_PROFILES` entry to `verified: true` on hardware the authors have never
+seen, and its analyzer self-tests against synthetic footage — including the
+negative cases — in CI.
+
 ## Development
 
 ```bash

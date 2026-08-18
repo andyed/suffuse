@@ -38,7 +38,8 @@
     "mcp/",
     "references/",
     "scripts/",
-    "tests/fixtures/"
+    "tests/fixtures/",
+    "verify/"
   ],
   "engines": {
     "node": ">=20"
