@@ -100,6 +100,7 @@ colour path on the tested SKUs.
 |---|---|
 | [`egold555/Govee-Reverse-Engineering`](https://github.com/egold555/Govee-Reverse-Engineering) | Per-model BLE opcodes, scene codes |
 | [`chvolkmann/govee_btled`](https://github.com/chvolkmann/govee_btled) | Working BLE bulb control (H6001), Python |
+| [`homebridge-govee`](https://github.com/homebridge-plugins/homebridge-govee) | Actively maintained; ships BLE control alongside cloud and LAN, inside Homebridge |
 | [`wez/govee2mqtt`](https://github.com/wez/govee2mqtt) | `ptReal` and the scene-code pipeline |
 
 Take the protocol research, keep your own implementation — the pacing,

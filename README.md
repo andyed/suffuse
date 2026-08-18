@@ -277,6 +277,52 @@ trustworthy, a mined negative is only "unknown" (the H612B renders 10 discrete
 pixels despite Govee's own database saying `supportRazer: 0`). See
 [references/device-portfolio.md](references/device-portfolio.md).
 
+## What Suffuse reaches — and what it does not
+
+| Wire | Status | What it gives you |
+| --- | --- | --- |
+| Cloud Platform API | Supported, needs a [Govee Developer key](https://developer.govee.com/) | Device/scene inspection, capability-aware compile, apply, restore — one-shot and rate-limited |
+| LAN (`colorwc` + `razer`) | Supported, **keyless** | Whole-device color and per-LED painting on profiled fixtures; 260 of the 371 portfolio SKUs advertise LAN support |
+| Bluetooth LE | **Not supported** — [#2](https://github.com/andyed/suffuse/issues/2) | — |
+
+**Where the effort goes.** Suffuse's centre of gravity is the keyless LAN
+path — per-LED `razer` painting against hardware-verified profiles — and the
+perceptual colour pipeline that decides what those pixels show: OKLCH recipes,
+conserved lightness, capability-aware compilation. That combination is what
+the authors run daily against a real room, and it is where this project is
+genuinely ahead. The cloud path works and is gated identically, but it is the
+least-exercised surface here; if something drifts, it will drift there first
+([#3](https://github.com/andyed/suffuse/issues/3) tracks verifying it
+end-to-end against live devices — reports welcome).
+
+The BLE gap is real and worth being precise about. Some SKUs are BLE-only
+(six are flagged that way in the mined portfolio), and a larger class — the
+H6009 bulb is the reference example — is cloud-listed but has no LAN Control
+at all, so Suffuse can reach them only through the cloud API: with a key, at
+cloud latency, one shot at a time. There is no keyless or live path to that
+hardware here today. A native BLE transport is the highest-priority missing
+capability ([#2](https://github.com/andyed/suffuse/issues/2)).
+
+What Suffuse does have is the protocol homework, hardware-verified and
+recorded in [references/ble.md](references/ble.md) — GATT identifiers, the
+RGBWW `0x0D` colour opcode (the widely documented `0x02` is accepted and
+visibly inert), the keep-alive/serialization/settle contract, the no-readback
+restore rule, and the macOS code-signing trap — so a future adapter starts
+from measurements, not blog posts.
+
+Until then, if you need BLE control now, use a project that ships it:
+
+- [homebridge-govee](https://github.com/homebridge-plugins/homebridge-govee) —
+  actively maintained; BLE control alongside cloud and LAN, inside Homebridge.
+- [chvolkmann/govee_btled](https://github.com/chvolkmann/govee_btled) —
+  working Python BLE bulb control, the closest analogue to a standalone
+  transport.
+- [egold555/Govee-Reverse-Engineering](https://github.com/egold555/Govee-Reverse-Engineering) —
+  per-model BLE opcode research, if you are building your own.
+- [wez/govee2mqtt](https://github.com/wez/govee2mqtt) — not direct BLE, but
+  its `ptReal` BLE-over-LAN tunnel reaches some BLE frames through the LAN
+  socket.
+
 ## Optional palette authoring
 
 Suffuse can resolve named palettes, preserve exact authored 3-5-band colors, or
@@ -353,11 +399,8 @@ and accepted correctly chunked requests but did not visibly render independent
 colors. Its advertised `Sunset Glow` scene did render. See
 [device evidence](references/device-evidence.md) for the precise boundary.
 
-Suffuse has no BLE transport, but the Bluetooth protocol knowledge a future
-adapter must honor — GATT identifiers, the RGBWW `0x0D` colour opcode (the
-widely documented `0x02` is accepted and inert), the keep-alive/serialization/
-settle contract, and the macOS code-signing trap — is hardware-verified and
-recorded in [references/ble.md](references/ble.md).
+Suffuse has no BLE transport — see "What Suffuse reaches" above for the
+precise boundary and for projects that ship BLE control today.
 **Resolved for the LAN path (2026-08-15):** the same fixture renders 15
 independent pixels over the local `razer` channel — verified by a discrete
 chase, every pixel individually lit. The cloud negative stands; the capability
