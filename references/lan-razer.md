@@ -83,7 +83,8 @@ probes exactly this with an 86-LED frame at every load.
 | Mode byte: `0x01` spatial array, `0x00` first-triple solid | Hardware sweep of both values on H608B + H6047 | Verified; OpenRGB names it `gradient_off`, which is misleading |
 | Whole-device `colorwc` flattens a live per-LED look (last writer wins) | Hardware, both orderings | Verified — basis of the hold contention lock |
 | ~60 s dead-man without LED data, device reverts to own effects | OpenRGB write-up; consistent with our observations | Corroborated |
-| H6047 has 8 interpolating zones | Working guess — renders plausible gradients at 8; true zone count unknown | **Unverified** |
+| H6047 has 20 slots — 0-9 up the left bar, 10-19 up the right; firmware remaps shorter packets unpredictably, so always stream all 20 | SignalRGB community zone-probe, mined 2026-08-16. Explains the earlier "8 interpolating zones" reading: short packets get remapped, which renders as interpolation | Corroborated; **unverified** by discrete chase |
+| H612B renders 10 discrete pixels despite Govee's own product DB saying `supportRazer: 0` | Hardware: field-verified 2026-08-16 — a wrong count renders nothing, so a rendering 10 IS the count | Verified |
 | Matrix devices (curtains, nets) have partial/first-N-pixel coverage | LedFx docs (H6811: first 224 pixels) | Reported, not reproduced here |
 
 ## What updating this page requires
@@ -91,4 +92,13 @@ probes exactly this with an 86-LED frame at every load.
 New SKU claims enter `RAZER_PROFILES` only through the discrete-chase test: one lit
 pixel walked across the fixture, every position visually counted. A rendered gradient
 is **not** verification — interpolating hardware renders a plausible gradient at any
-pixel count, which is precisely how wrong counts hide.
+pixel count, which is precisely how wrong counts hide. Community-sourced counts may
+enter as `verified: false` with their provenance named.
+
+**Rule for mined vendor capability flags:** a mined *positive* is trustworthy; a mined
+*negative* is only "unknown," never "absent." The H612B taught this — Govee's own
+product database says `supportRazer: 0` for it, yet the LAN firmware renders 10
+discrete pixels; the flag describes what the Desktop/Chroma app offers, not what the
+firmware accepts. The same family disagrees in the other direction too: the H608B
+advertises cloud `segmentedColorRgb` that never visibly renders while razer works.
+Capability surfaces are claims about *an app's* support, and only hardware settles them.

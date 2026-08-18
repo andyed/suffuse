@@ -55,12 +55,25 @@ export const HOLD_MAX_SECONDS = 4 * 60 * 60;
 // ── Per-SKU spatial profiles ─────────────────────────────────────────────────
 // A SKU absent here is not per-LED addressable as far as Suffuse is concerned.
 // `verified` means the pixel count was confirmed against physical hardware by
-// a discrete chase (every pixel individually lit and counted); an unverified
-// profile compiles with a warning and only because interpolating fixtures
-// render any hue-adjacent stop list as a plausible gradient.
+// a discrete chase (every pixel individually lit and counted). An unverified
+// profile compiles with a warning: its count is community-sourced, and on this
+// mute channel a wrong count is silently ignored — only eyes can promote it.
+// Rule for mined capability flags (learned on the H612B): a mined POSITIVE is
+// trustworthy, a mined NEGATIVE is only "unknown" — vendor flags describe app
+// support, not what the LAN firmware accepts.
 export const RAZER_PROFILES = Object.freeze({
   H608B: Object.freeze({ pixels: 15, blend: 'discrete', verified: true }),
-  H6047: Object.freeze({ pixels: 8, blend: 'interpolating', verified: false })
+  // Community zone-probe (SignalRGB), 2026-08-16: 20 slots — 0-9 up the left bar,
+  // 10-19 up the right — and the firmware remaps SHORTER packets unpredictably,
+  // so always stream all 20. The earlier 8-zone "interpolating" reading described
+  // short-packet behavior, not the addressing model. Unverified pending a
+  // discrete chase by eye.
+  H6047: Object.freeze({ pixels: 20, blend: 'discrete', verified: false }),
+  // Field-verified 2026-08-16: individual lights render at count=10 (a wrong
+  // count renders nothing, so a rendering 10 IS the count). Govee's own product
+  // DB says supportRazer: 0 for this SKU — that flag describes Desktop/Chroma
+  // app support, not the LAN firmware. Read a mined 0 as unknown, never absent.
+  H612B: Object.freeze({ pixels: 10, blend: 'discrete', verified: true })
 });
 
 export function razerProfile(sku) {
