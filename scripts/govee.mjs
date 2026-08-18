@@ -527,27 +527,18 @@ async function lanPaint(args, lan) {
   });
 
   // Keyless pre-write capture: devStatus answers over LAN (the razer channel does
-  // not, but we are reading the documented state BEFORE painting over it).
+  // not, but we are reading the documented state BEFORE painting over it). The
+  // capture→restore mapping (CCT-mode trap included) lives in lanRestoreOperations.
   const captured = await lan.lanDevStatus(ip);
-  const restoreOperations = [];
-  if (captured) {
-    restoreOperations.push({ transport: 'lan', action: 'razer-disable', ip });
-    if (captured.color) {
-      restoreOperations.push({
-        transport: 'lan',
-        action: 'colorwc',
-        ip,
-        color: `#${[captured.color.r, captured.color.g, captured.color.b].map(v => Number(v ?? 0).toString(16).padStart(2, '0')).join('')}`,
-        brightness: Number.isFinite(captured.brightness) ? captured.brightness : null
-      });
-    }
-  }
+  const restoreOperations = captured ? lan.lanRestoreOperations(ip, captured) : [];
   const restoreCoverage = {
     mode: 'capture',
     complete: restoreOperations.length > 1,
-    warning: captured
-      ? 'devStatus reflects the whole-device state only; any prior per-LED look is not queryable and cannot be restored.'
-      : 'devStatus did not answer before the write; restoration will fall back to releasing the device to its own effects.'
+    warning: !captured
+      ? 'devStatus did not answer before the write; restoration will fall back to releasing the device to its own effects.'
+      : restoreOperations.length > 1
+        ? 'devStatus reflects the whole-device state only; any prior per-LED look is not queryable and cannot be restored.'
+        : 'The device reported black RGB with no colour temperature; its prior colour is unknown and will not be replayed.'
   };
 
   if (mode === 'lan-per-led') {
@@ -752,7 +743,10 @@ async function restoreLan(receipt, lan) {
       await lan.releaseHold(operation.ip);
       outcomes.push({ action: 'razer-disable', ip: operation.ip, sent: true });
     } else if (operation.action === 'colorwc') {
-      await lan.lanSetColor(operation.ip, operation.color, { brightness: operation.brightness });
+      await lan.lanSetColor(operation.ip, operation.color ?? null, {
+        brightness: operation.brightness,
+        colorTemInKelvin: operation.colorTemInKelvin ?? 0
+      });
       outcomes.push({ action: 'colorwc', ip: operation.ip, sent: true });
     } else {
       throw new GoveeSkillError(`Unknown LAN restore action: ${operation.action}`, 'invalid-receipt');

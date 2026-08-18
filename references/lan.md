@@ -42,6 +42,29 @@ false "restore failed" diagnosis before it was understood. To read real
 state: stop sending, wait out the drain (~6 s), then poll. State capture is
 therefore slow by construction and must never run inside a send loop.
 
+## `devStatus` replies carry no device identity — filter by sender address
+
+All devices answer to the one shared reply port (:4002), and the devStatus
+payload names no device. Found by a cold-room agent run (2026-08-18):
+sequential polls of two fixtures cross-attributed replies, which matters
+beyond diagnostics because the pre-write capture uses this read — a receipt
+could record the WRONG device's state as its restore point. `lanDevStatus`
+now drops any reply whose `rinfo.address` is not the polled device. The
+sender address is the only identity this channel has.
+
+## White-temperature mode reports RGB as black — never replay it
+
+A device in CCT mode (the H608B at 3600 K in the same cold-room run) reports
+`color: {0,0,0}` alongside `colorTemInKelvin`. A restore that replays the
+captured RGB verbatim sends the lamp to BLACK. `lanRestoreOperations` prefers
+Kelvin when present and treats black-RGB-with-no-Kelvin as unknown rather
+than replayable state. Related observation from the same run, unconfirmed
+mechanism: LAN `brightness` visibly landed on the H612B but H6047/H608B kept
+reporting their prior value across multiple distinct requests — either those
+SKUs ignore the LAN brightness command in CCT mode or devStatus reports a
+different channel; the mute-channel rule applies (only eyes can promote
+either reading to fact).
+
 ## Multicast discovery is intermittent — per device
 
 The documented multicast scan to `239.255.255.250:4001` returned nothing on

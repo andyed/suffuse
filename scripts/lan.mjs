@@ -292,7 +292,14 @@ export async function lanDevStatus(ip, { timeoutMs = 3000 } = {}) {
   const socket = await openReplySocket();
   const state = await new Promise(resolve => {
     const timer = setTimeout(() => resolve(null), timeoutMs);
-    socket.on('message', buffer => {
+    socket.on('message', (buffer, rinfo) => {
+      // :4002 is one shared reply port for EVERY device on the LAN, and a lamp
+      // answering a stale or third-party poll is indistinguishable by payload
+      // (devStatus carries no device id). Found by a cold-room agent 2026-08-18:
+      // sequential polls cross-attributed replies between fixtures, and because
+      // lan paint uses this capture, a receipt could record the WRONG device's
+      // state as its restore point. The sender address is the only identity.
+      if (rinfo.address !== ip) return;
       try {
         const parsed = JSON.parse(buffer.toString('utf8').replace(/\0+$/, ''));
         if (parsed?.msg?.cmd === 'devStatus') {
@@ -309,16 +316,20 @@ export async function lanDevStatus(ip, { timeoutMs = 3000 } = {}) {
 
 // ── Writes ──────────────────────────────────────────────────────────────────
 
-export async function lanSetColor(ip, color, { brightness = null } = {}) {
+export async function lanSetColor(ip, color, { brightness = null, colorTemInKelvin = 0 } = {}) {
   await refuseIfHeld(ip);
   const socket = await openSendSocket();
-  const value = rgbInteger(color);
+  // CCT mode: colorwc with a Kelvin value and zeroed RGB selects white-temperature
+  // mode — the same wire shape the device itself reports from devStatus. A caller
+  // passing kelvin > 0 may pass color null.
+  const kelvin = Number.isFinite(colorTemInKelvin) && colorTemInKelvin > 0 ? Math.round(colorTemInKelvin) : 0;
+  const value = kelvin > 0 && color == null ? 0 : rgbInteger(color);
   sendJson(socket, ip, CMD_PORT, {
     msg: {
       cmd: 'colorwc',
       data: {
         color: { r: (value >> 16) & 0xff, g: (value >> 8) & 0xff, b: value & 0xff },
-        colorTemInKelvin: 0
+        colorTemInKelvin: kelvin
       }
     }
   });
@@ -328,6 +339,36 @@ export async function lanSetColor(ip, color, { brightness = null } = {}) {
   }
   await sleep(100);
   socket.close();
+}
+
+/**
+ * Map a devStatus capture to restore operations. Pure, because the mapping has
+ * a trap a cold-room agent walked into on 2026-08-18: a device in WHITE-
+ * TEMPERATURE mode reports its RGB as {0,0,0}, so naively restoring "the
+ * captured colour" sends the lamp to BLACK instead of back to its Kelvin
+ * white. Kelvin wins when present; an all-zero RGB with no Kelvin is treated
+ * as unknown rather than replayed as black.
+ */
+export function lanRestoreOperations(ip, captured) {
+  const operations = [{ transport: 'lan', action: 'razer-disable', ip }];
+  if (!captured) return operations;
+  const brightness = Number.isFinite(captured.brightness) ? captured.brightness : null;
+  const kelvin = Number(captured.colorTemInKelvin);
+  const rgb = captured.color;
+  if (Number.isFinite(kelvin) && kelvin > 0) {
+    operations.push({ transport: 'lan', action: 'colorwc', ip, color: null, colorTemInKelvin: kelvin, brightness });
+  } else if (rgb && ((rgb.r | 0) || (rgb.g | 0) || (rgb.b | 0))) {
+    operations.push({
+      transport: 'lan',
+      action: 'colorwc',
+      ip,
+      color: `#${[rgb.r, rgb.g, rgb.b].map(v => Number(v ?? 0).toString(16).padStart(2, '0')).join('')}`,
+      brightness
+    });
+  }
+  // else: colour state unknown (black RGB, no Kelvin) — no colour op is honest;
+  // the caller's coverage warning carries the gap.
+  return operations;
 }
 
 export async function lanPaintPixels(ip, colors) {

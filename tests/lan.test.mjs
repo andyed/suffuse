@@ -14,6 +14,7 @@ import {
   encodeRazerFrame,
   HOLD_DEFAULT_SECONDS,
   HOLD_MAX_SECONDS,
+  lanRestoreOperations,
   razerProfile,
   RAZER_PROFILES
 } from '../scripts/lan.mjs';
@@ -115,4 +116,35 @@ test('holds are bounded by construction', () => {
   assert.equal(clampHoldSeconds(-5), 0);
   assert.equal(clampHoldSeconds(HOLD_MAX_SECONDS + 1), HOLD_MAX_SECONDS);
   assert.equal(clampHoldSeconds(60), 60);
+});
+
+// ── Restore mapping (cold-room findings, 2026-08-18) ────────────────────────
+// A cold agent's reading-light run surfaced both cases below against real
+// hardware: the H608B in CCT mode reported RGB {0,0,0} + colorTemInKelvin 3600,
+// and the naive mapping would have restored it to BLACK.
+
+test('restore replays Kelvin, not the black RGB a CCT-mode device reports', () => {
+  const ops = lanRestoreOperations('192.168.1.34', {
+    onOff: 1, brightness: 67, color: { r: 0, g: 0, b: 0 }, colorTemInKelvin: 3600
+  });
+  assert.equal(ops.length, 2);
+  assert.equal(ops[1].colorTemInKelvin, 3600);
+  assert.equal(ops[1].color, null);
+  assert.equal(ops[1].brightness, 67);
+});
+
+test('restore treats black RGB with no Kelvin as unknown, never replays black', () => {
+  const ops = lanRestoreOperations('192.168.1.34', {
+    onOff: 1, brightness: 44, color: { r: 0, g: 0, b: 0 }, colorTemInKelvin: 0
+  });
+  assert.equal(ops.length, 1);
+  assert.equal(ops[0].action, 'razer-disable');
+});
+
+test('restore replays a genuine RGB capture as hex with brightness', () => {
+  const ops = lanRestoreOperations('192.168.1.90', {
+    onOff: 1, brightness: 44, color: { r: 255, g: 255, b: 0 }, colorTemInKelvin: 0
+  });
+  assert.equal(ops[1].color, '#ffff00');
+  assert.equal(ops[1].brightness, 44);
 });
