@@ -266,6 +266,14 @@ about it are tagged by evidence class in
 hardware, what is corroborated by independent implementations (OpenRGB, LedFx),
 and what remains a working guess.
 
+For SKUs Suffuse has never touched, `node scripts/portfolio.mjs <SKU>` queries
+a mined portfolio of 371 SKUs — community priors harvested from four
+open-source integrations with per-fact provenance, anchored against this
+project's hardware measurements. One rule governs it: a mined positive is
+trustworthy, a mined negative is only "unknown" (the H612B renders 10 discrete
+pixels despite Govee's own database saying `supportRazer: 0`). See
+[references/device-portfolio.md](references/device-portfolio.md).
+
 ## Optional palette authoring
 
 Suffuse can resolve named palettes, preserve exact authored 3-5-band colors, or

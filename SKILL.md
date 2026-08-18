@@ -110,6 +110,7 @@ The `lan` commands reach devices on the local network without an API key, includ
 5. Never mix writers. While a hold is active, whole-device color writes to that fixture are refused — a whole-device command repaints every pixel and flattens the per-LED look. Release before switching modes.
 6. Restoration is whole-device only. `devStatus` is captured before the write and replayed by `restore`; a prior per-LED look is not queryable on any channel, and the receipt must say that rather than overclaim.
 7. If the reply port (UDP 4002) is held by another local controller, scanning and state capture fail loudly. Do not work around it with port sharing — two listeners silently steal each other's replies. Tell the user which process to quit, or pin the device with `--ip`.
+8. For an unfamiliar SKU, consult the mined portfolio first (`node scripts/portfolio.mjs <SKU>`) — 371 SKUs of community priors with per-fact provenance. Read it under one rule: a mined positive is trustworthy, a mined negative is only "unknown" — vendor flags describe app support, not what the firmware accepts. Never tell the user their device "doesn't support" per-LED on the strength of a mined flag or absence from the portfolio.
 
 ## Handle unavailable credentials
 

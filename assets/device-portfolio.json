@@ -1,0 +1,5306 @@
+{
+ "minedAt": "2026-08-17T04:26:35.284Z",
+ "sources": {
+  "goveeProducts": "signalrgb-govee-direct-connect@b6bdd85",
+  "signalrgb": "SignalRGB-Govee-Network-Plugin@8b4e36d",
+  "localApi": "govee-local-api@218ab6b",
+  "govee2mqtt": "govee2mqtt@6f5a844"
+ },
+ "validation": "H608B: signalrgb ledCount 15 + govee supportRazer:1 + lanApi segments 15 all match hardware (15 discrete @40Hz)",
+ "devices": {
+  "H1232": {
+   "sku": "H1232",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H1250": {
+   "sku": "H1250",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H1270": {
+   "sku": "H1270",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H1310": {
+   "sku": "H1310",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H1401": {
+   "sku": "H1401",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H14A1": {
+   "sku": "H14A1",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H14C0": {
+   "sku": "H14C0",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H14C1": {
+   "sku": "H14C1",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H1630": {
+   "sku": "H1630",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H16B0": {
+   "sku": "H16B0",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H16C0": {
+   "sku": "H16C0",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H1A43": {
+   "sku": "H1A43",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H1A45": {
+   "sku": "H1A45",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H2A40": {
+   "sku": "H2A40",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H2A41": {
+   "sku": "H2A41",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H3200": {
+   "sku": "H3200",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H3500": {
+   "sku": "H3500",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H3501": {
+   "sku": "H3501",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H3510": {
+   "sku": "H3510",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H3511": {
+   "sku": "H3511",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H3751": {
+   "sku": "H3751",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H5051": {
+   "sku": "H5051",
+   "productName": "Wi-Fi Thermo-Hygrometer",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "quirks": {
+    "kind": "thermometer",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H5071": {
+   "sku": "H5071",
+   "productName": "Wi-Fi Thermo-Hygrometer Pro",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H5080": {
+   "sku": "H5080",
+   "productName": "Smart Plug",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H5083": {
+   "sku": "H5083",
+   "productName": "Circular Smart Plug",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H5085": {
+   "sku": "H5085",
+   "productName": "Smart Plug Pro",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H5086": {
+   "sku": "H5086",
+   "productName": "Smart Plug Pro （Energy Monitoring）",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H5100": {
+   "sku": "H5100",
+   "quirks": {
+    "kind": "thermometer",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H5103": {
+   "sku": "H5103",
+   "productName": "Wi-Fi Thermo-Hygrometer",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "quirks": {
+    "kind": "thermometer",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H5106": {
+   "sku": "H5106",
+   "productName": "Smart AIr Quality Monitor",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H5179": {
+   "sku": "H5179",
+   "productName": "Wi-Fi Thermo-Hygrometer",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "quirks": {
+    "kind": "thermometer",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6002": {
+   "sku": "H6002",
+   "productName": "Wi-Fi+BLE LED Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6003": {
+   "sku": "H6003",
+   "productName": "Wi-Fi RGBWW LED Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "quirks": {
+    "kind": "light",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6004": {
+   "sku": "H6004",
+   "productName": "Wi-Fi+BLE RGBWW LED Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6006": {
+   "sku": "H6006",
+   "productName": "Wi-Fi+BLE RGBWW LED Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6008": {
+   "sku": "H6008",
+   "productName": "Wi-Fi+BLE RGBWW LED Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Wi-Fi + Bluetooth Smart LED Bulb (A19)",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6009": {
+   "sku": "H6009",
+   "productName": "Wi-Fi+BLE RGBWW LED Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "ourHardware": {
+    "ble": {
+     "colorOpcode": "0x33 0x05 0x0D (RGBWW — NOT the published 0x02)",
+     "verified": "2026-08-09"
+    }
+   }
+  },
+  "H600A": {
+   "sku": "H600A",
+   "productName": "Wi-Fi+BLE RGBWW LED Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H600B": {
+   "sku": "H600B",
+   "productName": "Govee Smart Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H600C": {
+   "sku": "H600C",
+   "productName": "Govee Smart Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H600D": {
+   "sku": "H600D",
+   "productName": "Wi-Fi+BLE RGBWW LED Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6010": {
+   "sku": "H6010",
+   "productName": "Wi-Fi+BLE RGBWW LED Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6011": {
+   "sku": "H6011",
+   "productName": "Wi-Fi+BLE RGBWW LED Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6013": {
+   "sku": "H6013",
+   "productName": "Govee Smart Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H601A": {
+   "sku": "H601A",
+   "productName": "6inch Smart RGBWW LED Downlight",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H601B": {
+   "sku": "H601B",
+   "productName": "4inch Smart RGBWW LED Downlight",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H601C": {
+   "sku": "H601C",
+   "productName": "6inch Recessed Downlight（Can Light）",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H601D": {
+   "sku": "H601D",
+   "productName": "4inch Recessed Downlight（Can Light）",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H601E": {
+   "sku": "H601E",
+   "productName": "Govee Recessed Downlight 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H601F": {
+   "sku": "H601F",
+   "productName": "Govee Recessed Downlight 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6020": {
+   "sku": "H6020",
+   "productName": "Govee Table Lamp 2 Pro x Sound by JBL",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H6022": {
+   "sku": "H6022",
+   "productName": "Govee Table Lamp 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6038": {
+   "sku": "H6038",
+   "productName": "Govee Wall Sconce",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6039": {
+   "sku": "H6039",
+   "productName": "Govee Wall Sconce",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 12,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H6042": {
+   "sku": "H6042",
+   "productName": "Govee TV Light Bar 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 5,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H6043": {
+   "sku": "H6043",
+   "productName": "Govee TV Light Bars 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H6046": {
+   "sku": "H6046",
+   "productName": "RGBIC TV Light Bars",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "RGBIC TV Light Bars",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 0,
+    "subdevices": [
+     {
+      "name": "RGBIC TV Light Bars",
+      "ledCount": 10
+     },
+     {
+      "name": "RGBIC TV Light Bars",
+      "ledCount": 10
+     }
+    ],
+    "totalLeds": 20
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6047": {
+   "sku": "H6047",
+   "productName": "RGBIC Gaming Light Bars",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "RGBIC Gaming Light Bars",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 0,
+    "subdevices": [
+     {
+      "name": "Left Light Bar",
+      "ledCount": 10
+     },
+     {
+      "name": "Right Light Bar",
+      "ledCount": 10
+     }
+    ],
+    "totalLeds": 20
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   },
+   "ourHardware": {
+    "razer": {
+     "note": "12-stop chase read as one colour animating (2026-08-15) — consistent with signalrgb \"shorter packets remap unpredictably, always stream 20\""
+    }
+   }
+  },
+  "H6048": {
+   "sku": "H6048",
+   "productName": "Govee RGBIC Gaming Light Bars Pro",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "RGBIC TV Light Bars Pro",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 0,
+    "subdevices": [
+     {
+      "name": "RGBIC TV Light Bars Pro",
+      "ledCount": 10
+     },
+     {
+      "name": "RGBIC TV Light Bars Pro",
+      "ledCount": 10
+     }
+    ],
+    "totalLeds": 20
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 24,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H6049": {
+   "sku": "H6049",
+   "productName": "Govee DreamView P1S Light Bars",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H604A": {
+   "sku": "H604A",
+   "productName": "Govee DreamView G1 Pro Gaming Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H604B": {
+   "sku": "H604B",
+   "productName": "Govee DreamView G1 Gaming Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H604C": {
+   "sku": "H604C",
+   "productName": "Govee DreamView G1S Pro Gaming Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H604D": {
+   "sku": "H604D",
+   "productName": "Govee DreamView G1S Gaming Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6050": {
+   "sku": "H6050",
+   "productName": "Govee RGB Table lamp",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6051": {
+   "sku": "H6051",
+   "productName": "Table Lamp Lite",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Table Lamp Lite",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6052": {
+   "sku": "H6052",
+   "productName": "RGBICWW Table Lamp",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "RGBICWW Table Lamp",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6053": {
+   "sku": "H6053",
+   "quirks": {
+    "kind": "light",
+    "lanApiCapable": false,
+    "bleOnly": true,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6054": {
+   "sku": "H6054",
+   "productName": "Govee DreamView P1 Light Bars",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6056": {
+   "sku": "H6056",
+   "productName": "Flow Plus Light Bar",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Flow Plus Light Bar",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 0,
+    "subdevices": [
+     {
+      "name": "Flow Plus Light Bar",
+      "ledCount": 3
+     },
+     {
+      "name": "Flow Plus Light Bar",
+      "ledCount": 3
+     }
+    ],
+    "totalLeds": 6
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6057": {
+   "sku": "H6057",
+   "productName": "Govee Night Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6058": {
+   "sku": "H6058",
+   "productName": "Govee Portable Table Lamp",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6059": {
+   "sku": "H6059",
+   "productName": "RGB Night Light Mini",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "RGB Night Light Mini",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H605A": {
+   "sku": "H605A",
+   "productName": "Govee TV Backlight 3 Lite Kit",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H605B": {
+   "sku": "H605B",
+   "productName": "Govee DreamView T1 Pro TV Backlight",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H605C": {
+   "sku": "H605C",
+   "productName": "Govee RGBIC TV Backlight T2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H605D": {
+   "sku": "H605D",
+   "productName": "Govee DreamView T1S Pro TV Backlight",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6061": {
+   "sku": "H6061",
+   "productName": "Glide Hexa Light Panels",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "Unknown",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 30
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6062": {
+   "sku": "H6062",
+   "productName": "Glide Wall Light",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Glide Wall Light",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 29,
+    "hasVariableLedCount": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6063": {
+   "sku": "H6063",
+   "productName": "Govee Gaming Wall Light",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": false
+   }
+  },
+  "H6065": {
+   "sku": "H6065",
+   "productName": "Glide Y Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "Glide Y Lights",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6066": {
+   "sku": "H6066",
+   "productName": "Glide Hexa Pro Light Panels",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "Glide Hexa Pro Light Panels",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6067": {
+   "sku": "H6067",
+   "productName": "Glide Tri Light Panels",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "Glide Tri Light Panels",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6069": {
+   "sku": "H6069",
+   "productName": "Govee Mini Panel Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 20,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H606A": {
+   "sku": "H606A",
+   "productName": "Govee Glide Hexa Light Panel Ultra",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "Hex Glide Ultra",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 10,
+    "hasVariableLedCount": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6071": {
+   "sku": "H6071",
+   "productName": "Smart LED floor lamp",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6072": {
+   "sku": "H6072",
+   "productName": "RGBICWW Floor Lamp",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "RGBICWW Floor Lamp",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 8
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 8,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6073": {
+   "sku": "H6073",
+   "productName": "Smart RGB Floor Lamp",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Smart RGB Floor Lamp",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6075": {
+   "sku": "H6075",
+   "productName": "Smart LED floor lamp",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6076": {
+   "sku": "H6076",
+   "productName": "RGBICW Floor Lamp Basic",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "RGBICW Floor Lamp Basic",
+    "supportRazer": false,
+    "supportDreamView": true,
+    "ledCount": 68
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 7,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6078": {
+   "sku": "H6078",
+   "productName": "Govee RGBICWW Floor Lamp",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6079": {
+   "sku": "H6079",
+   "productName": "Govee RGBICWW Floor Lamp",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H607C": {
+   "sku": "H607C",
+   "productName": "Govee RGBICWW Floor Lamp 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "RGBICWW Floor Lamp 2",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 13,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H6087": {
+   "sku": "H6087",
+   "productName": "RGBIC Fixture Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "RGBIC Fixture Lights",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 12,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6088": {
+   "sku": "H6088",
+   "productName": "Govee RGBIC Cube Wall Sconces",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "RGBIC Cube Wall Sconces",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 6,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H608A": {
+   "sku": "H608A",
+   "productName": "5m String Downlights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H608B": {
+   "sku": "H608B",
+   "productName": "3m String Downlights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   },
+   "ourHardware": {
+    "razer": {
+     "pixels": 15,
+     "blend": "discrete",
+     "hz": 40,
+     "verified": "2026-08-15"
+    },
+    "colorwcDrainHz": "10-12"
+   }
+  },
+  "H608C": {
+   "sku": "H608C",
+   "productName": "2m String Downlights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H608D": {
+   "sku": "H608D",
+   "productName": "10m String Downlights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6092": {
+   "sku": "H6092",
+   "productName": "Govee Galaxy Light Projector",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6093": {
+   "sku": "H6093",
+   "productName": "Star Light Projector(Aurora)",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": false,
+    "scenes": true
+   }
+  },
+  "H6094": {
+   "sku": "H6094",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6095": {
+   "sku": "H6095",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H6097": {
+   "sku": "H6097",
+   "productName": "Govee TV Backlight 3 Lite",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6098": {
+   "sku": "H6098",
+   "productName": "Govee Smart TV Backlight 3S",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6099": {
+   "sku": "H6099",
+   "productName": "Govee TV Backlight 3 Lite",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H609D": {
+   "sku": "H609D",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H60A0": {
+   "sku": "H60A0",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H60A1": {
+   "sku": "H60A1",
+   "productName": "12inch Ceiling Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Smart Ceiling Light",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 13
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 13,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H60A4": {
+   "sku": "H60A4",
+   "productName": "Govee Square Ceiling Light",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 11,
+    "rgb": true,
+    "scenes": false
+   }
+  },
+  "H60A6": {
+   "sku": "H60A6",
+   "productName": "Govee Ceiling Light Pro",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": false
+   }
+  },
+  "H60B0": {
+   "sku": "H60B0",
+   "productName": "Govee Uplighter Floor Lamp",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H60B1": {
+   "sku": "H60B1",
+   "productName": "Govee Torchiere Floor Lamp",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 3,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H60B2": {
+   "sku": "H60B2",
+   "productName": "Govee Tree Floor Lamp",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 3,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H60C1": {
+   "sku": "H60C1",
+   "lanApi": {
+    "supported": true,
+    "segments": 3,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H6102": {
+   "sku": "H6102",
+   "quirks": {
+    "kind": "light",
+    "lanApiCapable": false,
+    "bleOnly": true,
+    "avoidPlatformApi": false
+   }
+  },
+  "H610A": {
+   "sku": "H610A",
+   "productName": "Glide Lively Wall Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Glide Lively Wall Light",
+    "supportRazer": false,
+    "supportDreamView": true,
+    "ledCount": 24
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H610B": {
+   "sku": "H610B",
+   "productName": "Glide Music Wall Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Glide Music Wall Light",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H610E": {
+   "sku": "H610E",
+   "lanApi": {
+    "supported": true,
+    "segments": 7,
+    "rgb": true,
+    "scenes": false
+   }
+  },
+  "H610F": {
+   "sku": "H610F",
+   "lanApi": {
+    "supported": true,
+    "segments": 7,
+    "rgb": true,
+    "scenes": false
+   }
+  },
+  "H6110": {
+   "sku": "H6110",
+   "productName": "2*5m MultiColor Strip Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "2*5m MultiColor Strip Lights",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6117": {
+   "sku": "H6117",
+   "productName": "2*5m RGBIC Strip Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "2*5m RGBIC Strip Lights",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6119": {
+   "sku": "H6119",
+   "quirks": {
+    "kind": "light",
+    "lanApiCapable": false,
+    "bleOnly": true,
+    "avoidPlatformApi": false
+   }
+  },
+  "H611A": {
+   "sku": "H611A",
+   "productName": "2*10m RGBIC Strip Light with Alexa",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6121": {
+   "sku": "H6121",
+   "productName": "10m RGB Strip Light with Alexa",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "quirks": {
+    "kind": "light",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H612A": {
+   "sku": "H612A",
+   "productName": "5m RGBIC+W Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H612B": {
+   "sku": "H612B",
+   "productName": "7.5m RGBIC+W Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "ourHardware": {
+    "razer": {
+     "pixels": 10,
+     "blend": "discrete",
+     "verified": "2026-08-16 — individual lights rendered at count=10 despite product-DB supportRazer:0; stop test froze instantly (no queue, 30Hz streaming safe)"
+    }
+   }
+  },
+  "H612C": {
+   "sku": "H612C",
+   "productName": "10m RGBIC+W Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": " RGBIC LED Strip Lights With Protective Coating",
+    "supportRazer": false,
+    "supportDreamView": true,
+    "ledCount": 20
+   }
+  },
+  "H612D": {
+   "sku": "H612D",
+   "productName": "2*7.5m RGBIC+W Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H612E": {
+   "sku": "H612E",
+   "productName": "2*10m RGBIC+W Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H612F": {
+   "sku": "H612F",
+   "productName": "3m RGBIC+W Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6141": {
+   "sku": "H6141",
+   "productName": "5m Smart MultiColor  Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "light",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6142": {
+   "sku": "H6142",
+   "productName": "2*5m Smart MultiColor  Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6143": {
+   "sku": "H6143",
+   "productName": "5m RGBIC Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6144": {
+   "sku": "H6144",
+   "productName": "2*5m RGBIC Strip Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H614E": {
+   "sku": "H614E",
+   "productName": "2*15m RGB Strip Light with Alexa",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6154": {
+   "sku": "H6154",
+   "productName": "2*7.5m RGB Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "quirks": {
+    "kind": "light",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6159": {
+   "sku": "H6159",
+   "productName": "5m MultiColor Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H615A": {
+   "sku": "H615A",
+   "productName": "5m RGB Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "5m RGB Strip Light",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H615B": {
+   "sku": "H615B",
+   "productName": "10m RGB Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "10m RGB Strip Light",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H615C": {
+   "sku": "H615C",
+   "productName": "15m RGB Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "15m RGB Strip Light",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H615D": {
+   "sku": "H615D",
+   "productName": "20m RGB Strip Light with Alexa",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "15m RGB Strip Light",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H615E": {
+   "sku": "H615E",
+   "productName": "30m RGB Strip Light with Alexa",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6163": {
+   "sku": "H6163",
+   "productName": "5m RGBIC Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6167": {
+   "sku": "H6167",
+   "productName": "2.4m RGBIC TV Backlight",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "RGBIC TV Light Bars",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 0,
+    "subdevices": [
+     {
+      "name": "RGBIC TV Light Bars",
+      "ledCount": 10
+     },
+     {
+      "name": "RGBIC TV Light Bars",
+      "ledCount": 10
+     }
+    ],
+    "totalLeds": 20
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 12,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H6168": {
+   "sku": "H6168",
+   "productName": "2*0.7m+2*1.2m RGBIC TV Backlight",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6169": {
+   "sku": "H6169",
+   "productName": "4.6m RGBIC TV Backlight",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H616C": {
+   "sku": "H616C",
+   "productName": "10m RGBIC Outdoor Strip Lights 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H616D": {
+   "sku": "H616D",
+   "productName": "2*7.5m RGBIC Outdoor Strip Lights 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H616E": {
+   "sku": "H616E",
+   "productName": "2*10m RGBIC Outdoor Strip Lights 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6172": {
+   "sku": "H6172",
+   "productName": "10m Outdoor RGBIC Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "10m Outdoor RGBIC Strip Light",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6173": {
+   "sku": "H6173",
+   "productName": "2*10m Outdoor RGBIC LED Strip Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6175": {
+   "sku": "H6175",
+   "productName": "10m RGBIC Outdoor Strip Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6176": {
+   "sku": "H6176",
+   "productName": "30m RGBIC Outdoor Strip Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "light",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H617C": {
+   "sku": "H617C",
+   "quirks": {
+    "kind": "light",
+    "lanApiCapable": false,
+    "bleOnly": true,
+    "avoidPlatformApi": false
+   }
+  },
+  "H617E": {
+   "sku": "H617E",
+   "quirks": {
+    "kind": "light",
+    "lanApiCapable": false,
+    "bleOnly": true,
+    "avoidPlatformApi": false
+   }
+  },
+  "H617F": {
+   "sku": "H617F",
+   "quirks": {
+    "kind": "light",
+    "lanApiCapable": false,
+    "bleOnly": true,
+    "avoidPlatformApi": false
+   }
+  },
+  "H6182": {
+   "sku": "H6182",
+   "productName": "Wi-Fi MultiColor  TV  Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H618A": {
+   "sku": "H618A",
+   "productName": "5m RGBIC Basic Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "5m RGBIC Basic Strip Light",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1,
+    "subdevices": [
+     {
+      "name": "RGBIC Basic Strip Light",
+      "ledCount": 10
+     }
+    ],
+    "totalLeds": 10
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H618C": {
+   "sku": "H618C",
+   "productName": "10m RGBIC Basic Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "10m RGBIC Basic Strip Light",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 12
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H618E": {
+   "sku": "H618E",
+   "productName": "2*10m RGBIC Bassic Strip Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "2*10m RGBIC Bassic Strip Lights",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H618F": {
+   "sku": "H618F",
+   "productName": "2*15m RGBIC LED Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "2*15m RGBIC LED Strip Light",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H618G": {
+   "sku": "H618G",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6195": {
+   "sku": "H6195",
+   "productName": "2*10m Smart MultiColor  Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6198": {
+   "sku": "H6198",
+   "productName": "Govee DreamView T1S TV Backlight",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6199": {
+   "sku": "H6199",
+   "productName": "Govee DreamView T1 TV Backlight",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H619A": {
+   "sku": "H619A",
+   "productName": "5m RGBIC Pro Strip Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "5m RGBIC LED Strip Light with Cover",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 30
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H619B": {
+   "sku": "H619B",
+   "productName": "7.5m RGBIC Pro Strip Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "7.5m RGBIC Pro Strip Lights",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H619C": {
+   "sku": "H619C",
+   "productName": "10m RGBIC Pro Strip Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "10m RGBIC Pro Strip Lights",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H619D": {
+   "sku": "H619D",
+   "productName": "2*7.5m RGBIC Pro Strip Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "2*7.5m RGBIC Pro Strip Lights",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H619E": {
+   "sku": "H619E",
+   "productName": "2*10m RGBIC Pro Strip Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "2*10m RGBIC Pro Strip Lights",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 30
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H619Z": {
+   "sku": "H619Z",
+   "productName": "3m RGBIC Pro Strip Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "3m RGBIC Pro Strip Lights",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 12
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H61A0": {
+   "sku": "H61A0",
+   "productName": "3m RGBIC Neon Rope Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "3m RGBIC Neon Rope Lights",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H61A1": {
+   "sku": "H61A1",
+   "productName": "2m RGBIC Neon Rope Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "2m RGBIC Neon Rope Lights",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H61A2": {
+   "sku": "H61A2",
+   "productName": "5m RGBIC Neon Rope Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "5m RGBIC Neon Rope Lights",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 70
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H61A3": {
+   "sku": "H61A3",
+   "productName": "4m RGBIC Neon Rope Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "4m RGBIC Neon Rope Lights",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H61A5": {
+   "sku": "H61A5",
+   "productName": "10m RGBIC Neon Rope Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "10m RGBIC Neon Rope Lights",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 30
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H61A8": {
+   "sku": "H61A8",
+   "productName": "10m RGBIC Outdoor Neon Rope Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H61A9": {
+   "sku": "H61A9",
+   "productName": "20m RGBIC Outdoor Neon Rope Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H61B1": {
+   "sku": "H61B1",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H61B2": {
+   "sku": "H61B2",
+   "productName": "3m RGBIC Neon TV Backlight",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "3m RGBIC Neon TV Backlight",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H61B3": {
+   "sku": "H61B3",
+   "productName": "5m RGBIC LED Strip Light with Cover",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "3m RGBIC LED Strip Light with Cover",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 30
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H61B5": {
+   "sku": "H61B5",
+   "productName": "5m RGBIC LED Strip Light with Cover",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "3m RGBIC Neon TV Backlight",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 15
+   }
+  },
+  "H61B6": {
+   "sku": "H61B6",
+   "productName": "10m RGBIC LED Strip Light with Cover",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H61B8": {
+   "sku": "H61B8",
+   "productName": "Govee Strip Light with Skyline Kit",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 40,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H61B9": {
+   "sku": "H61B9",
+   "productName": "Govee Strip Light with Skyline Kit",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H61BA": {
+   "sku": "H61BA",
+   "productName": "5m RGBICW LED Strip Light",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H61BC": {
+   "sku": "H61BC",
+   "productName": "10m RGBICW LED Strip Light",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H61BE": {
+   "sku": "H61BE",
+   "productName": "2*10m RGBICW LED Strip Light",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H61C2": {
+   "sku": "H61C2",
+   "productName": "2m RGBIC Neon Rope Light for desks",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "RGBIC LED Neon Rope Lights for Desks",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 16
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H61C3": {
+   "sku": "H61C3",
+   "productName": "3m RGBIC Neon Rope Light for desks",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "RGBIC LED Neon Rope Lights for Desks",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 42
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H61C5": {
+   "sku": "H61C5",
+   "productName": "5m RGBIC Neon Rope Light for desks",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "RGBIC LED Neon Rope Lights for Desks",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 20
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H61D2": {
+   "sku": "H61D2",
+   "productName": "2m Govee Neon Rope Light 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   }
+  },
+  "H61D3": {
+   "sku": "H61D3",
+   "productName": "3m Govee Neon Rope Light 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H61D4": {
+   "sku": "H61D4",
+   "productName": "4m Govee Neon Rope Light 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   }
+  },
+  "H61D5": {
+   "sku": "H61D5",
+   "productName": "5m Govee Neon Rope Light 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "RGBIC Neon Lights 2",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 7
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H61D6": {
+   "sku": "H61D6",
+   "productName": "10m Govee Neon Rope Light 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H61E0": {
+   "sku": "H61E0",
+   "productName": "Govee LED Strip Light M1",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H61E1": {
+   "sku": "H61E1",
+   "productName": "LED Strip Light M1",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "LED Strip Light M1",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H61E5": {
+   "sku": "H61E5",
+   "productName": "3m Govee COB Strip Light Pro",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "COB Strip Light Pro",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 12,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H61E6": {
+   "sku": "H61E6",
+   "productName": "5m Govee COB Strip Light Pro",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "COB LED Strip Light Pro",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 60
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H61F2": {
+   "sku": "H61F2",
+   "productName": "Govee Strip Light 2 Pro",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 4,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H61F5": {
+   "sku": "H61F5",
+   "productName": "Govee Strip Light 2 Pro",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H61F6": {
+   "sku": "H61F6",
+   "productName": "Govee Strip Light 2 Pro",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 20,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H6601": {
+   "sku": "H6601",
+   "productName": "Govee AI Gaming Sync Box Kit",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6602": {
+   "sku": "H6602",
+   "productName": "Govee AI Gaming Sync Box with Backlight",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6603": {
+   "sku": "H6603",
+   "productName": "Govee AI Sync Box Kit 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6604": {
+   "sku": "H6604",
+   "productName": "Govee AI Sync Box 2 with backlight",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H6608": {
+   "sku": "H6608",
+   "productName": "Govee Gaming Light Kit G1",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   }
+  },
+  "H6609": {
+   "sku": "H6609",
+   "productName": "Govee Gaming Light Strip G1",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "signalrgb": {
+    "name": "Gaming Light Strip G1",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 20
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 18,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H6630": {
+   "sku": "H6630",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6631": {
+   "sku": "H6631",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6640": {
+   "sku": "H6640",
+   "productName": "3m Govee Neon Rope Light for Wall Lining",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 14,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H6641": {
+   "sku": "H6641",
+   "productName": "5m Govee Neon Rope Light for Wall Lining",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 14,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H6671": {
+   "sku": "H6671",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6672": {
+   "sku": "H6672",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6800": {
+   "sku": "H6800",
+   "productName": "Christmas Tree LIghts",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6810": {
+   "sku": "H6810",
+   "productName": "240LED Net Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": false
+   }
+  },
+  "H6811": {
+   "sku": "H6811",
+   "productName": "480LED Net Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6840": {
+   "sku": "H6840",
+   "productName": "Govee Cone Tree Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6841": {
+   "sku": "H6841",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6860": {
+   "sku": "H6860",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6861": {
+   "sku": "H6861",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6870": {
+   "sku": "H6870",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H6871": {
+   "sku": "H6871",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H7012": {
+   "sku": "H7012",
+   "productName": "LED Bulb String Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": false,
+    "scenes": false
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7013": {
+   "sku": "H7013",
+   "productName": "LED Bulb String Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": false,
+    "scenes": false
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7020": {
+   "sku": "H7020",
+   "productName": "LED Bulb String Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7021": {
+   "sku": "H7021",
+   "productName": "LED Bulb String Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7025": {
+   "sku": "H7025",
+   "productName": "LED Bulb String Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H7026": {
+   "sku": "H7026",
+   "productName": "Govee Outdoor Clear Bulb String Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 30,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H7027": {
+   "sku": "H7027",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7028": {
+   "sku": "H7028",
+   "productName": "LED Bulb String Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H702A": {
+   "sku": "H702A",
+   "signalrgb": {
+    "name": "S14 Bulb Outdoor String Lights 2",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H702B": {
+   "sku": "H702B",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H702C": {
+   "sku": "H702C",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7030": {
+   "sku": "H7030",
+   "productName": "LED Bulb String Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7033": {
+   "sku": "H7033",
+   "productName": "LED Bulb String Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7037": {
+   "sku": "H7037",
+   "productName": "LED Bulb String Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7038": {
+   "sku": "H7038",
+   "productName": "LED Bulb String Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7039": {
+   "sku": "H7039",
+   "productName": "LED Bulb String Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Smart Outdoor String Lights 2",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 45
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 45,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H703A": {
+   "sku": "H703A",
+   "productName": "15m Dots String Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H703B": {
+   "sku": "H703B",
+   "productName": "30m Dots String Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7041": {
+   "sku": "H7041",
+   "productName": "LED Bulb String Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7042": {
+   "sku": "H7042",
+   "productName": "LED Bulb String Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7045": {
+   "sku": "H7045",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7046": {
+   "sku": "H7046",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7050": {
+   "sku": "H7050",
+   "productName": "Smart Ground Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7051": {
+   "sku": "H7051",
+   "productName": "Smart Ground Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7052": {
+   "sku": "H7052",
+   "productName": "15m Outdoor Ground Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7053": {
+   "sku": "H7053",
+   "productName": "30m Outdoor Ground Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H7055": {
+   "sku": "H7055",
+   "productName": "Govee RGBIC Path Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7056": {
+   "sku": "H7056",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7057": {
+   "sku": "H7057",
+   "productName": "Outdoor Flood Lights 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H7058": {
+   "sku": "H7058",
+   "productName": "Outdoor Flood Lights 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H705A": {
+   "sku": "H705A",
+   "productName": "30m Permanent Outdoor Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H705B": {
+   "sku": "H705B",
+   "productName": "15m Permanent Outdoor Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H705C": {
+   "sku": "H705C",
+   "productName": "45m Permanent Outdoor Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H705D": {
+   "sku": "H705D",
+   "productName": "15m Permanent Outdoor Lights 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 9,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H705E": {
+   "sku": "H705E",
+   "productName": "30m Permanent Outdoor Lights 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 18,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H705F": {
+   "sku": "H705F",
+   "productName": "45m Permanent Outdoor Lights 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 27,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H7060": {
+   "sku": "H7060",
+   "productName": "4 Pack RGBIC Flood Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "RGBICWW Floor Lamp Pro",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7061": {
+   "sku": "H7061",
+   "productName": "2 Pack RGBIC Flood Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "2 Pack RGBIC Flood Lights",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7062": {
+   "sku": "H7062",
+   "productName": "6 Pack RGBIC Flood Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "6 Pack RGBIC Flood Lights",
+    "supportRazer": false,
+    "supportDreamView": false,
+    "ledCount": 1
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7063": {
+   "sku": "H7063",
+   "productName": "Govee Outdoor Flood Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7065": {
+   "sku": "H7065",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   },
+   "quirks": {
+    "kind": "lan_api_capable_light",
+    "lanApiCapable": true,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7066": {
+   "sku": "H7066",
+   "productName": "Govee RGBIC Spotlights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7067": {
+   "sku": "H7067",
+   "productName": "Govee Outdoor Deck Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H7068": {
+   "sku": "H7068",
+   "productName": "Govee Outdoor Deck Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7069": {
+   "sku": "H7069",
+   "productName": "Govee Outdoor Deck Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H706A": {
+   "sku": "H706A",
+   "productName": "30m Permanent Outdoor Lights Pro",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Permanent Outdoor Lights Pro (100ft, 60 LED)",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 60
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H706B": {
+   "sku": "H706B",
+   "productName": "45m Permanent Outdoor Lights Pro",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Permanent Outdoor Lights Pro (150ft, 90 LED)",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 90
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H706C": {
+   "sku": "H706C",
+   "productName": "60m Permanent Outdoor Lights Pro",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Permanent Outdoor Lights Pro (200ft, 108 LED)",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 108
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7070": {
+   "sku": "H7070",
+   "productName": "Govee Outdoor Projector Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7071": {
+   "sku": "H7071",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7072": {
+   "sku": "H7072",
+   "productName": "Govee Outdoor Lamp Post Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7073": {
+   "sku": "H7073",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7075": {
+   "sku": "H7075",
+   "productName": "Govee Outdoor Wall light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Govee Outdoor Wall Light, 1500LM",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 10
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7076": {
+   "sku": "H7076",
+   "productName": "Govee Outdoor UpDown Wall Light",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H7078": {
+   "sku": "H7078",
+   "productName": "Govee Outdoor Wall light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H707A": {
+   "sku": "H707A",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H707B": {
+   "sku": "H707B",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H707C": {
+   "sku": "H707C",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7086": {
+   "sku": "H7086",
+   "productName": "Govee Outdoor Garden Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H7087": {
+   "sku": "H7087",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7093": {
+   "sku": "H7093",
+   "productName": "Govee Outdoor Spotlights 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 2,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H7094": {
+   "sku": "H7094",
+   "productName": "Govee Outdoor Spotlights 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H70A1": {
+   "sku": "H70A1",
+   "productName": "10m RGBICWW Outdoor Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H70A2": {
+   "sku": "H70A2",
+   "productName": "20m RGBICWW Outdoor Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 20,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H70A3": {
+   "sku": "H70A3",
+   "productName": "30m RGBICWW Outdoor Strip Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H70B1": {
+   "sku": "H70B1",
+   "productName": "1.5*2m 520LED Curtain Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Curtain Lights",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 10
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H70B3": {
+   "sku": "H70B3",
+   "productName": "520LED Curtain Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H70B4": {
+   "sku": "H70B4",
+   "productName": "1040LED Curtain Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H70B5": {
+   "sku": "H70B5",
+   "productName": "1560LED Curtain Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 3,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H70B6": {
+   "sku": "H70B6",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H70B8": {
+   "sku": "H70B8",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H70BC": {
+   "sku": "H70BC",
+   "productName": "400LED Curtain Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "Netflix Curtain Lights",
+    "supportRazer": true,
+    "supportDreamView": true,
+    "ledCount": 0
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H70C1": {
+   "sku": "H70C1",
+   "productName": "10m RGBIC String Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H70C2": {
+   "sku": "H70C2",
+   "productName": "20m RGBIC String Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H70C4": {
+   "sku": "H70C4",
+   "productName": "20m Christmas String Lights 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H70C5": {
+   "sku": "H70C5",
+   "productName": "30m Christmas String Lights 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H70C7": {
+   "sku": "H70C7",
+   "productName": "50m Christmas String Lights 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H70C9": {
+   "sku": "H70C9",
+   "productName": "100m Christmas String Lights 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H70CB": {
+   "sku": "H70CB",
+   "productName": "20m RGBIC String Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H70D1": {
+   "sku": "H70D1",
+   "productName": "10m RGBIC Outdoor Icicle Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H70D2": {
+   "sku": "H70D2",
+   "productName": "20m RGBIC Outdoor Icicle Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H70D3": {
+   "sku": "H70D3",
+   "productName": "30m RGBIC Outdoor Icicle Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H7101": {
+   "sku": "H7101",
+   "productName": "Smart Tower Fan",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7102": {
+   "sku": "H7102",
+   "productName": "Smart Tower Fan",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7105": {
+   "sku": "H7105",
+   "productName": "Smart Tower Fan 2 Max (42 Inch)",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7106": {
+   "sku": "H7106",
+   "productName": "Smart Tower Fan 2 (36inch)",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7122": {
+   "sku": "H7122",
+   "productName": "Smart Air Purifier",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7123": {
+   "sku": "H7123",
+   "productName": "Smart Pet Air Purifier",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7124": {
+   "sku": "H7124",
+   "productName": "Smart Air Purifier 2 (Sensor)",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7126": {
+   "sku": "H7126",
+   "productName": "Smart Mini Air Purifier",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7128": {
+   "sku": "H7128",
+   "productName": "Smart Air Purifier 2 Pro",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7129": {
+   "sku": "H7129",
+   "productName": "Smart Air Purifier 2 Pro (Sensor)",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H712C": {
+   "sku": "H712C",
+   "productName": "Smart Air Purifier 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7130": {
+   "sku": "H7130",
+   "quirks": {
+    "kind": "space_heater",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7131": {
+   "sku": "H7131",
+   "productName": "Smart Portable Space Heater",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "quirks": {
+    "kind": "space_heater",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7132": {
+   "sku": "H7132",
+   "quirks": {
+    "kind": "space_heater",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7133": {
+   "sku": "H7133",
+   "quirks": {
+    "kind": "space_heater",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7134": {
+   "sku": "H7134",
+   "quirks": {
+    "kind": "space_heater",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7135": {
+   "sku": "H7135",
+   "productName": "Smart Space Heater Lite",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "quirks": {
+    "kind": "space_heater",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H713A": {
+   "sku": "H713A",
+   "quirks": {
+    "kind": "space_heater",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H713B": {
+   "sku": "H713B",
+   "quirks": {
+    "kind": "space_heater",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7140": {
+   "sku": "H7140",
+   "productName": "Smart Humidifier Lite",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7142": {
+   "sku": "H7142",
+   "productName": "Smart Humidifier",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7143": {
+   "sku": "H7143",
+   "productName": "Cool and Warm Mist Humidifier",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7145": {
+   "sku": "H7145",
+   "productName": "Smart Humidifier 2 (6L)",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7151": {
+   "sku": "H7151",
+   "productName": "Smart Dehumidifier Max",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7152": {
+   "sku": "H7152",
+   "productName": "Smart Dehumidifier Max (Pump)",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H7160": {
+   "sku": "H7160",
+   "quirks": {
+    "kind": "humidifier",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7170": {
+   "sku": "H7170",
+   "quirks": {
+    "kind": "device",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7171": {
+   "sku": "H7171",
+   "quirks": {
+    "kind": "device",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7172": {
+   "sku": "H7172",
+   "productName": "Smart Countertop Ice Maker",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "quirks": {
+    "kind": "ice_maker",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H7173": {
+   "sku": "H7173",
+   "quirks": {
+    "kind": "device",
+    "lanApiCapable": false,
+    "bleOnly": false,
+    "avoidPlatformApi": false
+   }
+  },
+  "H717D": {
+   "sku": "H717D",
+   "productName": "Smart Countertop Ice Maker",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H800B": {
+   "sku": "H800B",
+   "productName": "Govee Smart Bulb",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H8015": {
+   "sku": "H8015",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H801A": {
+   "sku": "H801A",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H801B": {
+   "sku": "H801B",
+   "productName": "15m Permanent Outdoor Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H801C": {
+   "sku": "H801C",
+   "productName": "Govee Rescessed Downlight",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H801D": {
+   "sku": "H801D",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H8022": {
+   "sku": "H8022",
+   "productName": "Govee Table Lamp 2S",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "signalrgb": {
+    "name": "RGBIC Table Lamp",
+    "supportRazer": false,
+    "supportDreamView": true,
+    "ledCount": 30
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H8025": {
+   "sku": "H8025",
+   "productName": "Govee Outdoor Clear Bulb String Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H8026": {
+   "sku": "H8026",
+   "productName": "Govee Outdoor Clear Bulb String Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H802A": {
+   "sku": "H802A",
+   "productName": "5m RGBIC Basic Strip Lights with Alexa",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H8048": {
+   "sku": "H8048",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H8057": {
+   "sku": "H8057",
+   "productName": "Outdoor Flood Lights 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H805A": {
+   "sku": "H805A",
+   "productName": "30m Permanent Outdoor Lights Elite",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H805B": {
+   "sku": "H805B",
+   "productName": "15m Permanent Outdoor Lights Elite",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H805C": {
+   "sku": "H805C",
+   "productName": "45m Permanent Outdoor Lights Elite",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 9,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H8066": {
+   "sku": "H8066",
+   "productName": "Govee Smart Outdoor Spotlight",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H8069": {
+   "sku": "H8069",
+   "productName": "Govee Mini Panel Lights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H8072": {
+   "sku": "H8072",
+   "productName": "Govee RGBICWW Floor Lamp",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 8,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H8076": {
+   "sku": "H8076",
+   "productName": "Govee RGBICW Floor Lamp Lite",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H807C": {
+   "sku": "H807C",
+   "productName": "Govee Corner Floor Lamp 2",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H808A": {
+   "sku": "H808A",
+   "productName": "5m String Downlights",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 5,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H8098": {
+   "sku": "H8098",
+   "productName": "Govee Smart TV Backlight 3S",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H80A1": {
+   "sku": "H80A1",
+   "productName": "12inch Ceiling Light",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 14,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H80A4": {
+   "sku": "H80A4",
+   "productName": "Govee Square Ceiling Light",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H80B5": {
+   "sku": "H80B5",
+   "productName": "5m RGBIC LED Strip Light with Cover",
+   "govee": {
+    "supportRazer": true,
+    "supportFeast": true,
+    "supportMusicalFeast": true
+   }
+  },
+  "H80C4": {
+   "sku": "H80C4",
+   "productName": "20m Christmas String Lights 2",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H80C5": {
+   "sku": "H80C5",
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
+   }
+  },
+  "H80D1": {
+   "sku": "H80D1",
+   "productName": "10m RGBIC Outdoor Icicle Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H8604": {
+   "sku": "H8604",
+   "productName": "Govee Smart AI Sync Box",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   }
+  },
+  "H8630": {
+   "sku": "H8630",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H8811": {
+   "sku": "H8811",
+   "productName": "480LED Net Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H8840": {
+   "sku": "H8840",
+   "productName": "Cone Tree Lights",
+   "govee": {
+    "supportRazer": false,
+    "supportFeast": false,
+    "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  },
+  "H8841": {
+   "sku": "H8841",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
+   }
+  }
+ }
+}

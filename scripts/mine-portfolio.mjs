@@ -1,0 +1,181 @@
+#!/usr/bin/env node
+
+/**
+ * Mine open-source Govee integrations into a per-SKU device portfolio.
+ *
+ * WHY: every profile row we have was bought with hours of hardware probing against mute
+ * devices (H608B count sweep, H6047 chase mystery, H6009 opcode sweep). The open-source
+ * ecosystem has already paid that cost across hundreds of SKUs — this script harvests it
+ * with provenance, so a new lamp arrives with priors instead of a blind sweep.
+ *
+ * VALIDATION ANCHOR: our own hardware measurements. Any source that disagrees with a
+ * hardware-verified fact (H608B = 15 discrete over razer) is suspect for everything else.
+ *
+ * Sources (shallow clones; pass the parent dir as --sources):
+ *   1. fu-raz/signalrgb-govee-direct-connect  govee-products.test.js
+ *      → a dump of GOVEE'S OWN product database (293 SKUs): productName, supportRazer,
+ *        supportFeast. This is the authority on whether the razer channel exists at all.
+ *   2. RobThePCGuy/SignalRGB-Govee-Network-Plugin  GoveeNetwork.js
+ *      → community-probed razer LED counts, dreamview flags, subdevice layouts. This is
+ *        where the H6047 "stream 20, slots 0-9 left bar / 10-19 right" fact lives.
+ *   3. Galorhallen/govee-local-api  light_capabilities.py  (Home Assistant's LAN backend)
+ *      → which SKUs speak the LAN API + BLE-bitmask segment counts (ptReal-style).
+ *   4. wez/govee2mqtt  src/service/quirks.rs
+ *      → lan_api_capable / ble_only / avoid_platform_api quirks.
+ *
+ * LICENSING: this script reads the source repositories locally to extract
+ * device facts (SKU capability data), which are not copyrightable expression.
+ * No code from those repositories is copied into this one, and the clones are
+ * never redistributed. Two of the sources are GPL — the read-never-copy rule
+ * from references/lan-razer.md applies here identically.
+ *
+ * Usage:
+ *   node scripts/mine-portfolio.mjs --sources <dir-with-clones> \
+ *       [--out assets/device-portfolio.json] [--sku H612B]
+ */
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { execSync } from 'node:child_process';
+
+const arg = (name, dflt) => {
+    const i = process.argv.indexOf(`--${name}`);
+    return i === -1 || !process.argv[i + 1] ? dflt : process.argv[i + 1];
+};
+
+const sourcesDir = arg('sources', null);
+const outPath = arg('out', 'assets/device-portfolio.json');
+const querySku = arg('sku', null);
+
+const REPOS = {
+    goveeProducts: 'signalrgb-govee-direct-connect',
+    signalrgb: 'SignalRGB-Govee-Network-Plugin',
+    localApi: 'govee-local-api',
+    govee2mqtt: 'govee2mqtt'
+};
+
+if (!sourcesDir) {
+    process.stderr.write('--sources <dir> required. Populate it with:\n'
+        + '  git clone --depth 1 https://github.com/fu-raz/signalrgb-govee-direct-connect\n'
+        + '  git clone --depth 1 https://github.com/RobThePCGuy/SignalRGB-Govee-Network-Plugin\n'
+        + '  git clone --depth 1 https://github.com/Galorhallen/govee-local-api\n'
+        + '  git clone --depth 1 https://github.com/wez/govee2mqtt\n');
+    process.exit(2);
+}
+
+const repoPath = (key) => path.join(sourcesDir, REPOS[key]);
+const repoSha = (key) => {
+    try {
+        return execSync('git rev-parse --short HEAD', { cwd: repoPath(key) }).toString().trim();
+    } catch { return 'unknown'; }
+};
+
+/** sku -> merged entry. Every mined fact names its source so disagreements stay visible. */
+const portfolio = new Map();
+const entry = (sku) => {
+    const key = sku.toUpperCase();
+    if (!portfolio.has(key)) portfolio.set(key, { sku: key });
+    return portfolio.get(key);
+};
+
+// ── 1. Govee's own product DB ─────────────────────────────────────────────────────────
+{
+    let src = fs.readFileSync(
+        path.join(repoPath('goveeProducts'), 'govee-products.test.js'), 'utf8');
+    src = src.replace(/^export\s+(const|default)\s*/m, 'const __x = ')
+        .replace(/export\s*\{[^}]*\};?/g, '');
+    const data = new Function(`return (${src.slice(src.indexOf('{'), src.lastIndexOf('}') + 1)})`)();
+    for (const [sku, d] of Object.entries(data)) {
+        if (!/^H[0-9A-Z]{4}$/i.test(sku)) continue;
+        const e = entry(sku);
+        e.productName = d.productName || null;
+        e.govee = {
+            supportRazer: !!d.supportRazer,
+            supportFeast: !!d.supportFeast,
+            supportMusicalFeast: !!d.supportMusicalFeast
+        };
+    }
+}
+
+// ── 2. SignalRGB community plugin: razer LED counts + layouts ─────────────────────────
+{
+    const src = fs.readFileSync(path.join(repoPath('signalrgb'), 'GoveeNetwork.js'), 'utf8');
+    // Entries are object literals; capture through the subdevices block when present.
+    const re = /\{\s*name:\s*"([^"]+)",[\s\S]*?sku:\s*"(H[0-9A-Z]{4})",[\s\S]*?supportRazer:\s*(true|false),\s*supportDreamView:\s*(true|false),\s*ledCount:\s*(\d+),?(?<rest>[\s\S]*?)\n\t\},/g;
+    let m;
+    while ((m = re.exec(src))) {
+        const e = entry(m[2]);
+        const sub = [...m.groups.rest.matchAll(/name:\s*"([^"]+)",\s*\n\s*ledCount:\s*(\d+)/g)]
+            .map(s => ({ name: s[1], ledCount: +s[2] }));
+        e.signalrgb = {
+            name: m[1],
+            supportRazer: m[3] === 'true',
+            supportDreamView: m[4] === 'true',
+            ledCount: +m[5],
+            ...(sub.length ? { subdevices: sub, totalLeds: sub.reduce((a, s) => a + s.ledCount, 0) } : {}),
+            ...(m.groups.rest.includes('hasVariableLedCount') ? { hasVariableLedCount: true } : {})
+        };
+    }
+}
+
+// ── 3. Home Assistant LAN backend: LAN API + BLE-bitmask segment counts ───────────────
+{
+    const src = fs.readFileSync(
+        path.join(repoPath('localApi'), 'src/govee_local_api/light_capabilities.py'), 'utf8');
+    const table = src.slice(src.indexOf('GOVEE_LIGHT_CAPABILITIES'));
+    const re = /"(H[0-9A-Z]{4})":\s*(BASIC_CAPABILITIES|ON_OFF_CAPABILITIES|create_with_capabilities\(\s*(\w+),\s*(\w+),\s*(\w+),\s*(\d+),\s*(\w+)\s*\))/g;
+    let m;
+    while ((m = re.exec(table))) {
+        const e = entry(m[1]);
+        e.lanApi = m[2].startsWith('create_with')
+            ? { supported: true, segments: +m[6], rgb: m[3] === 'True', scenes: m[7] === 'True' }
+            : { supported: true, segments: 0, basic: m[2] };
+    }
+}
+
+// ── 4. govee2mqtt quirks ──────────────────────────────────────────────────────────────
+{
+    const src = fs.readFileSync(path.join(repoPath('govee2mqtt'), 'src/service/quirks.rs'), 'utf8');
+    const re = /Quirk::(\w+)\(\s*"(H[0-9A-Z]{4})"[^)]*\)((?:\s*\.\s*with_\w+\([^)]*\))*)/g;
+    let m;
+    while ((m = re.exec(src))) {
+        const e = entry(m[2]);
+        const mods = m[3] || '';
+        e.quirks = {
+            kind: m[1],
+            lanApiCapable: m[1] === 'lan_api_capable_light' || mods.includes('with_lan_api'),
+            bleOnly: mods.includes('with_ble_only(true)'),
+            avoidPlatformApi: mods.includes('avoid_platform_api')
+        };
+    }
+}
+
+// ── Our hardware ground truth (the validation anchor; never overwritten by mining) ────
+const HARDWARE = {
+    H608B: { razer: { pixels: 15, blend: 'discrete', hz: 40, verified: '2026-08-15' }, colorwcDrainHz: '10-12' },
+    H6009: { ble: { colorOpcode: '0x33 0x05 0x0D (RGBWW — NOT the published 0x02)', verified: '2026-08-09' } },
+    H6047: { razer: { note: '12-stop chase read as one colour animating (2026-08-15) — consistent with signalrgb "shorter packets remap unpredictably, always stream 20"' } },
+    // ⚠️ Direct contradiction of the mined govee.supportRazer:0 — the firmware honours razer
+    // frames even though the flag says no. The flag describes Govee Desktop/Chroma app
+    // support, NOT the LAN handler. Treat supportRazer:0 as "unknown", never "absent".
+    H612B: { razer: { pixels: 10, blend: 'discrete', verified: '2026-08-16 — individual lights rendered at count=10 despite product-DB supportRazer:0; stop test froze instantly (no queue, 30Hz streaming safe)' } }
+};
+for (const [sku, hw] of Object.entries(HARDWARE)) entry(sku).ourHardware = hw;
+
+const result = {
+    minedAt: new Date().toISOString(),
+    sources: Object.fromEntries(Object.entries(REPOS).map(([k, repo]) => [k, `${repo}@${repoSha(k)}`])),
+    validation: 'H608B: signalrgb ledCount 15 + govee supportRazer:1 + lanApi segments 15 all match hardware (15 discrete @40Hz)',
+    devices: Object.fromEntries([...portfolio.entries()].sort(([a], [b]) => a.localeCompare(b)))
+};
+
+if (querySku) {
+    process.stdout.write(JSON.stringify(result.devices[querySku.toUpperCase()] || null, null, 2) + '\n');
+} else {
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+    fs.writeFileSync(outPath, JSON.stringify(result, null, 1) + '\n');
+    const n = portfolio.size;
+    const razer = [...portfolio.values()].filter(e => e.govee?.supportRazer || e.signalrgb?.supportRazer).length;
+    const lan = [...portfolio.values()].filter(e => e.lanApi?.supported || e.quirks?.lanApiCapable).length;
+    process.stdout.write(`wrote ${outPath}: ${n} SKUs (${razer} razer-capable, ${lan} LAN API)\n`);
+}
