@@ -209,7 +209,10 @@ Suffuse 0.5 adds a local-network transport beside the cloud path: the documented
 LAN API (`scan`, `devStatus`, `colorwc`) plus the undocumented per-LED `razer`
 channel that Razer Synapse, Govee Desktop, SignalRGB and LedFx use. The same
 contract applies — LightScore in, write gates on, private receipt out — with a
-different wire underneath.
+different wire underneath. The LAN API's measured failure modes — `colorwc`
+queues unboundedly past ~10 Hz, `devStatus` returns stale replies while
+sending, multicast discovery is intermittent *per device* — are documented
+with methods in [references/lan.md](references/lan.md).
 
 ```bash
 node scripts/govee.mjs lan scan
@@ -349,6 +352,12 @@ One recorded H608B result is negative: the device advertised segmented color
 and accepted correctly chunked requests but did not visibly render independent
 colors. Its advertised `Sunset Glow` scene did render. See
 [device evidence](references/device-evidence.md) for the precise boundary.
+
+Suffuse has no BLE transport, but the Bluetooth protocol knowledge a future
+adapter must honor — GATT identifiers, the RGBWW `0x0D` colour opcode (the
+widely documented `0x02` is accepted and inert), the keep-alive/serialization/
+settle contract, and the macOS code-signing trap — is hardware-verified and
+recorded in [references/ble.md](references/ble.md).
 **Resolved for the LAN path (2026-08-15):** the same fixture renders 15
 independent pixels over the local `razer` channel — verified by a discrete
 chase, every pixel individually lit. The cloud negative stands; the capability
