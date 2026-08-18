@@ -1,0 +1,42 @@
+name: Bug report
+description: Something in Suffuse misbehaved — server, CLI, Skill, or score compilation.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Redact before posting:** no Govee API keys, no device IDs, no network names.
+        For a suspected security problem, do not open a public issue — use
+        [private vulnerability reporting](../../security/advisories/new) instead.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you ran, what you expected, what you got. Redacted tool output or receipts welcome.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Suffuse version / commit
+      placeholder: "v0.5.0"
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+      placeholder: "20.x"
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - MCP server
+        - Agent Skill
+        - CLI (scripts/govee.mjs)
+        - LAN transport
+        - Score validation / compilation
+        - Other
+    validations:
+      required: true

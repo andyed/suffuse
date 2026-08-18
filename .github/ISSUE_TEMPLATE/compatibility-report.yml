@@ -1,0 +1,63 @@
+name: Device compatibility report
+description: Report how a Govee device behaved with Suffuse — accepted operations and visible results, recorded separately.
+title: "[compat] SKU: "
+labels: ["documentation", "compatibility"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks — device evidence is the most valuable contribution this project accepts.
+        Redact household identifiers (device IDs, network names, MAC addresses) before posting.
+        **Never paste your Govee API key anywhere in this report.**
+
+        The ledger records *accepted operations* and *visible results* separately: a 200
+        response is not visual proof. See `references/device-evidence.md` for the model entry.
+  - type: input
+    id: sku
+    attributes:
+      label: SKU / model
+      placeholder: "H608B"
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware version (if known)
+      placeholder: "1.02.14"
+  - type: dropdown
+    id: transport
+    attributes:
+      label: Transport tested
+      multiple: true
+      options:
+        - Cloud API (Developer key)
+        - LAN
+        - LAN razer (per-LED)
+    validations:
+      required: true
+  - type: textarea
+    id: capabilities
+    attributes:
+      label: Advertised capabilities
+      description: What the capability inspection reported (segment counts, per-request limits, gradientToggle, scene support). Paste redacted tool output if convenient.
+    validations:
+      required: true
+  - type: textarea
+    id: accepted
+    attributes:
+      label: Accepted operations
+      description: Which requests the API/device accepted (returned success), regardless of what happened visibly.
+    validations:
+      required: true
+  - type: textarea
+    id: visible
+    attributes:
+      label: Visible result
+      description: What the hardware actually did. "Uniform / unchanged" is a valid and valuable answer — negative evidence for the tested unit, not a SKU blacklist.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Timing, quirks, recovery
+      description: Settle delays, discovery behavior, rate limits hit, restore fidelity — anything an agent driving this device should know.
