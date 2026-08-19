@@ -158,7 +158,17 @@ const HARDWARE = {
     // ⚠️ Direct contradiction of the mined govee.supportRazer:0 — the firmware honours razer
     // frames even though the flag says no. The flag describes Govee Desktop/Chroma app
     // support, NOT the LAN handler. Treat supportRazer:0 as "unknown", never "absent".
-    H612B: { razer: { pixels: 10, blend: 'discrete', verified: '2026-08-16 — individual lights rendered at count=10 despite product-DB supportRazer:0; stop test froze instantly (no queue, 30Hz streaming safe)' } }
+    H612B: { razer: { pixels: 10, blend: 'discrete', verified: '2026-08-16 — individual lights rendered at count=10 despite product-DB supportRazer:0; stop test froze instantly (no queue, 30Hz streaming safe)' } },
+    H16C0: {
+        platformApi: { segments: 7, segmentedBrightness: true, verified: '2026-08-18' },
+        razer: {
+            pixels: 7,
+            blend: 'discrete',
+            frameHz: 30,
+            orientation: 'index 0 bottom to index 6 top',
+            verified: '2026-08-18 — one-hot local walk plus smooth 20s Electron 30Hz run; immediate stop with no visible backlog; restore passed'
+        }
+    }
 };
 for (const [sku, hw] of Object.entries(HARDWARE)) entry(sku).ourHardware = hw;
 

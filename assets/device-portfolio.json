@@ -94,6 +94,20 @@
     "supported": true,
     "segments": 0,
     "basic": "BASIC_CAPABILITIES"
+   },
+   "ourHardware": {
+    "platformApi": {
+     "segments": 7,
+     "segmentedBrightness": true,
+     "verified": "2026-08-18"
+    },
+    "razer": {
+     "pixels": 7,
+     "blend": "discrete",
+     "frameHz": 30,
+     "orientation": "index 0 bottom to index 6 top",
+     "verified": "2026-08-18 — one-hot local walk plus smooth 20s Electron 30Hz run; immediate stop with no visible backlog; restore passed"
+    }
    }
   },
   "H1A43": {

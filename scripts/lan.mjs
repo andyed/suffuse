@@ -73,7 +73,12 @@ export const RAZER_PROFILES = Object.freeze({
   // count renders nothing, so a rendering 10 IS the count). Govee's own product
   // DB says supportRazer: 0 for this SKU — that flag describes Desktop/Chroma
   // app support, not the LAN firmware. Read a mined 0 as unknown, never absent.
-  H612B: Object.freeze({ pixels: 10, blend: 'discrete', verified: true })
+  H612B: Object.freeze({ pixels: 10, blend: 'discrete', verified: true }),
+  // Floor Lamp 3 Lite — field-verified 2026-08-18: a one-hot red segment walked
+  // all seven positions, index 0 bottom through index 6 top, with every other
+  // region dark. A normal 30 Hz Electron stream then ran smoothly for 20 seconds,
+  // stopped immediately with no visible backlog, and restored cleanly.
+  H16C0: Object.freeze({ pixels: 7, blend: 'discrete', verified: true })
 });
 
 export function razerProfile(sku) {

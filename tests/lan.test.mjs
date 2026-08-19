@@ -102,6 +102,9 @@ test('profiles gate per-LED to hardware-verified pixel counts', () => {
   assert.equal(razerProfile('H608B').verified, true);
   assert.equal(razerProfile('h608b').pixels, 15);          // case-insensitive
   assert.equal(razerProfile('H6047').verified, false);     // ships marked, compiles with a warning
+  assert.equal(razerProfile('H16C0').pixels, 7);
+  assert.equal(razerProfile('H16C0').blend, 'discrete');
+  assert.equal(razerProfile('H16C0').verified, true);
   assert.equal(razerProfile('H6199'), null);               // unknown SKUs never guess
   for (const profile of Object.values(RAZER_PROFILES)) {
     assert.ok(Number.isInteger(profile.pixels) && profile.pixels >= 1 && profile.pixels <= 255);
