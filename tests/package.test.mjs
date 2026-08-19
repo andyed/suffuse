@@ -70,7 +70,7 @@ test('package and skill expose the Suffuse identity', async () => {
   const skill = await (await import('node:fs/promises')).readFile(new URL('../SKILL.md', import.meta.url), 'utf8');
   const readme = await (await import('node:fs/promises')).readFile(new URL('../README.md', import.meta.url), 'utf8');
   assert.equal(packageDocument.name, 'suffuse');
-  assert.equal(packageDocument.version, '0.5.0');
+  assert.equal(packageDocument.version, '0.6.0');
   assert.match(packageDocument.description, /MCP server and Agent Skill/);
   assert.equal(packageDocument.repository.url, 'git+https://github.com/andyed/suffuse.git');
   assert.match(skill, /^---\nname: suffuse\n/);
