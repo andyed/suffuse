@@ -96,13 +96,16 @@ test('ships an exact 1200x630 Open Graph card', async () => {
   assert.equal(png.readUInt32BE(20), 630);
 });
 
-test('managed installer deduplicates shared Codex and OpenClaw paths', async () => {
+test('managed installer gives each user-scope consumer its own root', async () => {
   const home = await mkdtemp(join(tmpdir(), 'suffuse-home-'));
   try {
     const common = ['--target', 'all', '--scope', 'user', '--home', home];
     const planned = JSON.parse((await execFileAsync(process.execPath, ['scripts/manage.mjs', 'plan', ...common], { cwd: root })).stdout);
-    assert.equal(planned.plans.length, 2);
-    assert.deepEqual(planned.plans.find(plan => plan.destination.includes('.agents')).consumers, ['codex', 'openclaw']);
+    // Codex, Claude, and Hermes each read a distinct profile-local root.
+    assert.equal(planned.plans.length, 3);
+    assert.deepEqual(planned.plans.find(plan => plan.destination.includes('.agents')).consumers, ['codex']);
+    assert.deepEqual(planned.plans.find(plan => plan.destination.includes('.claude')).consumers, ['claude']);
+    assert.deepEqual(planned.plans.find(plan => plan.destination.includes('.hermes')).consumers, ['hermes']);
 
     const installed = JSON.parse((await execFileAsync(process.execPath, ['scripts/manage.mjs', 'install', ...common], { cwd: root })).stdout);
     for (const plan of installed.plans) {
@@ -114,6 +117,21 @@ test('managed installer deduplicates shared Codex and OpenClaw paths', async () 
     assert.ok(removed.plans.every(plan => plan.state === 'removed'));
   } finally {
     await rm(home, { recursive: true, force: true });
+  }
+});
+
+test('project scope shares one .agents link between Codex and Hermes', async () => {
+  // Hermes scans BOTH .hermes/skills and .agents/skills for a trusted project,
+  // so a second project link would be the same skill discovered twice.
+  const project = await mkdtemp(join(tmpdir(), 'suffuse-project-'));
+  try {
+    const common = ['--target', 'all', '--scope', 'project', '--project', project];
+    const planned = JSON.parse((await execFileAsync(process.execPath, ['scripts/manage.mjs', 'plan', ...common], { cwd: root })).stdout);
+    assert.equal(planned.plans.length, 2);
+    assert.deepEqual(planned.plans.find(plan => plan.destination.includes('.agents')).consumers, ['codex', 'hermes']);
+    assert.equal(planned.plans.some(plan => plan.destination.includes('.hermes')), false);
+  } finally {
+    await rm(project, { recursive: true, force: true });
   }
 });
 

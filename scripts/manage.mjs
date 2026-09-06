@@ -9,13 +9,27 @@ import { loadPaletteCatalog } from './palettes.mjs';
 
 const SKILL_NAME = 'suffuse';
 const SOURCE_ROOT = fileURLToPath(new URL('..', import.meta.url));
-const TARGETS = new Set(['codex', 'claude', 'openclaw', 'all']);
+const TARGETS = new Set(['codex', 'claude', 'hermes', 'all']);
+
+/**
+ * Where each consumer discovers a skill, per scope.
+ *
+ * Hermes is the only one whose two scopes differ. Its profile-local root is
+ * `~/.hermes/skills`, but its project tier scans `.hermes/skills` AND
+ * `.agents/skills` — so a project install shares Codex's link rather than
+ * minting a second one for the same checkout.
+ */
+const SKILL_ROOTS = {
+  codex: { user: ['.agents', 'skills'], project: ['.agents', 'skills'] },
+  claude: { user: ['.claude', 'skills'], project: ['.claude', 'skills'] },
+  hermes: { user: ['.hermes', 'skills'], project: ['.agents', 'skills'] }
+};
 const SCOPES = new Set(['user', 'project']);
 
 function usage() {
   return `Usage:
   manage.mjs doctor [--source PATH]
-  manage.mjs plan|status|install|uninstall [--target codex|claude|openclaw|all]
+  manage.mjs plan|status|install|uninstall [--target codex|claude|hermes|all]
               [--scope user|project] [--home PATH] [--project PATH] [--source PATH]
   manage.mjs mcp-config [--source PATH]
 
@@ -45,16 +59,12 @@ function targetPlans(args) {
   if (!TARGETS.has(target)) throw new GoveeSkillError(`Unknown target: ${target}`, 'invalid-target');
   if (!SCOPES.has(scope)) throw new GoveeSkillError(`Unknown scope: ${scope}`, 'invalid-scope');
 
-  const consumers = target === 'all' ? ['codex', 'claude', 'openclaw'] : [target];
-  const home = resolve(args.home ?? homedir());
-  const project = resolve(args.project ?? process.cwd());
+  const consumers = target === 'all' ? ['codex', 'claude', 'hermes'] : [target];
+  const base = scope === 'user' ? resolve(args.home ?? homedir()) : resolve(args.project ?? process.cwd());
   const grouped = new Map();
 
   for (const consumer of consumers) {
-    const root = scope === 'user'
-      ? consumer === 'claude' ? join(home, '.claude', 'skills') : join(home, '.agents', 'skills')
-      : consumer === 'claude' ? join(project, '.claude', 'skills') : join(project, '.agents', 'skills');
-    const destination = join(root, SKILL_NAME);
+    const destination = join(base, ...SKILL_ROOTS[consumer][scope], SKILL_NAME);
     const current = grouped.get(destination) ?? { destination, consumers: [] };
     current.consumers.push(consumer);
     grouped.set(destination, current);
@@ -166,7 +176,22 @@ async function mcpConfig(args) {
       'default_tools_approval_mode = "writes"'
     ].join('\n'),
     claude: 'The bundled .mcp.json starts this server when the repository is loaded as a Claude skills-directory plugin.',
-    openclaw: 'Use the shared skill and deterministic CLI; MCP client wiring is intentionally not assumed.'
+    hermesYaml: [
+      '# ~/.hermes/config.yaml',
+      'mcp_servers:',
+      '  suffuse:',
+      '    command: node',
+      `    args: [${JSON.stringify(server)}]`,
+      '    enabled: true',
+      '    env:',
+      '      GOVEE_API_KEY: "${GOVEE_API_KEY}"'
+    ].join('\n'),
+    hermesEnvNote: 'Hermes does not forward ambient shell environment to a stdio MCP server. It '
+      + 'passes an allowlist (PATH, HOME, USER, LANG, LC_ALL, TERM, SHELL, TMPDIR, XDG_*) plus keys '
+      + 'it recognizes as secrets. Put GOVEE_API_KEY in ~/.hermes/.env and reference it as '
+      + '${GOVEE_API_KEY} above; a literal value in config.yaml would commit the key to a plaintext '
+      + 'config. Without either, the server starts with no key and every cloud call fails while the '
+      + 'palette, compile, and LAN paths keep working.'
   };
 }
 

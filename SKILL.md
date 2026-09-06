@@ -1,6 +1,6 @@
 ---
 name: suffuse
-description: Control Govee lighting through a capability-safe MCP server and Agent Skill. Use when an agent needs to inspect devices, discover scenes, compile a read-only plan, apply or restore a LightScore with explicit write gates, diagnose unavailable effects, author optional perceptual palettes, or install one managed lighting tool for Codex, Claude Code, and OpenClaw.
+description: Control Govee lighting through a capability-safe MCP server and Agent Skill. Use when an agent needs to inspect devices, discover scenes, compile a read-only plan, apply or restore a LightScore with explicit write gates, diagnose unavailable effects, author optional perceptual palettes, or install one managed lighting tool for Codex, Claude Code, and Hermes.
 ---
 
 # Suffuse
@@ -92,7 +92,7 @@ Do not describe a solid-color fallback as a gradient. Do not describe scene repl
 
 ## Use the managed package
 
-The repository root is the single source of truth. `scripts/manage.mjs` previews, installs, audits, and conservatively removes local discovery links for Codex, Claude Code, and OpenClaw. Read [references/distribution.md](references/distribution.md) before installing or packaging it.
+The repository root is the single source of truth. `scripts/manage.mjs` previews, installs, audits, and conservatively removes local discovery links for Codex, Claude Code, and Hermes. Read [references/distribution.md](references/distribution.md) before installing or packaging it.
 
 Use `mcp/server.mjs` when the agent should call typed tools instead of shell commands. It is read-mostly by default, inherits credentials from the environment, and double-gates physical writes. Read [references/mcp.md](references/mcp.md) before connecting it to an agent.
 

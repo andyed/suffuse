@@ -25,7 +25,7 @@ community project and is not affiliated with or endorsed by Govee.
 | Surface | Role |
 | --- | --- |
 | MCP server | Exposes fourteen typed tools over local stdio and enforces the runtime write gates |
-| Agent Skill | Teaches Codex, Claude Code, and OpenClaw when to inspect, compile, confirm, apply, restore, and report incomplete evidence |
+| Agent Skill | Teaches Codex, Claude Code, and Hermes when to inspect, compile, confirm, apply, restore, and report incomplete evidence |
 
 ### What the Govee API key unlocks
 
