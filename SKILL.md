@@ -12,7 +12,7 @@ The current execution provider is Govee's documented Developer Platform. Provide
 ## Follow the control workflow
 
 1. Establish whether the request is palette authoring, read-only inspection, a compiled preview, or a device write.
-2. Inspect the exact installed device before promising segments, scenes, or restoration.
+2. Use `govee_inspect_household` when transport inventory or cross-source identity matters, then inspect the exact installed device before promising segments, scenes, or restoration. Household snapshot references are read-only and ephemeral.
 3. Read [references/color-theory.md](references/color-theory.md), [references/palettes.md](references/palettes.md), and [references/light-score.md](references/light-score.md) when authoring or revising a palette or score.
 4. Compile the score against the returned capability document. Never infer capability support from a SKU or product page.
 5. Show a redacted dry run unless the user already gave a direct imperative to change the lights.
@@ -20,6 +20,7 @@ The current execution provider is Govee's documented Developer Platform. Provide
 7. Restore from the receipt when requested. Explain when the API could not capture the prior segmented state exactly.
 
 Read [references/govee-platform.md](references/govee-platform.md) for endpoints, capability forms, rate limits, and the public/private API boundary. Read [references/ecosystem.md](references/ecosystem.md) when deciding whether the documented cloud API, LAN, MQTT, BLE, or an existing MCP implementation should own execution. Read [references/device-evidence.md](references/device-evidence.md) before interpreting a successful API response as visual proof. Read [references/safety.md](references/safety.md) before changing devices, handling identifiers, or claiming restoration. Read [references/lan-razer.md](references/lan-razer.md) before making any claim about the per-LED LAN channel — it is undocumented by Govee, and that page is the provenance chain for every claim Suffuse relies on.
+Read [references/device-registry.md](references/device-registry.md) before using household observations for transport selection, persistence, or group design.
 
 ## Use the deterministic CLI
 

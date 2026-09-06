@@ -1,5 +1,6 @@
-// LAN transport — the pure parts. Sockets are exercised against hardware, not
-// in CI; what CI must hold is the encoding and the compile, because the razer
+// LAN transport — the pure parts. Discovery and documented state sockets have
+// a loopback fake-device integration test; physical writes remain hardware-only.
+// What CI must hold most tightly is the encoding and the compile, because the razer
 // channel is MUTE: a malformed frame never errors, it just paints nothing and
 // reads as an unsupported device. Construction-time checks are the only error
 // surface this transport has.

@@ -1,6 +1,6 @@
 # MCP surface
 
-`mcp/server.mjs` is a local stdio MCP server built with the official MCP v2 TypeScript SDK. It exposes focused tools for palette listing, score validation, device inspection, scene discovery, compilation, apply, and restore.
+`mcp/server.mjs` is a local stdio MCP server built with the official MCP v2 TypeScript SDK. It exposes focused tools for palette listing, score validation, device and household inspection, scene discovery, compilation, apply, and restore.
 
 The server is the stable agent-facing authoring and safety facade, not a new device transport for its own sake. Existing Govee MCP servers and the mature `govee2mqtt` bridge are compared in [ecosystem.md](ecosystem.md). Keep tool and `LightScore` contracts independent of the execution provider so an opt-in MQTT or LAN backend can be added later without changing agent workflows.
 
@@ -9,6 +9,9 @@ The server is the stable agent-facing authoring and safety facade, not a new dev
 - The server inherits `GOVEE_API_KEY` from its process environment; no tool accepts a key.
 - Local palette listing and score validation need no credentials.
 - Device and scene reads need `GOVEE_API_KEY`.
+- `govee_inspect_household` remains useful without a key: it reports cloud as
+  not configured and returns any current LAN observations. Snapshot references
+  are ephemeral and are not accepted as write targets.
 - Physical writes are disabled unless the server process has `GOVEE_MCP_ALLOW_WRITES=1`.
 - Every write tool also requires `confirmWrite: true` and an absolute private receipt path.
 - A score that compiles to `segmentedColorRgb` additionally requires `confirmSegments: true`.

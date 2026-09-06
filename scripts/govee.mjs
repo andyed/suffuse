@@ -20,6 +20,11 @@ import {
   materializePaletteScore,
   summarizePalettes
 } from './palettes.mjs';
+import {
+  buildDoctorReport,
+  buildHouseholdRegistry,
+  summarizeHouseholdRegistry
+} from './registry.mjs';
 
 const BASE_URL = 'https://openapi.api.govee.com';
 const PATHS = Object.freeze({
@@ -221,6 +226,56 @@ async function inspect(args) {
       showIdentifiers: !!args['show-identifiers']
     })
   });
+}
+
+function sourceError(error) {
+  return {
+    code: error?.code ?? 'unexpected-error',
+    message: String(error?.message ?? error)
+  };
+}
+
+async function probeHousehold(args = {}) {
+  const observedAt = new Date().toISOString();
+  const timeoutMs = args.timeout === undefined ? undefined : Number(args.timeout);
+  if (timeoutMs !== undefined && (!Number.isFinite(timeoutMs) || timeoutMs <= 0)) {
+    throw new GoveeSkillError('--timeout must be a positive number of milliseconds', 'invalid-arguments');
+  }
+
+  const cloudConfigured = !!String(process.env.GOVEE_API_KEY ?? '').trim();
+  const cloudProbe = cloudConfigured
+    ? discoverDevices()
+      .then(devices => ({ devices, status: { status: 'ok', deviceCount: devices.length } }))
+      .catch(error => ({ devices: [], status: { status: 'error', deviceCount: 0, error: sourceError(error) } }))
+    : Promise.resolve({ devices: [], status: { status: 'not-configured', deviceCount: 0 } });
+
+  const lanProbe = import('./lan.mjs')
+    .then(lan => lan.lanScan({
+      subnet: args.subnet ?? null,
+      timeoutMs
+    }))
+    .then(devices => ({ devices, status: { status: 'ok', deviceCount: devices.length } }))
+    .catch(error => ({ devices: [], status: { status: 'error', deviceCount: 0, error: sourceError(error) } }));
+
+  const [cloud, lan] = await Promise.all([cloudProbe, lanProbe]);
+  return buildHouseholdRegistry({
+    cloudDevices: cloud.devices,
+    lanDevices: lan.devices,
+    observedAt,
+    sources: { cloud: cloud.status, lan: lan.status }
+  });
+}
+
+async function household(args) {
+  const registry = await probeHousehold(args);
+  printJson(summarizeHouseholdRegistry(registry, {
+    showIdentifiers: !!args['show-identifiers']
+  }));
+}
+
+async function doctor(args) {
+  const registry = await probeHousehold(args);
+  printJson(buildDoctorReport(summarizeHouseholdRegistry(registry)));
 }
 
 async function palettes(args) {
@@ -763,6 +818,8 @@ async function main() {
     return;
   }
   if (command === 'inspect') return inspect(args);
+  if (command === 'household') return household(args);
+  if (command === 'doctor') return doctor(args);
   if (command === 'scenes') return scenes(args);
   if (command === 'palettes') return palettes(args);
   if (command === 'compile') return compile(args);
@@ -788,6 +845,7 @@ export {
   enrichDeviceForScore,
   executeOperations,
   loadJson,
+  probeHousehold,
   querySceneCatalog,
   queryState,
   writePrivateJson

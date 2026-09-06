@@ -47,6 +47,8 @@
   "scripts": {
     "test": "node --test",
     "doctor": "node scripts/manage.mjs doctor",
+    "doctor:govee": "node scripts/govee.mjs doctor",
+    "household": "node scripts/govee.mjs household",
     "inspect:fixture": "node scripts/govee.mjs inspect --fixture tests/fixtures/segmented-device.json --sku H0001",
     "mcp:describe": "node mcp/server.mjs --describe",
     "palettes": "node scripts/govee.mjs palettes"

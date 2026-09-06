@@ -25,6 +25,7 @@ export const MCP_TOOL_METADATA = Object.freeze([
   { name: 'govee_list_palettes', title: 'List lighting palettes', readOnly: true },
   { name: 'govee_validate_score', title: 'Validate a LightScore', readOnly: true },
   { name: 'govee_inspect_devices', title: 'Inspect Govee devices', readOnly: true },
+  { name: 'govee_inspect_household', title: 'Inspect the Govee household', readOnly: true },
   { name: 'govee_list_scenes', title: 'List Govee scenes', readOnly: true },
   { name: 'govee_compile_score', title: 'Compile a LightScore', readOnly: true },
   { name: 'govee_apply_score', title: 'Apply a LightScore', readOnly: false },
@@ -131,6 +132,22 @@ export async function createMcpServer() {
     const args = ['inspect'];
     if (sku) args.push('--sku', sku);
     if (name) args.push('--name', name);
+    return result(await runCli(args));
+  });
+
+  server.registerTool('govee_inspect_household', {
+    title: 'Inspect the Govee household',
+    description: 'Merge current cloud inventory and LAN scan observations without changing devices. Exact device ids are the only automatic join key; every transport fact retains its source, observation time, and reachability evidence. Household identifiers stay redacted.',
+    inputSchema: z.object({
+      subnet: z.string().optional(),
+      timeoutMs: z.number().int().positive().optional()
+    }),
+    outputSchema: OUTPUT_SCHEMA,
+    annotations: annotations(true)
+  }, async ({ subnet, timeoutMs }) => {
+    const args = ['household'];
+    if (subnet) args.push('--subnet', subnet);
+    if (timeoutMs) args.push('--timeout', String(timeoutMs));
     return result(await runCli(args));
   });
 

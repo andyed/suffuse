@@ -24,7 +24,7 @@ community project and is not affiliated with or endorsed by Govee.
 
 | Surface | Role |
 | --- | --- |
-| MCP server | Exposes twelve typed tools over local stdio and enforces the runtime write gates |
+| MCP server | Exposes thirteen typed tools over local stdio and enforces the runtime write gates |
 | Agent Skill | Teaches Codex, Claude Code, and OpenClaw when to inspect, compile, confirm, apply, restore, and report incomplete evidence |
 
 ### What the Govee API key unlocks
@@ -55,6 +55,7 @@ keys for the same account, so update every service that uses the old key.
 | Tool | What it does | Default |
 | --- | --- | --- |
 | `govee_inspect_devices` | Reads installed devices and advertised capabilities, with household identifiers redacted | Read-only |
+| `govee_inspect_household` | Merges current cloud and LAN observations into one provenance-aware inventory, with identifiers redacted | Read-only |
 | `govee_list_scenes` | Reads native or DIY scene names for one exact device | Read-only |
 | `govee_validate_score` | Validates lighting intent locally | Read-only |
 | `govee_compile_score` | Discovers the selected device and returns a redacted execution plan | Read-only |
@@ -78,6 +79,21 @@ Run the local stdio server:
 ```bash
 GOVEE_API_KEY="your-private-key" node mcp/server.mjs
 ```
+
+Diagnose cloud configuration, LAN discovery, and exact device-identity merging
+without changing a light:
+
+```bash
+node scripts/govee.mjs doctor
+node scripts/govee.mjs household
+```
+
+`household` is a live read-only snapshot, not a durable routing table. Cloud
+account membership does not prove current reachability; a LAN scan response
+records only that the device answered at the stated observation time. Automatic
+merging requires an exact normalized device id. Command routing remains outside
+this first registry slice. See [the household device registry](references/device-registry.md)
+for the identity, freshness, privacy, and future routing contract.
 
 Configure an MCP client to run `node` with the absolute path to
 `mcp/server.mjs`, forwarding `GOVEE_API_KEY` from the client process environment.

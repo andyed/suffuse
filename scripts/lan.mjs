@@ -3,8 +3,8 @@
 // Desktop, SignalRGB and LedFx.
 //
 // ── Why this exists ─────────────────────────────────────────────────────────
-// The cloud Developer Platform is rate-limited (~10 req/min) and cannot address
-// individual LEDs on most fixtures. The LAN API has no rate ceiling that
+// The cloud Developer Platform has endpoint- and device-specific rate limits
+// and cannot address individual LEDs on most fixtures. The LAN API has no rate ceiling that
 // matters (razer measured at 40 Hz sustained with no device-side queue) and
 // reaches per-LED on RGBIC hardware. It is also keyless — which cuts both
 // ways: no auth gate protects the user's lights, so every write here sits
@@ -211,18 +211,18 @@ async function openSendSocket() {
  * the port with another controller (the Psychodeli+ app, LedFx…) silently
  * steals replies from one of the two. Failing loudly is the honest behaviour.
  */
-async function openReplySocket() {
+async function openReplySocket(replyPort = REPLY_PORT) {
   const socket = dgram.createSocket({ type: 'udp4' });
   try {
     await new Promise((resolve, reject) => {
       socket.once('error', reject);
-      socket.bind(REPLY_PORT, resolve);
+      socket.bind(replyPort, resolve);
     });
   } catch (error) {
     socket.close();
     if (error?.code === 'EADDRINUSE') {
       throw new GoveeSkillError(
-        'UDP :4002 is held by another local light controller; quit it, or pass --ip to skip discovery',
+        `UDP :${replyPort} is held by another local light controller; quit it before discovery or state reads`,
         'reply-port-busy'
       );
     }
@@ -239,8 +239,17 @@ async function openReplySocket() {
  * lamps rejoin lazily), so "answered multicast" says nothing about the others,
  * and multicast silence must never be read as "no LAN support".
  */
-export async function lanScan({ timeoutMs = 6000, subnet = null } = {}) {
-  const socket = await openReplySocket();
+export async function lanScan({
+  timeoutMs = 6000,
+  subnet = null,
+  scanIps = null,
+  includeMulticast = true,
+  replyPort = REPLY_PORT,
+  scanPort = SCAN_PORT,
+  commandPort = CMD_PORT,
+  multicastAddress = MULTICAST_ADDR
+} = {}) {
+  const socket = await openReplySocket(replyPort);
   const found = new Map();
   socket.on('message', (buffer, rinfo) => {
     try {
@@ -259,16 +268,24 @@ export async function lanScan({ timeoutMs = 6000, subnet = null } = {}) {
   });
 
   const scan = { msg: { cmd: 'scan', data: { account_topic: 'reserve' } } };
-  try {
-    socket.setBroadcast(true);
-    sendJson(socket, MULTICAST_ADDR, SCAN_PORT, scan);
-  } catch { /* multicast unavailable; the sweep still runs */ }
+  if (includeMulticast) {
+    try {
+      socket.setBroadcast(true);
+      sendJson(socket, multicastAddress, scanPort, scan);
+    } catch { /* multicast unavailable; the sweep still runs */ }
+  }
 
-  const base = subnet ?? localSubnet();
-  if (base) {
-    for (let host = 1; host <= 254; host++) {
-      sendJson(socket, `${base}.${host}`, SCAN_PORT, scan);
-      sendJson(socket, `${base}.${host}`, CMD_PORT, scan);
+  const targets = Array.isArray(scanIps) ? scanIps : null;
+  if (targets) {
+    for (const ip of targets) {
+      sendJson(socket, ip, scanPort, scan);
+      if (commandPort !== scanPort) sendJson(socket, ip, commandPort, scan);
+    }
+  } else {
+    const base = subnet ?? localSubnet();
+    for (let host = 1; base && host <= 254; host++) {
+      sendJson(socket, `${base}.${host}`, scanPort, scan);
+      sendJson(socket, `${base}.${host}`, commandPort, scan);
       if (host % 32 === 0) await sleep(50);
     }
   }
@@ -293,8 +310,12 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 /** Read onOff/brightness/color over LAN. This is the KEYLESS pre-write capture:
  * unlike the razer channel, devStatus genuinely answers. Capture happens before
  * any write — replies queue behind pending commands, so mid-write readback lies. */
-export async function lanDevStatus(ip, { timeoutMs = 3000 } = {}) {
-  const socket = await openReplySocket();
+export async function lanDevStatus(ip, {
+  timeoutMs = 3000,
+  replyPort = REPLY_PORT,
+  commandPort = CMD_PORT
+} = {}) {
+  const socket = await openReplySocket(replyPort);
   const state = await new Promise(resolve => {
     const timer = setTimeout(() => resolve(null), timeoutMs);
     socket.on('message', (buffer, rinfo) => {
@@ -313,7 +334,7 @@ export async function lanDevStatus(ip, { timeoutMs = 3000 } = {}) {
         }
       } catch { /* not ours */ }
     });
-    sendJson(socket, ip, CMD_PORT, { msg: { cmd: 'devStatus', data: {} } });
+    sendJson(socket, ip, commandPort, { msg: { cmd: 'devStatus', data: {} } });
   });
   socket.close();
   return state;
