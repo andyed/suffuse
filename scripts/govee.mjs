@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { randomUUID } from 'node:crypto';
-import { chmod, readFile, writeFile } from 'node:fs/promises';
+import { chmod, readFile, rename, unlink, writeFile } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   GoveeSkillError,
@@ -20,6 +21,13 @@ import {
   materializePaletteScore,
   summarizePalettes
 } from './palettes.mjs';
+import {
+  appendEvidence,
+  createEvidenceTransaction,
+  evidenceFromReceipt,
+  openUncertainty,
+  summarizeEvidence
+} from './evidence.mjs';
 import {
   buildDoctorReport,
   buildHouseholdRegistry,
@@ -40,11 +48,14 @@ const TIMEOUT_MS = 10_000;
 function usage() {
   return `Usage:
   govee.mjs inspect [--sku SKU] [--name NAME] [--fixture FILE] [--show-identifiers]
+  govee.mjs household [--subnet 192.168.1] [--timeout MS] [--show-identifiers]
+  govee.mjs doctor [--subnet 192.168.1] [--timeout MS]
   govee.mjs scenes --sku SKU [--name NAME] [--instance lightScene|diyScene]
   govee.mjs palettes [--name NAME] [--catalog FILE]
   govee.mjs compile --score FILE --capabilities FILE [--catalog FILE] [--output FILE]
   govee.mjs apply --score FILE [--catalog FILE] [--confirm-write --receipt FILE]
                    [--confirm-segments]
+  govee.mjs evidence --receipt FILE
   govee.mjs restore --receipt FILE --confirm-write
   govee.mjs lan scan [--subnet 192.168.1] [--timeout MS]
   govee.mjs lan paint --score FILE [--ip ADDR] [--hold-seconds N]
@@ -91,11 +102,104 @@ async function loadJson(path, label) {
 
 async function writePrivateJson(path, value, { overwrite = false } = {}) {
   if (!path) throw new GoveeSkillError('Output path is required', 'invalid-arguments');
-  await writeFile(path, `${JSON.stringify(value, null, 2)}\n`, {
-    mode: 0o600,
-    flag: overwrite ? 'w' : 'wx'
+  const body = `${JSON.stringify(value, null, 2)}\n`;
+  if (!overwrite) {
+    await writeFile(path, body, { mode: 0o600, flag: 'wx' });
+    await chmod(path, 0o600);
+    return;
+  }
+
+  // Rewrite through the receipt's own directory so rename is atomic. A crash
+  // leaves either the old complete journal or the new complete journal, never a
+  // truncated JSON file that destroys the restoration record.
+  const temporary = join(dirname(path), `.${basename(path)}.${process.pid}.${randomUUID()}.tmp`);
+  try {
+    await writeFile(temporary, body, { mode: 0o600, flag: 'wx' });
+    await chmod(temporary, 0o600);
+    await rename(temporary, path);
+    await chmod(path, 0o600);
+  } catch (error) {
+    await unlink(temporary).catch(() => {});
+    throw error;
+  }
+}
+
+function requestedState(plan) {
+  return {
+    executionMode: plan.executionMode ?? null,
+    operationCount: plan.operations?.length ?? null,
+    operations: plan.operations?.map(operation => ({
+      label: operation.label ?? null,
+      capability: operation.payload?.capability ?? null
+    })) ?? null,
+    restoreMode: plan.restoreMode ?? null,
+    look: plan.requestedLook ?? null,
+    channels: plan.channels ?? null,
+    pixels: plan.pixels ?? null,
+    holdSeconds: plan.holdSeconds ?? null
+  };
+}
+
+function beginEvidence(plan, transport) {
+  const profiles = {
+    cloud: {
+      protocolAcknowledgment: 'service-response',
+      query: 'cloud-state',
+      visualVerification: 'external-only'
+    },
+    lan: {
+      protocolAcknowledgment: 'none',
+      query: 'pre-write-whole-device-only',
+      visualVerification: 'external-only'
+    },
+    ble: {
+      protocolAcknowledgment: 'none',
+      query: 'unavailable',
+      visualVerification: 'external-only'
+    }
+  };
+  const evidence = createEvidenceTransaction({
+    transport,
+    requestedState: requestedState(plan),
+    transportFacts: profiles[transport]
   });
-  await chmod(path, 0o600);
+  for (const [index, warning] of (plan.warnings ?? []).entries()) {
+    openUncertainty(evidence, `plan-warning-${index + 1}`, warning);
+  }
+  return evidence;
+}
+
+function recordOutcomes(evidence, outcomes, { transport, source }) {
+  for (const outcome of outcomes) {
+    appendEvidence(evidence, {
+      kind: 'protocol',
+      status: outcome.ok === false
+        ? 'failed'
+        : transport === 'cloud' ? 'accepted' : 'sent-unacknowledged',
+      source,
+      facts: {
+        label: outcome.label ?? outcome.action ?? outcome.channel ?? null,
+        code: outcome.code ?? null,
+        message: outcome.ok === false ? outcome.message ?? null : null
+      }
+    });
+  }
+}
+
+function recordAppearanceBoundary(evidence) {
+  appendEvidence(evidence, {
+    kind: 'visual',
+    status: 'not-observed',
+    source: 'suffuse',
+    facts: { method: null }
+  });
+  openUncertainty(evidence, 'appearance-unverified', 'No visual observation is recorded.');
+}
+
+function recordRestoreCoverage(evidence, restoreCoverage) {
+  if (restoreCoverage?.warning) {
+    openUncertainty(evidence, 'restoration-coverage', restoreCoverage.warning);
+  }
 }
 
 function apiKey() {
@@ -332,6 +436,18 @@ async function compile(args) {
   printJson(args['show-identifiers'] ? plan : redactPlan(plan));
 }
 
+async function inspectEvidence(args) {
+  const receipt = await loadJson(args.receipt, 'receipt');
+  if (receipt?.version !== 1 || !Array.isArray(receipt?.restoreOperations)) {
+    throw new GoveeSkillError('Receipt has no valid restore operation list', 'invalid-receipt');
+  }
+  printJson({
+    readOnly: true,
+    receiptStatus: receipt.status ?? null,
+    evidence: summarizeEvidence(evidenceFromReceipt(receipt), { includeDetails: false })
+  });
+}
+
 async function apply(args) {
   if (args.fixture) throw new GoveeSkillError('apply never accepts fixture data', 'fixture-write-blocked');
   const score = await loadScoreWithPalette(args);
@@ -352,16 +468,20 @@ async function apply(args) {
     );
   }
 
+  const evidence = beginEvidence(plan, 'cloud');
+
   // Reserve the receipt before touching a physical device. This fails closed if the path
   // already exists and leaves a useful prepared record if the process exits unexpectedly.
   await writePrivateJson(args.receipt, {
     version: 1,
     createdAt: new Date().toISOString(),
     status: 'prepared',
+    transport: 'cloud',
     plan,
     outcomes: [],
     restoreOperations: [],
-    restoreCoverage: { mode: plan.restoreMode, complete: false, capturedInstances: [], warning: 'State capture has not run.' }
+    restoreCoverage: { mode: plan.restoreMode, complete: false, capturedInstances: [], warning: 'State capture has not run.' },
+    evidence
   });
 
   let stateDocument = null;
@@ -369,9 +489,28 @@ async function apply(args) {
   if (plan.restoreMode === 'capture') {
     try {
       stateDocument = await queryState(device);
+      appendEvidence(evidence, {
+        kind: 'query',
+        status: 'captured',
+        source: 'govee-cloud-state',
+        facts: { query: 'pre-write-state' }
+      });
     } catch (error) {
       stateWarning = `Pre-write state capture failed: ${error.message}`;
+      appendEvidence(evidence, {
+        kind: 'query',
+        status: 'failed',
+        source: 'govee-cloud-state',
+        facts: { query: 'pre-write-state', code: error.code ?? 'query-failed' }
+      });
     }
+  } else {
+    appendEvidence(evidence, {
+      kind: 'query',
+      status: 'unavailable',
+      source: 'light-score',
+      facts: { reason: 'restore-mode-none' }
+    });
   }
   const restoreOperations = stateDocument ? restoreOperationsFromState(device, stateDocument) : [];
   const sceneWrite = plan.operations.some(operation => operation.payload.capability.type === 'devices.capabilities.dynamic_scene');
@@ -384,33 +523,43 @@ async function apply(args) {
       : sceneWrite ? 'Prior dynamic scene selection may not be queryable; restoration covers only returned device state.'
       : restoreOperations.length ? null : 'No queryable restore operations were captured.')
   };
+  recordRestoreCoverage(evidence, restoreCoverage);
 
   let outcomes;
   try {
     outcomes = await executeOperations(plan.operations);
   } catch (error) {
     outcomes = error.outcomes ?? [];
+    recordOutcomes(evidence, outcomes, { transport: 'cloud', source: 'govee-cloud-control' });
+    if (outcomes.some(outcome => outcome.ok)) recordAppearanceBoundary(evidence);
     const receipt = {
       version: 1,
       createdAt: new Date().toISOString(),
       status: 'partial-or-failed',
+      transport: 'cloud',
       plan,
       outcomes,
       restoreOperations,
-      restoreCoverage
+      restoreCoverage,
+      evidence
     };
     await writePrivateJson(args.receipt, receipt, { overwrite: true });
     throw new GoveeSkillError(`Write stopped; receipt saved to ${args.receipt}: ${error.message}`, error.code);
   }
 
+  recordOutcomes(evidence, outcomes, { transport: 'cloud', source: 'govee-cloud-control' });
+  recordAppearanceBoundary(evidence);
+
   const receipt = {
     version: 1,
     createdAt: new Date().toISOString(),
     status: 'applied',
+    transport: 'cloud',
     plan,
     outcomes,
     restoreOperations,
-    restoreCoverage
+    restoreCoverage,
+    evidence
   };
   await writePrivateJson(args.receipt, receipt, { overwrite: true });
   printJson({
@@ -419,7 +568,8 @@ async function apply(args) {
     executionMode: plan.executionMode,
     operationCount: outcomes.length,
     receipt: args.receipt,
-    restoreCoverage
+    restoreCoverage,
+    evidence: summarizeEvidence(evidence)
   });
 }
 
@@ -429,27 +579,73 @@ async function restore(args) {
   if (receipt?.version !== 1 || !Array.isArray(receipt?.restoreOperations)) {
     throw new GoveeSkillError('Receipt has no valid restore operation list', 'invalid-receipt');
   }
-  // LAN receipts restore over LAN — releasing any hold first, then replaying the
-  // captured whole-device state via the documented colorwc channel.
-  if (receipt.transport === 'lan') return restoreLan(receipt, await import('./lan.mjs'));
-  // BLE receipts replay the DECLARED restore point — the channel has no
-  // readback, so this is a return to a stated neutral, not to prior state.
-  if (receipt.transport === 'ble') return restoreBle(receipt, await import('./ble.mjs'));
-  if (!receipt.restoreOperations.length) {
-    throw new GoveeSkillError('Receipt contains no queryable state to restore', 'restore-unavailable');
-  }
-  receipt.restoreOperations.forEach(validateControlOperation);
-  const outcomes = await executeOperations(receipt.restoreOperations);
-  printJson({
-    restored: true,
-    target: {
-      sku: receipt?.plan?.target?.sku,
-      device: redactIdentifier(receipt?.plan?.target?.device)
-    },
-    operationCount: outcomes.length,
-    outcomes,
-    warning: receipt?.restoreCoverage?.warning ?? null
+  const evidence = evidenceFromReceipt(receipt);
+  receipt.evidence = evidence;
+  appendEvidence(evidence, {
+    kind: 'restoration',
+    status: 'started',
+    source: 'suffuse',
+    facts: { operationCount: receipt.restoreOperations.length }
   });
+  receipt.updatedAt = new Date().toISOString();
+  // Persist the attempt before touching the device. If the process dies during
+  // restore, the private journal says that restoration was in flight.
+  await writePrivateJson(args.receipt, receipt, { overwrite: true });
+
+  let restored;
+  try {
+    // LAN receipts restore over LAN — releasing any hold first, then replaying the
+    // captured whole-device state via the documented colorwc channel.
+    if (receipt.transport === 'lan') {
+      restored = await restoreLan(receipt, await import('./lan.mjs'));
+    // BLE receipts replay the DECLARED restore point — the channel has no
+    // readback, so this is a return to a stated neutral, not to prior state.
+    } else if (receipt.transport === 'ble') {
+      restored = await restoreBle(receipt, await import('./ble.mjs'));
+    } else {
+      if (!receipt.restoreOperations.length) {
+        throw new GoveeSkillError('Receipt contains no queryable state to restore', 'restore-unavailable');
+      }
+      receipt.restoreOperations.forEach(validateControlOperation);
+      const outcomes = await executeOperations(receipt.restoreOperations);
+      restored = {
+        restored: true,
+        transport: 'cloud',
+        target: {
+          sku: receipt?.plan?.target?.sku,
+          device: redactIdentifier(receipt?.plan?.target?.device)
+        },
+        operationCount: outcomes.length,
+        outcomes,
+        warning: receipt?.restoreCoverage?.warning ?? null
+      };
+    }
+  } catch (error) {
+    appendEvidence(evidence, {
+      kind: 'restoration',
+      status: 'failed',
+      source: receipt.transport ?? 'cloud',
+      facts: { code: error.code ?? 'restore-failed', message: error.message }
+    });
+    receipt.updatedAt = new Date().toISOString();
+    await writePrivateJson(args.receipt, receipt, { overwrite: true });
+    throw error;
+  }
+
+  appendEvidence(evidence, {
+    kind: 'restoration',
+    status: 'completed',
+    source: receipt.transport ?? 'cloud',
+    facts: {
+      operationCount: restored.operationCount ?? restored.sent?.length ?? null,
+      coverageComplete: receipt?.restoreCoverage?.complete === true,
+      appearance: 'not-observed'
+    }
+  });
+  openUncertainty(evidence, 'restoration-appearance-unverified', 'Restore operations completed, but restored appearance was not visually observed.');
+  receipt.updatedAt = new Date().toISOString();
+  await writePrivateJson(args.receipt, receipt, { overwrite: true });
+  printJson({ ...restored, evidence: summarizeEvidence(evidence) });
 }
 
 // ── LAN commands ─────────────────────────────────────────────────────────────
@@ -553,6 +749,7 @@ async function lanPaint(args, lan) {
   const plan = {
     executionMode: mode,
     target: { sku, ip },
+    requestedLook: score.look,
     pixels: pixels ? pixels.length : null,
     holdSeconds: mode === 'lan-per-led' ? holdSeconds : null,
     warnings
@@ -569,6 +766,7 @@ async function lanPaint(args, lan) {
       'segment-write-not-confirmed'
     );
   }
+  const evidence = beginEvidence(plan, 'lan');
 
   // Reserve the receipt before touching the device — same fail-closed contract as apply().
   await writePrivateJson(args.receipt, {
@@ -578,7 +776,8 @@ async function lanPaint(args, lan) {
     transport: 'lan',
     plan,
     restoreOperations: [],
-    restoreCoverage: { mode: 'capture', complete: false, warning: 'State capture has not run.' }
+    restoreCoverage: { mode: 'capture', complete: false, warning: 'State capture has not run.' },
+    evidence
   });
 
   // Keyless pre-write capture: devStatus answers over LAN (the razer channel does
@@ -586,37 +785,76 @@ async function lanPaint(args, lan) {
   // capture→restore mapping (CCT-mode trap included) lives in lanRestoreOperations.
   const captured = await lan.lanDevStatus(ip);
   const restoreOperations = captured ? lan.lanRestoreOperations(ip, captured) : [];
+  appendEvidence(evidence, {
+    kind: 'query',
+    status: captured ? 'captured' : 'unavailable',
+    source: 'govee-lan-devStatus',
+    facts: {
+      query: 'pre-write-whole-device-state',
+      restoreOperationCount: restoreOperations.length,
+      segmentStateQueryable: false
+    }
+  });
   const restoreCoverage = {
     mode: 'capture',
-    complete: restoreOperations.length > 1,
+    complete: mode === 'lan-solid' && restoreOperations.length > 1,
     warning: !captured
       ? 'devStatus did not answer before the write; restoration will fall back to releasing the device to its own effects.'
-      : restoreOperations.length > 1
+      : mode === 'lan-per-led' && restoreOperations.length > 1
         ? 'devStatus reflects the whole-device state only; any prior per-LED look is not queryable and cannot be restored.'
-        : 'The device reported black RGB with no colour temperature; its prior colour is unknown and will not be replayed.'
+        : restoreOperations.length > 1
+          ? null
+          : 'The device reported black RGB with no colour temperature; its prior colour is unknown and will not be replayed.'
   };
+  recordRestoreCoverage(evidence, restoreCoverage);
 
-  if (mode === 'lan-per-led') {
-    await lan.lanPaintPixels(ip, pixels);
-    if (holdSeconds > 0) {
-      const { spawn } = await import('node:child_process');
-      const self = fileURLToPath(import.meta.url);
-      const child = spawn(process.execPath, [
-        self, 'lan', 'hold-loop',
-        '--ip', ip,
-        '--frame', Buffer.from(JSON.stringify(pixels)).toString('base64'),
-        '--ttl', String(holdSeconds)
-      ], { detached: true, stdio: 'ignore' });
-      child.unref();
-      await lan.writeHold(ip, { pid: child.pid, expiresAt: Date.now() + holdSeconds * 1000, label: score.name });
+  try {
+    if (mode === 'lan-per-led') {
+      await lan.lanPaintPixels(ip, pixels);
+      if (holdSeconds > 0) {
+        const { spawn } = await import('node:child_process');
+        const self = fileURLToPath(import.meta.url);
+        const child = spawn(process.execPath, [
+          self, 'lan', 'hold-loop',
+          '--ip', ip,
+          '--frame', Buffer.from(JSON.stringify(pixels)).toString('base64'),
+          '--ttl', String(holdSeconds)
+        ], { detached: true, stdio: 'ignore' });
+        child.unref();
+        await lan.writeHold(ip, { pid: child.pid, expiresAt: Date.now() + holdSeconds * 1000, label: score.name });
+      } else {
+        warnings.push('No hold requested: the device reverts to its own effects in roughly a minute (hardware dead-man).');
+      }
     } else {
-      warnings.push('No hold requested: the device reverts to its own effects in roughly a minute (hardware dead-man).');
+      await lan.lanSetColor(ip, score.look.color, {
+        brightness: score.look.brightness ?? null
+      });
     }
-  } else {
-    await lan.lanSetColor(ip, score.look.color, {
-      brightness: score.look.brightness ?? null
-    });
+  } catch (error) {
+    recordOutcomes(evidence, [{
+      action: mode === 'lan-per-led' ? 'razer-paint' : 'colorwc',
+      ok: false,
+      code: error.code ?? 'lan-write-failed',
+      message: error.message
+    }], { transport: 'lan', source: 'govee-lan' });
+    await writePrivateJson(args.receipt, {
+      version: 1,
+      createdAt: new Date().toISOString(),
+      status: 'partial-or-failed',
+      transport: 'lan',
+      plan,
+      restoreOperations,
+      restoreCoverage,
+      evidence
+    }, { overwrite: true });
+    throw error;
   }
+
+  recordOutcomes(evidence, [{
+    action: mode === 'lan-per-led' ? 'razer-paint' : 'colorwc',
+    ok: true
+  }], { transport: 'lan', source: 'govee-lan' });
+  recordAppearanceBoundary(evidence);
 
   await writePrivateJson(args.receipt, {
     version: 1,
@@ -625,7 +863,8 @@ async function lanPaint(args, lan) {
     transport: 'lan',
     plan,
     restoreOperations,
-    restoreCoverage
+    restoreCoverage,
+    evidence
   }, { overwrite: true });
 
   printJson({
@@ -637,6 +876,7 @@ async function lanPaint(args, lan) {
     receipt: args.receipt,
     restoreCoverage,
     warnings,
+    evidence: summarizeEvidence(evidence),
     // The channel is mute: report what was SENT, never that the device obeyed.
     verified: false
   });
@@ -723,6 +963,14 @@ async function bleSetCommand(args, ble) {
     warning: 'BLE has no state readback: prior colour and brightness were not captured. '
       + 'Restore returns the lamp to a declared warm white, not to its previous look.'
   };
+  const evidence = beginEvidence(plan, 'ble');
+  appendEvidence(evidence, {
+    kind: 'query',
+    status: 'unavailable',
+    source: 'govee-ble',
+    facts: { reason: 'protocol-has-no-state-readback' }
+  });
+  recordRestoreCoverage(evidence, restoreCoverage);
 
   // Reserve the receipt before touching the device — same fail-closed contract
   // as every other write path.
@@ -733,10 +981,34 @@ async function bleSetCommand(args, ble) {
     transport: 'ble',
     plan,
     restoreOperations,
-    restoreCoverage
+    restoreCoverage,
+    evidence
   });
 
-  const outcome = await ble.bleSet(peripheral, { power, color, brightness });
+  let outcome;
+  try {
+    outcome = await ble.bleSet(peripheral, { power, color, brightness });
+  } catch (error) {
+    recordOutcomes(evidence, [{
+      action: 'ble-one-shot',
+      ok: false,
+      code: error.code ?? 'ble-write-failed',
+      message: error.message
+    }], { transport: 'ble', source: 'govee-ble' });
+    await writePrivateJson(args.receipt, {
+      version: 1,
+      createdAt: new Date().toISOString(),
+      status: 'partial-or-failed',
+      transport: 'ble',
+      plan,
+      restoreOperations,
+      restoreCoverage,
+      evidence
+    }, { overwrite: true });
+    throw error;
+  }
+  recordOutcomes(evidence, outcome.sent, { transport: 'ble', source: 'ble-write-without-response' });
+  recordAppearanceBoundary(evidence);
 
   await writePrivateJson(args.receipt, {
     version: 1,
@@ -746,7 +1018,8 @@ async function bleSetCommand(args, ble) {
     plan,
     sent: outcome.sent,
     restoreOperations,
-    restoreCoverage
+    restoreCoverage,
+    evidence
   }, { overwrite: true });
 
   printJson({
@@ -757,6 +1030,7 @@ async function bleSetCommand(args, ble) {
     channels: plan.channels,
     receipt: args.receipt,
     restoreCoverage,
+    evidence: summarizeEvidence(evidence),
     // Write-without-response resolves when the OS accepts the buffer. Report
     // what was SENT, never that the lamp obeyed.
     verified: false
@@ -775,13 +1049,13 @@ async function restoreBle(receipt, ble) {
       color: operation.color,
       brightness: operation.brightness
     });
-    printJson({
+    return {
       restored: true,
       transport: 'ble',
       target: { name: operation.name },
       sent: outcome.sent,
       warning: receipt?.restoreCoverage?.warning ?? null
-    });
+    };
   } finally {
     ble.bleStop();
   }
@@ -807,7 +1081,13 @@ async function restoreLan(receipt, lan) {
       throw new GoveeSkillError(`Unknown LAN restore action: ${operation.action}`, 'invalid-receipt');
     }
   }
-  printJson({ restored: true, transport: 'lan', operationCount: outcomes.length, outcomes, warning: receipt?.restoreCoverage?.warning ?? null });
+  return {
+    restored: true,
+    transport: 'lan',
+    operationCount: outcomes.length,
+    outcomes,
+    warning: receipt?.restoreCoverage?.warning ?? null
+  };
 }
 
 async function main() {
@@ -823,6 +1103,7 @@ async function main() {
   if (command === 'scenes') return scenes(args);
   if (command === 'palettes') return palettes(args);
   if (command === 'compile') return compile(args);
+  if (command === 'evidence') return inspectEvidence(args);
   if (command === 'apply') return apply(args);
   if (command === 'restore') return restore(args);
   if (command === 'lan') return lanCommand(args);

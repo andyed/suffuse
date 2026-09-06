@@ -22,9 +22,17 @@ Require a receipt path for writes. Store:
 - per-operation HTTP outcome;
 - queryable pre-write state converted into restore operations;
 - restoration coverage and warnings;
+- typed evidence events for request, selected transport, query, protocol,
+  visual observation, restoration attempt, and residual uncertainty;
 - timestamps and selected device identity.
 
 The receipt intentionally excludes the API key.
+
+Treat the evidence transaction as a classification boundary, not a success
+counter. Cloud `accepted` means the service accepted an operation. LAN/BLE
+`sent-unacknowledged` means the host emitted a command on a mute channel.
+Neither means the requested appearance rendered. See
+[evidence-transactions.md](evidence-transactions.md).
 
 ## State restoration limits
 

@@ -17,9 +17,11 @@ The current execution provider is Govee's documented Developer Platform. Provide
 4. Compile the score against the returned capability document. Never infer capability support from a SKU or product page.
 5. Show a redacted dry run unless the user already gave a direct imperative to change the lights.
 6. For a write, use `--confirm-write` and save the receipt to a private path. Segment writes also require `--confirm-segments` until visible independence has been established.
-7. Restore from the receipt when requested. Explain when the API could not capture the prior segmented state exactly.
+7. Inspect the receipt evidence when reporting results. Keep protocol acceptance, query state, visual observation, and residual uncertainty separate.
+8. Restore from the receipt when requested. Explain when the API could not capture the prior segmented state exactly; the restore attempt is persisted back into the receipt.
 
 Read [references/govee-platform.md](references/govee-platform.md) for endpoints, capability forms, rate limits, and the public/private API boundary. Read [references/ecosystem.md](references/ecosystem.md) when deciding whether the documented cloud API, LAN, MQTT, BLE, or an existing MCP implementation should own execution. Read [references/device-evidence.md](references/device-evidence.md) before interpreting a successful API response as visual proof. Read [references/safety.md](references/safety.md) before changing devices, handling identifiers, or claiming restoration. Read [references/lan-razer.md](references/lan-razer.md) before making any claim about the per-LED LAN channel — it is undocumented by Govee, and that page is the provenance chain for every claim Suffuse relies on.
+Read [references/evidence-transactions.md](references/evidence-transactions.md) before interpreting or extending receipt evidence across transports.
 Read [references/device-registry.md](references/device-registry.md) before using household observations for transport selection, persistence, or group design.
 
 ## Use the deterministic CLI
@@ -139,3 +141,5 @@ Report:
 - number and outcome of control operations;
 - receipt path, when written;
 - restoration coverage and any state that could not be captured.
+- the evidence summary statement and residual uncertainty; never translate
+  `accepted` or `sent-unacknowledged` into visible success.

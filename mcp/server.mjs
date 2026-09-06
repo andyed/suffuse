@@ -29,6 +29,7 @@ export const MCP_TOOL_METADATA = Object.freeze([
   { name: 'govee_list_scenes', title: 'List Govee scenes', readOnly: true },
   { name: 'govee_compile_score', title: 'Compile a LightScore', readOnly: true },
   { name: 'govee_apply_score', title: 'Apply a LightScore', readOnly: false },
+  { name: 'govee_inspect_receipt', title: 'Inspect lighting evidence', readOnly: true },
   { name: 'govee_restore', title: 'Restore Govee lights', readOnly: false },
   { name: 'govee_lan_scan', title: 'Scan the LAN for Govee devices', readOnly: true },
   { name: 'govee_lan_paint', title: 'Paint a LightScore over LAN', readOnly: false },
@@ -196,6 +197,17 @@ export async function createMcpServer() {
       if (confirmSegments === true) args.push('--confirm-segments');
       return runCli(args);
     }));
+  });
+
+  server.registerTool('govee_inspect_receipt', {
+    title: 'Inspect lighting evidence',
+    description: 'Classify the evidence in a private receipt without changing a device or returning household identifiers. Separates protocol acceptance, query results, visual verification, restoration attempts, and residual uncertainty.',
+    inputSchema: z.object({ receiptPath: z.string() }),
+    outputSchema: OUTPUT_SCHEMA,
+    annotations: annotations(true)
+  }, async ({ receiptPath }) => {
+    requireAbsoluteReceipt(receiptPath);
+    return result(await runCli(['evidence', '--receipt', receiptPath]));
   });
 
   server.registerTool('govee_restore', {

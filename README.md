@@ -24,7 +24,7 @@ community project and is not affiliated with or endorsed by Govee.
 
 | Surface | Role |
 | --- | --- |
-| MCP server | Exposes thirteen typed tools over local stdio and enforces the runtime write gates |
+| MCP server | Exposes fourteen typed tools over local stdio and enforces the runtime write gates |
 | Agent Skill | Teaches Codex, Claude Code, and OpenClaw when to inspect, compile, confirm, apply, restore, and report incomplete evidence |
 
 ### What the Govee API key unlocks
@@ -60,6 +60,7 @@ keys for the same account, so update every service that uses the old key.
 | `govee_validate_score` | Validates lighting intent locally | Read-only |
 | `govee_compile_score` | Discovers the selected device and returns a redacted execution plan | Read-only |
 | `govee_apply_score` | Applies a compiled look and writes a private restore receipt | Write-gated |
+| `govee_inspect_receipt` | Classifies protocol, query, visual, restoration, and uncertainty evidence without returning household identifiers | Read-only |
 | `govee_restore` | Restores the queryable prior state from a receipt | Write-gated |
 | `govee_list_palettes` | Lists the optional bundled palettes without contacting Govee | Read-only |
 | `govee_lan_scan` | Discovers Govee devices on the local network, keyless, and reports per-LED support | Read-only |
@@ -72,12 +73,6 @@ Inspect the MCP metadata without starting a connection:
 
 ```bash
 node mcp/server.mjs --describe
-```
-
-Run the local stdio server:
-
-```bash
-GOVEE_API_KEY="your-private-key" node mcp/server.mjs
 ```
 
 Diagnose cloud configuration, LAN discovery, and exact device-identity merging
@@ -94,6 +89,12 @@ records only that the device answered at the stated observation time. Automatic
 merging requires an exact normalized device id. Command routing remains outside
 this first registry slice. See [the household device registry](references/device-registry.md)
 for the identity, freshness, privacy, and future routing contract.
+
+Run the local stdio server:
+
+```bash
+GOVEE_API_KEY="your-private-key" node mcp/server.mjs
+```
 
 Configure an MCP client to run `node` with the absolute path to
 `mcp/server.mjs`, forwarding `GOVEE_API_KEY` from the client process environment.
@@ -140,6 +141,23 @@ This separates five facts that device-control tools often blur together:
 An accepted API request is not treated as proof of visible output. Restoration
 is reported as partial when Govee exposes global state but not the previous
 per-segment arrangement.
+
+Each private receipt also carries a transport-neutral evidence transaction. Its
+typed events keep requested state, selected transport, pre-write query results,
+protocol acceptance or lack of acknowledgment, visual observation, restoration
+attempts, and residual uncertainty separate. Inspect that classification without
+changing a device:
+
+```bash
+node scripts/govee.mjs evidence --receipt /private/path/look.receipt.json
+```
+
+The resulting summary deliberately says, for example, “Command accepted but
+appearance unverified.” Restoration writes its started/completed/failed attempt
+back into the receipt before and after touching the device. Existing v0.6.0
+receipts remain restorable and receive an explicitly inferred evidence boundary
+when inspected or restored. See [evidence transactions](references/evidence-transactions.md)
+for the contract.
 
 ## Quick start
 
