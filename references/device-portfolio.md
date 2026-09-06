@@ -44,6 +44,14 @@ hardware-verified fact would be suspect for everything else it claims.
 4. **`ourHardware` outranks every mined claim** for its SKU, and mining never
    overwrites it.
 
+## Known upstream disagreement
+
+`govee-local-api` 3.0.1 states two different segment counts for the **H612D**: its
+generated `SUPPORTED_DEVICES.md` says 15, its `light_capabilities.py` says 20. The miner
+reads the `.py`, so 20 is what lands here. Neither number is hardware-verified, and rule 3
+already holds the count at `verified: false` — treat it as a range until a discrete chase
+settles it.
+
 ## Licensing
 
 The miner reads the source repositories locally and extracts device facts —

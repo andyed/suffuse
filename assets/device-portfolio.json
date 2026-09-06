@@ -1,9 +1,9 @@
 {
- "minedAt": "2026-08-17T04:26:35.284Z",
+ "minedAt": "2026-09-06T04:23:05.580Z",
  "sources": {
   "goveeProducts": "signalrgb-govee-direct-connect@b6bdd85",
   "signalrgb": "SignalRGB-Govee-Network-Plugin@8b4e36d",
-  "localApi": "govee-local-api@218ab6b",
+  "localApi": "govee-local-api@a3fe441",
   "govee2mqtt": "govee2mqtt@6f5a844"
  },
  "validation": "H608B: signalrgb ledCount 15 + govee supportRazer:1 + lanApi segments 15 all match hardware (15 discrete @40Hz)",
@@ -1772,6 +1772,11 @@
     "supportRazer": false,
     "supportFeast": false,
     "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
    }
   },
   "H612B": {
@@ -1781,6 +1786,11 @@
     "supportRazer": false,
     "supportFeast": false,
     "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
    },
    "ourHardware": {
     "razer": {
@@ -1803,6 +1813,12 @@
     "supportRazer": false,
     "supportDreamView": true,
     "ledCount": 20
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 10,
+    "rgb": true,
+    "scenes": true
    }
   },
   "H612D": {
@@ -1812,6 +1828,12 @@
     "supportRazer": false,
     "supportFeast": false,
     "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 20,
+    "rgb": true,
+    "scenes": true
    }
   },
   "H612E": {
@@ -1830,6 +1852,12 @@
     "supportRazer": false,
     "supportFeast": false,
     "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 5,
+    "rgb": true,
+    "scenes": true
    }
   },
   "H6141": {
@@ -2117,6 +2145,12 @@
     "supportRazer": false,
     "supportFeast": false,
     "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 15,
+    "rgb": true,
+    "scenes": true
    }
   },
   "H616C": {
@@ -2253,6 +2287,12 @@
   },
   "H617E": {
    "sku": "H617E",
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "rgb": true,
+    "scenes": true
+   },
    "quirks": {
     "kind": "light",
     "lanApiCapable": false,
@@ -2826,6 +2866,11 @@
     "supportRazer": false,
     "supportDreamView": false,
     "ledCount": 15
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 0,
+    "basic": "BASIC_CAPABILITIES"
    }
   },
   "H61B6": {
@@ -4254,6 +4299,12 @@
     "supportRazer": false,
     "supportFeast": false,
     "supportMusicalFeast": false
+   },
+   "lanApi": {
+    "supported": true,
+    "segments": 4,
+    "rgb": true,
+    "scenes": true
    }
   },
   "H707A": {
