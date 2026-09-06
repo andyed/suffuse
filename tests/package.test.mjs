@@ -89,6 +89,17 @@ test('package and skill expose the Suffuse identity', async () => {
   assert.match(readme, /Desktop apps \| Closed beta/);
 });
 
+test('every shipped version string agrees', async () => {
+  // The plugin manifest silently trailed package.json by a release; plugin
+  // consumers read the manifest, so drift here ships a wrong version number.
+  const read = async (rel) => (await import('node:fs/promises')).readFile(new URL(rel, import.meta.url), 'utf8');
+  const packageDocument = JSON.parse(await read('../package.json'));
+  const plugin = JSON.parse(await read('../.claude-plugin/plugin.json'));
+  const server = await read('../mcp/server.mjs');
+  assert.equal(plugin.version, packageDocument.version);
+  assert.match(server, new RegExp(`const VERSION = '${packageDocument.version.replace(/\./g, '\\.')}';`));
+});
+
 test('ships an exact 1200x630 Open Graph card', async () => {
   const png = await readFile(new URL('../assets/brand/suffuse-og-1200x630.png', import.meta.url));
   assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
