@@ -86,7 +86,28 @@ probes exactly this with an 86-LED frame at every load.
 | H6047 has 20 slots — 0-9 up the left bar, 10-19 up the right; firmware remaps shorter packets unpredictably, so always stream all 20 | SignalRGB community zone-probe, mined 2026-08-16. Explains the earlier "8 interpolating zones" reading: short packets get remapped, which renders as interpolation | Corroborated; **unverified** by discrete chase |
 | H612B renders 10 discrete pixels despite Govee's own product DB saying `supportRazer: 0` | Hardware: field-verified 2026-08-16 — a wrong count renders nothing, so a rendering 10 IS the count | Verified |
 | H16C0 Floor Lamp 3 Lite renders 7 discrete vertical regions, index 0 bottom through index 6 top | Hardware: one-hot red segment walked all seven positions with the other six dark; then a smooth 20 s Electron run at 30 Hz stopped immediately with no visible backlog and restored cleanly (2026-08-18) | Verified; native iOS/Android transport performance remains unmeasured |
+| H61D3 Neon Rope Light 2 renders 7 discrete pixels; the mined `lanApi.segments` prior of 15 renders ONE collapsed colour that still tracks the palette | Hardware: discrete chase at 7, 60 Hz stop-test clean (psychodeli-webgl-port, 2026-09-05). At 15 the rope looked exactly like a working whole-device lamp — the same shape as the H6047 solid result | Verified; treat `lanApi.segments` as suspect for the H61D2–D6 range |
+| The H61D3 and H612B map bytes to LED duty roughly linearly, so minor-channel leakage in an sRGB-shaped pixel ([82,0,10]) lights PINK; the H16C0 (LuminBlend+, gamma-calibrated) shows the same bytes red | Photo + eye, 2026-09-07 (Red Moon): identical frames red on the H16C0, pink end to end on the H61D3/H612B, constant across brightness; raw probe [255,0,25] read pink on both, pure [255,0,0] read best; chroma gamma 2.2 helped, 3 read redder | Verified by eye; the gamma value is an eye measurement, not a photometric one. `RAZER_PROFILES.chromaGamma` |
 | Matrix devices (curtains, nets) have partial/first-N-pixel coverage | LedFx docs (H6811: first 224 pixels) | Reported, not reproduced here |
+
+## Chroma gamma — when a fixture drives its LEDs linearly
+
+Every pixel Suffuse compiles is sRGB-shaped: a byte of 10 means ~0.3% of full light.
+A fixture whose PWM duty follows the byte linearly emits 4% for it — thirteen times
+the intended blue — so a red pixel carrying a little blue lights pink, at every
+brightness, because the error is a ratio. Govee's LuminBlend+ lamps carry a gamma
+calibration and show the same bytes correctly; the older RGBIC strips and ropes do not.
+
+`chromaGamma(colors, gamma)` re-encodes each pixel's minor channels against its
+dominant one, `c' = max · (c/max)^γ`, and zeroes any minor channel that lands below one
+LSB. The dominant channel is untouched, so brightness is preserved. The value is per SKU
+in `RAZER_PROFILES.chromaGamma`, applied in the per-LED compile, and reported in the
+plan. **null means unmeasured and applies no correction** — never inherit a neighbour's
+number, because a guessed γ on a calibrated fixture thins every mixed colour it shows.
+
+To measure a SKU: paint every pixel `[255,0,25]` (10% blue). Pink means linear drive;
+red means calibrated, keep null. Then raise γ on a red look until the pink is gone
+without oranges and teals going thin. The H61D3 and H612B landed at 3 by this method.
 
 ## What updating this page requires
 

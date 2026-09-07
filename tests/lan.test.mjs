@@ -10,6 +10,7 @@ import test from 'node:test';
 import {
   assertRazerEncoderSane,
   bandsToPixels,
+  chromaGamma,
   clampHoldSeconds,
   encodeRazerEnable,
   encodeRazerFrame,
@@ -106,11 +107,41 @@ test('profiles gate per-LED to hardware-verified pixel counts', () => {
   assert.equal(razerProfile('H16C0').pixels, 7);
   assert.equal(razerProfile('H16C0').blend, 'discrete');
   assert.equal(razerProfile('H16C0').verified, true);
+  assert.equal(razerProfile('H61D3').pixels, 7);           // NOT the mined 15
   assert.equal(razerProfile('H6199'), null);               // unknown SKUs never guess
   for (const profile of Object.values(RAZER_PROFILES)) {
     assert.ok(Number.isInteger(profile.pixels) && profile.pixels >= 1 && profile.pixels <= 255);
     assert.ok(['discrete', 'interpolating'].includes(profile.blend));
+    assert.ok('chromaGamma' in profile, 'every profile states its chromaGamma, null when unmeasured');
+    assert.ok(profile.chromaGamma === null || profile.chromaGamma > 1);
   }
+});
+
+test('chroma gamma is per SKU: measured on the linear-drive fixtures, null on the calibrated lamp', () => {
+  assert.equal(razerProfile('H61D3').chromaGamma, 3);
+  assert.equal(razerProfile('H612B').chromaGamma, 3);
+  assert.equal(razerProfile('H16C0').chromaGamma, null);    // LuminBlend+: never inherit
+  assert.equal(razerProfile('H608B').chromaGamma, null);    // unmeasured: never inherit
+});
+
+test('chromaGamma crushes minor-channel leakage and leaves the dominant channel alone', () => {
+  assert.deepEqual(chromaGamma([[82, 0, 10]], 3), [[82, 0, 0]]);       // 12% blue by byte -> gone
+  assert.deepEqual(chromaGamma([[255, 128, 0]], 2.2), [[255, 56, 0]]); // (128/255)^2.2 * 255 = 55.97
+  assert.deepEqual(chromaGamma([[0, 0, 255]], 3), [[0, 0, 255]]);      // a pure channel is exact
+  assert.deepEqual(chromaGamma([[0, 0, 0]], 3), [[0, 0, 0]]);
+});
+
+test('chromaGamma zeroes a minor channel below one LSB rather than rounding it up', () => {
+  assert.deepEqual(chromaGamma([[46, 0, 9]], 3), [[46, 0, 0]]);        // 0.34 -> 0
+  assert.deepEqual(chromaGamma([[122, 26, 15]], 3), [[122, 1, 0]]);    // 1.18 stays, 0.23 dies
+});
+
+test('chromaGamma is the identity for null, 1 and non-positive gamma, and feeds the encoder', () => {
+  const src = [[82, 0, 10], [12, 200, 30]];
+  assert.equal(chromaGamma(src, null), src);
+  assert.equal(chromaGamma(src, 1), src);
+  assert.equal(chromaGamma(src, 0), src);
+  assert.doesNotThrow(() => encodeRazerFrame(chromaGamma([[82.4, 0, 10.2]], 3)));
 });
 
 test('holds are bounded by construction', () => {

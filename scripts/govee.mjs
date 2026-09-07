@@ -741,6 +741,9 @@ async function lanPaint(args, lan) {
       warnings.push(`The ${sku} pixel count (${profile.pixels}) is unverified; an interpolating fixture renders a plausible gradient at any count, so treat the layout as approximate.`);
     }
     pixels = lan.bandsToPixels(score.look.bands, profile.pixels);
+    // Linear-drive fixtures show minor-channel leakage as a tint (red → pink);
+    // null profiles pass through untouched. See RAZER_PROFILES.chromaGamma.
+    pixels = lan.chromaGamma(pixels, profile.chromaGamma);
     mode = 'lan-per-led';
   } else {
     mode = 'lan-solid';
@@ -751,6 +754,7 @@ async function lanPaint(args, lan) {
     target: { sku, ip },
     requestedLook: score.look,
     pixels: pixels ? pixels.length : null,
+    chromaGamma: mode === 'lan-per-led' ? (profile.chromaGamma ?? null) : null,
     holdSeconds: mode === 'lan-per-led' ? holdSeconds : null,
     warnings
   };

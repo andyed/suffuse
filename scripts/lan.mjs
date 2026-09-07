@@ -61,24 +61,50 @@ export const HOLD_MAX_SECONDS = 4 * 60 * 60;
 // Rule for mined capability flags (learned on the H612B): a mined POSITIVE is
 // trustworthy, a mined NEGATIVE is only "unknown" — vendor flags describe app
 // support, not what the LAN firmware accepts.
+//
+// `chromaGamma` — per-SKU colour correction for fixtures that map bytes to LED
+// duty LINEARLY. Every pixel Suffuse compiles is sRGB-shaped (a byte of 10 means
+// ~0.3% of full light); a linear fixture emits 4% for it, so a red like [82,0,10]
+// lights PINK while a gamma-calibrated fixture shows it red. Measured by photo and
+// eye 2026-09-07 (psychodeli-webgl-port, Red Moon): identical frames were red on
+// the H16C0 (LuminBlend+, "proprietary gamma calibration") and pink end to end on
+// the H61D3 and H612B, constant across brightness — a ratio, not a dim-end
+// artefact. See chromaGamma() below. null = unmeasured = no correction; never
+// inherit a neighbour's value — a guessed gamma on a calibrated lamp thins every
+// mixed colour it shows. To measure: paint every pixel [255,0,25] (10% blue); a
+// linear fixture reads pink, a calibrated one red; then raise gamma on a red look
+// until the pink is gone without oranges and teals going thin.
 export const RAZER_PROFILES = Object.freeze({
-  H608B: Object.freeze({ pixels: 15, blend: 'discrete', verified: true }),
+  // chromaGamma: "pinkish" in the 2026-09-07 photo, milder than the H61D3/H612B and
+  // not isolated under the solid probe — null rather than inherit 3.
+  H608B: Object.freeze({ pixels: 15, blend: 'discrete', verified: true, chromaGamma: null }),
   // Community zone-probe (SignalRGB), 2026-08-16: 20 slots — 0-9 up the left bar,
   // 10-19 up the right — and the firmware remaps SHORTER packets unpredictably,
   // so always stream all 20. The earlier 8-zone "interpolating" reading described
   // short-packet behavior, not the addressing model. Unverified pending a
   // discrete chase by eye.
-  H6047: Object.freeze({ pixels: 20, blend: 'discrete', verified: false }),
+  H6047: Object.freeze({ pixels: 20, blend: 'discrete', verified: false, chromaGamma: null }),
   // Field-verified 2026-08-16: individual lights render at count=10 (a wrong
   // count renders nothing, so a rendering 10 IS the count). Govee's own product
   // DB says supportRazer: 0 for this SKU — that flag describes Desktop/Chroma
   // app support, not the LAN firmware. Read a mined 0 as unknown, never absent.
-  H612B: Object.freeze({ pixels: 10, blend: 'discrete', verified: true }),
+  // chromaGamma 3: Red Moon reds rendered PINK end to end (photo 2026-09-07); the raw
+  // probe [255,0,25] read pink too. By eye the same day: 2.2 helped a lot, 3 read redder.
+  H612B: Object.freeze({ pixels: 10, blend: 'discrete', verified: true, chromaGamma: 3 }),
   // Floor Lamp 3 Lite — field-verified 2026-08-18: a one-hot red segment walked
   // all seven positions, index 0 bottom through index 6 top, with every other
   // region dark. A normal 30 Hz Electron stream then ran smoothly for 20 seconds,
   // stopped immediately with no visible backlog, and restored cleanly.
-  H16C0: Object.freeze({ pixels: 7, blend: 'discrete', verified: true })
+  // chromaGamma: LuminBlend+ — rendered the same Red Moon frames RED. Keep null.
+  H16C0: Object.freeze({ pixels: 7, blend: 'discrete', verified: true, chromaGamma: null }),
+  // 3m Neon Rope Light 2 — 7 px field-verified 2026-09-05 (psychodeli-webgl-port):
+  // a wrong count renders nothing, so a rendering 7 IS the count. The mined prior
+  // said 15 (lanApi.segments) and at 15 the rope rendered ONE collapsed colour that
+  // still tracked the palette — which reads exactly like a working whole-device lamp.
+  // SignalRGB's ledCount for the 5m H61D5 sibling is also 7, so this looks like a
+  // fixed 7-segment architecture; treat lanApi.segments as suspect for H61D2-D6.
+  // chromaGamma 3: same evidence as the H612B (photo + eye, 2026-09-07).
+  H61D3: Object.freeze({ pixels: 7, blend: 'discrete', verified: true, chromaGamma: 3 })
 });
 
 export function razerProfile(sku) {
@@ -142,6 +168,32 @@ export function assertRazerEncoderSane() {
     throw new GoveeSkillError('razer length field is not 16-bit big-endian', 'encoder-drift');
   }
   return true;
+}
+
+// ── Chroma gamma ────────────────────────────────────────────────────────────
+/**
+ * Re-encode each pixel's MINOR channels against its dominant one,
+ * c' = max · (c/max)^gamma, for fixtures whose LED duty follows the byte linearly
+ * (see RAZER_PROFILES). The dominant channel is untouched, so brightness is
+ * preserved; only the leakage of the minor channels is crushed toward what the
+ * sRGB byte meant. A minor channel that lands below one LSB is ZERO, not rounded
+ * up: pure [255,0,0] read best by eye while gamma 3 still left "a bit pink" from
+ * single-LSB blue (2026-09-07). gamma 1, null or non-positive is the identity.
+ * Pure; integer triples out, ready for encodeRazerFrame.
+ */
+export function chromaGamma(colors, gamma) {
+  const g = Number(gamma);
+  if (!Array.isArray(colors) || !Number.isFinite(g) || g <= 0 || g === 1) return colors;
+  return colors.map(color => {
+    const ch = [0, 1, 2].map(i => Math.max(0, Number(color?.[i]) || 0));
+    const m = Math.max(...ch);
+    if (!(m > 0)) return [0, 0, 0];
+    return ch.map(v => {
+      if (v === m) return Math.round(v);
+      const enc = m * Math.pow(v / m, g);
+      return enc >= 1 ? Math.round(enc) : 0;
+    });
+  });
 }
 
 // ── Bands → pixels ──────────────────────────────────────────────────────────
