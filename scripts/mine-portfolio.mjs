@@ -152,7 +152,8 @@ const entry = (sku) => {
 
 // ── Our hardware ground truth (the validation anchor; never overwritten by mining) ────
 const HARDWARE = {
-    H608B: { razer: { pixels: 15, blend: 'discrete', hz: 40, verified: '2026-08-15' }, colorwcDrainHz: '10-12' },
+    H608B: { razer: { pixels: 15, blend: 'discrete', hz: 40, verified: '2026-08-15',
+        chromaGamma: 2, chromaGammaVerified: '2026-09-07 — "pinkish" under Red Moon, between the linear-drive H61D3/H612B and the calibrated H16C0; isolated with a per-SKU override, 2 read as an upgrade (eye)' }, colorwcDrainHz: '10-12' },
     H6009: { ble: { colorOpcode: '0x33 0x05 0x0D (RGBWW — NOT the published 0x02)', verified: '2026-08-09' } },
     H6047: { razer: { note: '12-stop chase read as one colour animating (2026-08-15) — consistent with signalrgb "shorter packets remap unpredictably, always stream 20"' } },
     // ⚠️ Direct contradiction of the mined govee.supportRazer:0 — the firmware honours razer

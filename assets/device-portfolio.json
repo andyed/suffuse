@@ -1382,7 +1382,9 @@
      "pixels": 15,
      "blend": "discrete",
      "hz": 40,
-     "verified": "2026-08-15"
+     "verified": "2026-08-15",
+     "chromaGamma": 2,
+     "chromaGammaVerified": "2026-09-07 — \"pinkish\" under Red Moon, between the linear-drive H61D3/H612B and the calibrated H16C0; isolated with a per-SKU override, 2 read as an upgrade (eye)"
     },
     "colorwcDrainHz": "10-12"
    }

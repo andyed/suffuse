@@ -75,9 +75,9 @@ export const HOLD_MAX_SECONDS = 4 * 60 * 60;
 // linear fixture reads pink, a calibrated one red; then raise gamma on a red look
 // until the pink is gone without oranges and teals going thin.
 export const RAZER_PROFILES = Object.freeze({
-  // chromaGamma: "pinkish" in the 2026-09-07 photo, milder than the H61D3/H612B and
-  // not isolated under the solid probe — null rather than inherit 3.
-  H608B: Object.freeze({ pixels: 15, blend: 'discrete', verified: true, chromaGamma: null }),
+  // chromaGamma 2: "pinkish" in the 2026-09-07 photo, milder than the H61D3/H612B;
+  // isolated with a per-SKU override the same day, 2 read as an upgrade by eye.
+  H608B: Object.freeze({ pixels: 15, blend: 'discrete', verified: true, chromaGamma: 2 }),
   // Community zone-probe (SignalRGB), 2026-08-16: 20 slots — 0-9 up the left bar,
   // 10-19 up the right — and the firmware remaps SHORTER packets unpredictably,
   // so always stream all 20. The earlier 8-zone "interpolating" reading described

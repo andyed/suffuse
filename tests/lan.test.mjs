@@ -121,7 +121,7 @@ test('chroma gamma is per SKU: measured on the linear-drive fixtures, null on th
   assert.equal(razerProfile('H61D3').chromaGamma, 3);
   assert.equal(razerProfile('H612B').chromaGamma, 3);
   assert.equal(razerProfile('H16C0').chromaGamma, null);    // LuminBlend+: never inherit
-  assert.equal(razerProfile('H608B').chromaGamma, null);    // unmeasured: never inherit
+  assert.equal(razerProfile('H608B').chromaGamma, 2);       // isolated by eye, between the two
 });
 
 test('chromaGamma crushes minor-channel leakage and leaves the dominant channel alone', () => {
