@@ -136,6 +136,15 @@ test('chromaGamma zeroes a minor channel below one LSB rather than rounding it u
   assert.deepEqual(chromaGamma([[122, 26, 15]], 3), [[122, 1, 0]]);    // 1.18 stays, 0.23 dies
 });
 
+test('chromaGamma leaves a near-white as it arrived — it must not manufacture a tint', () => {
+  // Sunshine 2026-09-07: a screen ivory [240,238,250] (s=0.048) became a lavender
+  // segment on the neon under an unweighted gamma 3 (s=0.136 after encoding).
+  const [c] = chromaGamma([[240, 238, 250]], 3);
+  assert.ok(c[0] >= 239 && c[1] >= 237 && c[2] === 250, `near-white moved: ${c}`);
+  const [pastel] = chromaGamma([[255, 113, 126]], 3);       // s=0.56: full correction
+  assert.ok(pastel[1] < 25 && pastel[2] < 35, `chromatic pixel under-corrected: ${pastel}`);
+});
+
 test('chromaGamma is the identity for null, 1 and non-positive gamma, and feeds the encoder', () => {
   const src = [[82, 0, 10], [12, 200, 30]];
   assert.equal(chromaGamma(src, null), src);

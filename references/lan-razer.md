@@ -100,7 +100,9 @@ calibration and show the same bytes correctly; the older RGBIC strips and ropes 
 
 `chromaGamma(colors, gamma)` re-encodes each pixel's minor channels against its
 dominant one, `c' = max · (c/max)^γ`, and zeroes any minor channel that lands below one
-LSB. The dominant channel is untouched, so brightness is preserved. The value is per SKU
+LSB. The exponent is weighted by the pixel's saturation (identity at or below 0.05, full
+from 0.35 up): the leakage lives on chromatic pixels, and an unweighted gamma turns a
+near-white's faint tint into a visible one (a screen ivory read lavender on a neon rope). The dominant channel is untouched, so brightness is preserved. The value is per SKU
 in `RAZER_PROFILES.chromaGamma`, applied in the per-LED compile, and reported in the
 plan. **null means unmeasured and applies no correction** — never inherit a neighbour's
 number, because a guessed γ on a calibrated fixture thins every mixed colour it shows.

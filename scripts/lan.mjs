@@ -181,6 +181,13 @@ export function assertRazerEncoderSane() {
  * single-LSB blue (2026-09-07). gamma 1, null or non-positive is the identity.
  * Pure; integer triples out, ready for encodeRazerFrame.
  */
+// Saturation band over which the correction fades in: identity at or below LO, full at
+// or above HI. The encoding is relative to the dominant channel and a near-white has
+// every channel near it, so an unweighted gamma 3 turned a 5% screen tint into a 14%
+// lavender segment on a neon rope (Sunshine, 2026-09-07). The leakage this removes
+// lives on chromatic pixels; a near-neutral must leave as it arrived.
+export const CHROMA_GAMMA_FADE = Object.freeze({ lo: 0.05, hi: 0.35 });
+
 export function chromaGamma(colors, gamma) {
   const g = Number(gamma);
   if (!Array.isArray(colors) || !Number.isFinite(g) || g <= 0 || g === 1) return colors;
@@ -188,9 +195,12 @@ export function chromaGamma(colors, gamma) {
     const ch = [0, 1, 2].map(i => Math.max(0, Number(color?.[i]) || 0));
     const m = Math.max(...ch);
     if (!(m > 0)) return [0, 0, 0];
+    const sat = (m - Math.min(...ch)) / m;
+    const u = Math.max(0, Math.min(1, (sat - CHROMA_GAMMA_FADE.lo) / (CHROMA_GAMMA_FADE.hi - CHROMA_GAMMA_FADE.lo)));
+    const ge = 1 + (g - 1) * (u * u * (3 - 2 * u));
     return ch.map(v => {
-      if (v === m) return Math.round(v);
-      const enc = m * Math.pow(v / m, g);
+      if (v === m || ge === 1) return Math.round(v);
+      const enc = m * Math.pow(v / m, ge);
       return enc >= 1 ? Math.round(enc) : 0;
     });
   });
