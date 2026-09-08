@@ -23,7 +23,7 @@ test('hardware anchors agree with RAZER_PROFILES', async () => {
       assert.equal(hw?.pixels, profile.pixels, `${sku}: portfolio hardware pixels != profile`);
     }
     if (profile.chromaGamma !== null) {
-      assert.equal(hw?.chromaGamma, profile.chromaGamma, `${sku}: portfolio chromaGamma != profile`);
+      assert.deepEqual(hw?.chromaGamma, profile.chromaGamma, `${sku}: portfolio chromaGamma != profile`);
       assert.ok(hw?.chromaGammaVerified, `${sku}: a shipped chromaGamma needs its evidence`);
     }
   }

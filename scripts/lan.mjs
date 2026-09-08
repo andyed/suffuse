@@ -88,9 +88,11 @@ export const RAZER_PROFILES = Object.freeze({
   // count renders nothing, so a rendering 10 IS the count). Govee's own product
   // DB says supportRazer: 0 for this SKU — that flag describes Desktop/Chroma
   // app support, not the LAN firmware. Read a mined 0 as unknown, never absent.
-  // chromaGamma 3: Red Moon reds rendered PINK end to end (photo 2026-09-07); the raw
-  // probe [255,0,25] read pink too. By eye the same day: 2.2 helped a lot, 3 read redder.
-  H612B: Object.freeze({ pixels: 10, blend: 'discrete', verified: true, chromaGamma: 3 }),
+  // chromaGamma [2.2, 2.2, 3]: Red Moon reds rendered PINK end to end (photo 2026-09-07);
+  // the raw probe [255,0,25] read pink too. By eye: 2.2 helped a lot, 3 read redder; then
+  // Golden Hour read pinkish under a scalar 3 (2026-09-08) — one exponent crushes green as
+  // hard as blue. Per channel: 2.2 on red and green, 3 on blue keeps the gold.
+  H612B: Object.freeze({ pixels: 10, blend: 'discrete', verified: true, chromaGamma: [2.2, 2.2, 3] }),
   // Floor Lamp 3 Lite — field-verified 2026-08-18: a one-hot red segment walked
   // all seven positions, index 0 bottom through index 6 top, with every other
   // region dark. A normal 30 Hz Electron stream then ran smoothly for 20 seconds,
@@ -103,8 +105,8 @@ export const RAZER_PROFILES = Object.freeze({
   // still tracked the palette — which reads exactly like a working whole-device lamp.
   // SignalRGB's ledCount for the 5m H61D5 sibling is also 7, so this looks like a
   // fixed 7-segment architecture; treat lanApi.segments as suspect for H61D2-D6.
-  // chromaGamma 3: same evidence as the H612B (photo + eye, 2026-09-07).
-  H61D3: Object.freeze({ pixels: 7, blend: 'discrete', verified: true, chromaGamma: 3 })
+  // chromaGamma [2.2, 2.2, 3]: same evidence as the H612B (photo + eye, 2026-09-07/08).
+  H61D3: Object.freeze({ pixels: 7, blend: 'discrete', verified: true, chromaGamma: [2.2, 2.2, 3] })
 });
 
 export function razerProfile(sku) {
@@ -188,17 +190,34 @@ export function assertRazerEncoderSane() {
 // lives on chromatic pixels; a near-neutral must leave as it arrived.
 export const CHROMA_GAMMA_FADE = Object.freeze({ lo: 0.05, hi: 0.35 });
 
-export function chromaGamma(colors, gamma) {
+/**
+ * One exponent for every channel, or `[gr, gg, gb]`. Per channel exists because one exponent
+ * tuned on saturated red — where only blue leaks — crushes GREEN as hard as blue: Golden
+ * Hour's gold [255,200,100] left a scalar 3 as [255,112,9] and read pinkish (2026-09-08).
+ * Returns null for anything that is not a positive exponent, or the identity.
+ */
+export function normalizeChromaGamma(gamma) {
+  if (Array.isArray(gamma) && gamma.length === 3) {
+    const v = gamma.map(Number);
+    if (!v.every(x => Number.isFinite(x) && x > 0)) return null;
+    return v.every(x => x === 1) ? null : v;
+  }
   const g = Number(gamma);
-  if (!Array.isArray(colors) || !Number.isFinite(g) || g <= 0 || g === 1) return colors;
+  return Number.isFinite(g) && g > 0 && g !== 1 ? [g, g, g] : null;
+}
+
+export function chromaGamma(colors, gamma) {
+  const gv = normalizeChromaGamma(gamma);
+  if (!Array.isArray(colors) || !gv) return colors;
   return colors.map(color => {
     const ch = [0, 1, 2].map(i => Math.max(0, Number(color?.[i]) || 0));
     const m = Math.max(...ch);
     if (!(m > 0)) return [0, 0, 0];
     const sat = (m - Math.min(...ch)) / m;
     const u = Math.max(0, Math.min(1, (sat - CHROMA_GAMMA_FADE.lo) / (CHROMA_GAMMA_FADE.hi - CHROMA_GAMMA_FADE.lo)));
-    const ge = 1 + (g - 1) * (u * u * (3 - 2 * u));
-    return ch.map(v => {
+    const fade = u * u * (3 - 2 * u);
+    return ch.map((v, k) => {
+      const ge = 1 + (gv[k] - 1) * fade;
       if (v === m || ge === 1) return Math.round(v);
       const enc = m * Math.pow(v / m, ge);
       return enc >= 1 ? Math.round(enc) : 0;

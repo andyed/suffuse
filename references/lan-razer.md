@@ -109,7 +109,7 @@ number, because a guessed γ on a calibrated fixture thins every mixed colour it
 
 To measure a SKU: paint every pixel `[255,0,25]` (10% blue). Pink means linear drive;
 red means calibrated, keep null. Then raise γ on a red look until the pink is gone
-without oranges and teals going thin. The H61D3 and H612B landed at 3 by this method, the H608B downlights at 2.
+without oranges and teals going thin. The value may be one exponent or `[gr, gg, gb]`: an exponent tuned on saturated red, where only blue leaks, crushes green as hard as blue, and Golden Hour's golds read pinkish under a scalar 3. The H61D3 and H612B landed at `[2.2, 2.2, 3]` by this method, the H608B downlights at 2.
 
 ## What updating this page requires
 

@@ -113,13 +113,14 @@ test('profiles gate per-LED to hardware-verified pixel counts', () => {
     assert.ok(Number.isInteger(profile.pixels) && profile.pixels >= 1 && profile.pixels <= 255);
     assert.ok(['discrete', 'interpolating'].includes(profile.blend));
     assert.ok('chromaGamma' in profile, 'every profile states its chromaGamma, null when unmeasured');
-    assert.ok(profile.chromaGamma === null || profile.chromaGamma > 1);
+    const g = profile.chromaGamma;
+    assert.ok(g === null || g > 1 || (Array.isArray(g) && g.length === 3 && g.every(x => x > 0)));
   }
 });
 
 test('chroma gamma is per SKU: measured on the linear-drive fixtures, null on the calibrated lamp', () => {
-  assert.equal(razerProfile('H61D3').chromaGamma, 3);
-  assert.equal(razerProfile('H612B').chromaGamma, 3);
+  assert.deepEqual(razerProfile('H61D3').chromaGamma, [2.2, 2.2, 3]);
+  assert.deepEqual(razerProfile('H612B').chromaGamma, [2.2, 2.2, 3]);
   assert.equal(razerProfile('H16C0').chromaGamma, null);    // LuminBlend+: never inherit
   assert.equal(razerProfile('H608B').chromaGamma, 2);       // isolated by eye, between the two
 });
@@ -143,6 +144,16 @@ test('chromaGamma leaves a near-white as it arrived — it must not manufacture 
   assert.ok(c[0] >= 239 && c[1] >= 237 && c[2] === 250, `near-white moved: ${c}`);
   const [pastel] = chromaGamma([[255, 113, 126]], 3);       // s=0.56: full correction
   assert.ok(pastel[1] < 25 && pastel[2] < 35, `chromatic pixel under-corrected: ${pastel}`);
+});
+
+test('chromaGamma takes one exponent per channel — gold keeps its green, blue still crushed', () => {
+  const gold = [255, 200, 100];
+  const [scalar] = chromaGamma([gold], 3);
+  const [perCh] = chromaGamma([gold], [2.2, 2.2, 3]);
+  assert.ok(perCh[1] > scalar[1] + 20, `green should survive: ${perCh} vs ${scalar}`);
+  assert.equal(perCh[2], scalar[2]);
+  assert.deepEqual(chromaGamma([gold], [1, 1, 1]), [gold]);
+  assert.deepEqual(chromaGamma([gold], [3, 3, 3]), [scalar]);
 });
 
 test('chromaGamma is the identity for null, 1 and non-positive gamma, and feeds the encoder', () => {

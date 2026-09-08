@@ -160,7 +160,7 @@ const HARDWARE = {
     // frames even though the flag says no. The flag describes Govee Desktop/Chroma app
     // support, NOT the LAN handler. Treat supportRazer:0 as "unknown", never "absent".
     H612B: { razer: { pixels: 10, blend: 'discrete', verified: '2026-08-16 — individual lights rendered at count=10 despite product-DB supportRazer:0; stop test froze instantly (no queue, 30Hz streaming safe)',
-        chromaGamma: 3, chromaGammaVerified: '2026-09-07 — Red Moon reds rendered PINK end to end (photo) while the H16C0 showed the same frames red; raw [255,0,25] read pink, pure [255,0,0] best; 2.2 helped, 3 read redder (eye)' } },
+        chromaGamma: [2.2, 2.2, 3], chromaGammaVerified: '2026-09-07 — Red Moon reds rendered PINK end to end (photo) while the H16C0 showed the same frames red; raw [255,0,25] read pink, pure [255,0,0] best; 2.2 helped, 3 read redder (eye). 2026-09-08 — Golden Hour pinkish under a scalar 3; per channel 2.2/2.2/3 kept the gold (eye)' } },
     H16C0: {
         platformApi: { segments: 7, segmentedBrightness: true, verified: '2026-08-18' },
         razer: {
@@ -178,7 +178,7 @@ const HARDWARE = {
     // SignalRGB's ledCount for the 5m H61D5 sibling is also 7: a fixed 7-segment architecture.
     H61D3: { razer: { pixels: 7, blend: 'discrete', hz: 60,
         verified: '2026-09-05 — one-hot chase rendered at count=7 (a wrong count renders nothing); 60Hz stop-test clean, 480 frames, instant freeze (psychodeli-webgl-port)',
-        chromaGamma: 3, chromaGammaVerified: '2026-09-07 — same evidence as the H612B: pink end to end in the photo, raw [255,0,25] pink, 3 read redder by eye' } }
+        chromaGamma: [2.2, 2.2, 3], chromaGammaVerified: '2026-09-07/08 — same evidence as the H612B: pink end to end in the photo, raw [255,0,25] pink, 3 read redder; per channel 2.2/2.2/3 kept Golden Hour gold (eye)' } }
 };
 for (const [sku, hw] of Object.entries(HARDWARE)) entry(sku).ourHardware = hw;
 
