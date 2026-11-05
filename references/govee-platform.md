@@ -47,6 +47,39 @@ For `segmentedColorRgb`, use only segment indices explicitly returned in the cap
 
 If `gradientToggle` is advertised, enable it before sending segmented colors. Some devices accept segment payloads while rendering them as whole-fixture colors when gradient mode is not active. The state endpoint may return an empty value for this toggle, so visual confirmation remains necessary.
 
+## Device names
+
+The device list (`GET /router/api/v1/user/devices`) documents `deviceName`
+beside `sku` and `device`: the name the user gave the lamp in Govee Home. The
+large example responses in Govee's reference omit it even though the field
+table lists it, so check a real response before relying on it, and treat a
+missing or blank name as valid. Bluetooth-only devices may not appear in the
+account list at all. (Checked against Govee's documentation 2026-10-10 by
+psychodeli-webgl-port, which labels its room with these names.)
+
+Suffuse already reads `deviceName`: `inspect --show-identifiers` prints it, a
+`LightScore` may target an exact name, and the MCP surface keeps it redacted
+like every other household identifier. Rules for any tool that shows names:
+
+- **A name is a label, never an identity.** Duplicate names are normal. Join a
+  name to a fixture only on the exact, complete `(sku, device)` pair, unique on
+  both sides; never on a name, an IP address, a suffix or discovery order.
+- **Refreshing names changes labels only.** It must never restart, rescan,
+  capture state, change which lamps are included, run a test, or interrupt a
+  running look, and names stay out of any restore journal so a label refresh
+  cannot rewrite a pending restore.
+- **Account access is not local membership.** A light that appears only in the
+  cloud list never becomes a discovered, included or controllable local
+  fixture because of it.
+- **Failures keep the last good labels.** On 401/403, stop automatic requests
+  until the key is replaced: generating a new key invalidates the old one (see
+  above), so a working key that starts failing usually means someone made a
+  new one. On 429, honour `Retry-After`. Space refreshes well inside the
+  30 requests/minute discovery limit (psychodeli-webgl-port uses a 60 s
+  minimum gap) and do not retry in a loop.
+- Treat names as untrusted plain text: trim, drop control and bidirectional
+  override characters, and cap the length before display.
+
 ## Published rate limits
 
 At the time this reference was authored, Govee documented these principal limits:
