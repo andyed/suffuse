@@ -66,6 +66,17 @@ which tracks loosely but cannot resolve a single pixel. A `chase` PASS at the
 profile's pixel count, seen on camera, is what promotes `verified: false` to
 `verified: true`.
 
+`chase` also writes a **zone map**: for each step, the centroid of the brightest
+change against the dark baseline, inside the fixture's ROI, as index → (x, y) in
+frame pixels (`zonemap` in `--json`). It is a layout record, not a verdict.
+Correlation says the lit pixel tracks the commanded index; the map says where
+each index sits, so it learns LED order on layouts one axis cannot describe,
+such as indices running up one bar and then up a second (the H6047). Same
+method as psychodeli-webgl-port's camera zone map (2026-10): light one index at
+a time, subtract a dark baseline, take the centroid of the brightest change.
+The chase lights full white, so the centroid uses only pixels at or above half
+the peak change: glow around a lit LED pulls the point less than the LED does.
+
 `latency` is an **upper bound**: it includes camera pipeline delay and 1/fps
 quantisation. Do not quote it as wire latency.
 

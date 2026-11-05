@@ -240,7 +240,33 @@ def score_spatial(frames, fps, sync, origin_ms, ev, rois, results):
     })
 
 
-def score_chase(frames, fps, sync, origin_ms, steps, fixture, leds, rois, results):
+def centroid_of_change(frame, baseline, roi):
+    """
+    Where on screen one lit index sits: the centroid of the brightest change against the
+    dark baseline, inside the fixture's ROI. Pixels at or above half the peak change count,
+    weighted by their change, so glow around a lit LED pulls the point less than the LED.
+    None when nothing in the ROI changed enough to locate.
+
+    The zone-map method (psychodeli-webgl-port, 2026-10): light one index at a time, subtract
+    a dark baseline, take the centroid of the brightest change. Learns LED ORDER and layout,
+    which the chase correlation cannot. Correlation says the lit pixel tracks the commanded
+    index along one fitted axis; a fixture whose indices run up one bar and then up a second
+    (the H6047's 0-9 left, 10-19 right) can still score PASS there (0.87 on the selftest's
+    two-bar clip), and only the map shows each bar running upward and the jump from the top
+    of the first to the bottom of the second.
+    """
+    delta = luma(frame) - baseline
+    vals = delta[roi["ys"], roi["xs"]]
+    if vals.size == 0 or vals.max() < 12.0:
+        return None
+    sel = vals >= vals.max() * 0.5
+    w = vals[sel]
+    return (float((roi["xs"][sel] * w).sum() / w.sum()),
+            float((roi["ys"][sel] * w).sum() / w.sum()))
+
+
+def score_chase(frames, fps, sync, origin_ms, steps, fixture, leds, rois, results,
+                baseline=None):
     roi = rois.get(fixture)
     if roi is None:
         results.append({"test": "chase", "fixture": fixture, "verdict": "SKIP",
@@ -248,10 +274,16 @@ def score_chase(frames, fps, sync, origin_ms, steps, fixture, leds, rois, result
         return
 
     positions = []
+    zonemap = []
     for ev in steps:
         fi = frame_for(sync, origin_ms, ev["t"], fps, offset_ms=200)   # settle inside the step
         if fi >= len(frames):
             break
+        if baseline is not None:
+            point = centroid_of_change(frames[fi], baseline, roi)
+            if point is not None:
+                zonemap.append({"index": ev["index"], "x": round(point[0], 1),
+                                "y": round(point[1], 1)})
         bins = bin_along_axis(frames[fi], roi, roi["project"], min(leds, 12))
         lum = np.nanmean(bins, axis=1)
         if np.all(np.isnan(lum)):
@@ -276,6 +308,8 @@ def score_chase(frames, fps, sync, origin_ms, steps, fixture, leds, rois, result
     results.append({
         "test": "chase", "fixture": fixture, "verdict": verdict,
         "correlation": round(corr, 3), "steps": len(positions),
+        # index -> (x, y) in frame pixels; order and layout, not a verdict.
+        **({"zonemap": zonemap} if zonemap else {}),
         "why": {"PASS": "lit pixel tracks the commanded index — discrete addressing",
                 "WEAK": "partial tracking — likely interpolating, not discrete",
                 "FAIL": "no relationship — fixture is not resolving single pixels"}[verdict],
@@ -375,7 +409,7 @@ def main():
             steps = [e for e in chase_steps if e["fixture"] == f["ip"]]
             if steps:
                 score_chase(frames, args.fps, sync, origin_ms, steps, f["ip"], f["leds"],
-                            rois, results)
+                            rois, results, baseline=baseline)
 
         score_latency(frames, args.fps, sync, origin_ms,
                       [e for e in events if e["phase"] == "latency_step"], results)
@@ -387,10 +421,13 @@ def main():
             print(f"\n{len(frames)} frames @ {args.fps}fps, sync at frame {sync}\n")
             for r in results:
                 extra = " ".join(f"{k}={v}" for k, v in r.items()
-                                 if k not in ("test", "fixture", "verdict", "why"))
+                                 if k not in ("test", "fixture", "verdict", "why", "zonemap"))
                 who = f" {r['fixture']}" if "fixture" in r else ""
                 print(f"  [{r['verdict']:5}] {r['test']}{who}  {extra}")
                 print(f"          {r['why']}")
+                if r.get("zonemap"):
+                    print("          zone map (index -> x, y px): " + "  ".join(
+                        f"{z['index']}->({z['x']:.0f},{z['y']:.0f})" for z in r["zonemap"]))
             suspect = [r for r in results if r["verdict"] == "SUSPECT"]
             if suspect:
                 print("\n⚠️  SUSPECT = the fixture ran off frame, so a negative here is more "

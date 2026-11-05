@@ -149,7 +149,63 @@ def main():
     check("does NOT call a uniform flash a chase", results4[-1]["verdict"] != "PASS",
           f"verdict={results4[-1]['verdict']}")
 
+    # ---- zone map: the chase also learns where each index sits.
+    results5 = []
+    A.score_chase(chase_frames, FPS, sync, ORIGIN_MS, steps, "A", 8, {"A": roi}, results5,
+                  baseline=baseline)
+    zm = results5[-1].get("zonemap", [])
+    xs = [z["x"] for z in zm]
+    check("zone map locates every chase step", len(zm) == 8, f"got {len(zm)}")
+    check("zone map follows the strip left to right", xs == sorted(xs) and len(set(xs)) == 8,
+          f"x={xs}")
+    check("zone map sits on the strip", all(abs(z["y"] - (y + 3)) < 4 for z in zm))
+
+    # ---- zone map: a two-bar fixture (indices up a left bar, then up a right bar, like
+    # the H6047). The chase correlation still passes on this layout; only the map can show
+    # both columns and the upward order within each.
+    bars = two_bar_layout()
+    bar_base = A.luma(blank())
+    bar_frames = [blank()] * (sync + 1)
+    bar_frames.extend([paint_cells(blank(), bars, [[255, 255, 255]] * 8)] * 30)
+    bar_roi = A.roi_from_window(bar_frames, sync + 2, sync + 28, bar_base)
+    bar_roi["project"], bar_roi["span_px"] = A.principal_axis(bar_roi["xs"], bar_roi["ys"])
+    bar_clip = [blank()] * (sync + 1)
+    for idx in range(8):
+        colors = [[0, 0, 0]] * 8
+        colors[idx] = [255, 255, 255]
+        bar_clip.extend([paint_cells(blank(), bars, colors)] * 6)
+    results6 = []
+    A.score_chase(bar_clip, FPS, sync, ORIGIN_MS, steps, "A", 8, {"A": bar_roi}, results6,
+                  baseline=bar_base)
+    bz = {z["index"]: z for z in results6[-1].get("zonemap", [])}
+    check("two-bar map has every index", len(bz) == 8, f"got {sorted(bz)}")
+    if len(bz) == 8:
+        left = [bz[i] for i in range(4)]
+        right = [bz[i] for i in range(4, 8)]
+        check("two-bar map splits into a left and a right column",
+              max(z["x"] for z in left) < min(z["x"] for z in right))
+        check("two-bar map runs UP each bar",
+              all(a["y"] > b["y"] for a, b in zip(left, left[1:]))
+              and all(a["y"] > b["y"] for a, b in zip(right, right[1:])))
+
     finish()
+
+
+def two_bar_layout():
+    """Cells for 8 indices: 0-3 bottom-to-top on a left bar, 4-7 bottom-to-top on a right."""
+    cells = []
+    for x in (90, 230):
+        for k in range(4):
+            y0 = 100 - (k + 1) * 20
+            cells.append((x, x + 8, y0 + 2, y0 + 18))
+    return cells
+
+
+def paint_cells(frame, cells, colors):
+    f = frame.copy()
+    for (xa, xb, ya, yb), c in zip(cells, colors):
+        f[ya:yb, xa:xb] = c
+    return f
 
 
 def finish():
