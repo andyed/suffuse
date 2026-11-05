@@ -41,6 +41,40 @@ The current MCP projects are useful references but do not save enough core work 
 
 Adopt small operational improvements independently when they strengthen the current provider: a device allowlist, process-level dry-run mode, bounded retries, structured redacted logs, and per-device rate limiting. Do not import another project's control model wholesale or weaken the existing double confirmation for physical writes.
 
+### Candidate route: HyperHDR's raw UDP input
+
+[HyperHDR](https://github.com/awawa-dev/HyperHDR) (core MIT) is an ambient
+lighting server whose output drivers reach hardware Suffuse does not: its
+v22.0.0.0 driver registry includes Hue, WLED, Nanoleaf, LIFX, WiZ,
+Art-Net/E1.31 and USB/DIY LED controllers. It has no OpenRGB or MSI Mystic
+Light output. A driver entry makes a fixture a candidate, not a verified
+target. The input contract below is protocol fact from a review of the
+released v22.0.0.0 raw UDP receiver (`sources/base/RawUdpServer.cpp`), by
+psychodeli-webgl-port, 2026-10:
+
+- One datagram is one complete LED array: packed `R,G,B` bytes, with no
+  header and no sequence number.
+- A nonempty multiple of three bytes, at most **1500 bytes (500 LEDs)** per
+  datagram. **Never split a larger array** across datagrams: each one is taken
+  as a new complete frame.
+- Default port **5568** and default input priority **109**, both configurable
+  per instance. Port 5568 is the usual sACN port, but this input is raw RGB,
+  not an E1.31 parser.
+- After **3000 ms** without a frame the input goes inactive. That releases its
+  priority; it does not restore any lamp's earlier state.
+- No acknowledgement. A sent datagram proves neither delivery nor that
+  HyperHDR is running, so evidence for it is `sent-unacknowledged`, and output
+  health must be checked separately.
+- The receiver binds every interface and has no authentication or source
+  ownership. Point it only at a configured local or trusted-LAN endpoint.
+
+As a Suffuse provider this would compile bands to one RGB array per frame,
+pace and stream it like a held look (a frame at least every 3 s), and treat
+"restore" as releasing the input priority, since nothing here can capture or
+replay prior state. It is a candidate, not a planned dependency. HyperHDR
+also offers a JSON API and a FlatBuffers image input; raw RGB is the smallest
+contract that matches a lighting frame.
+
 ## Segment evidence
 
 `govee2mqtt` corroborates an important constraint: segment support and behavior vary by installed device, and some devices couple segment brightness or ignore particular values. Continue to gate authored gradients on the live `segmentedColorRgb` capability and explicit segment domain. Treat a successful transport response as request acceptance, not proof that individual bulbs or pucks rendered independently.
