@@ -15,6 +15,17 @@ The cloud API returned success for correctly chunked segment requests, both befo
 
 The same fixture visibly changed when the advertised native `Sunset Glow` scene was resolved by name and triggered. That is positive evidence for named native-scene replay, not for arbitrary palette upload or per-puck control.
 
+## LAN: all lamps found, none captured
+
+When every LAN lamp answers the discovery scan but none answers `devStatus`,
+the evidence points at the host, not the lamps. On Windows the usual cause is
+the firewall: a `node` path with no Allow rule gets inbound Block rules, which
+pass the multicast scan's replies and drop every `devStatus` reply (measured
+6/6 discovered, 0/36 asks answered). Do not record those lamps as offline or
+as lacking LAN support. See [lan.md](lan.md) for the event log to check and
+the fix. A single lamp that misses capture once is the Wi-Fi case instead;
+`lanDevStatusRead` asks three times before calling it silent.
+
 ## Retest rule
 
 After a firmware update or on a different unit:

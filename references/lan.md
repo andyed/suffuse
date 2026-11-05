@@ -72,7 +72,9 @@ lamp while it is read, so its state cannot have moved between asks. The read
 resolves the moment a reply lands, so a prompt lamp costs tens of
 milliseconds, and the worst case (2.7 s) is inside the old single 3 s window.
 The `lan paint` receipt's capture event records `asksSent`, and
-`answeredOnAsk` when a lamp needed more than one ask.
+`answeredOnAsk` when a lamp needed more than one ask. A lamp that answered
+discovery but none of three asks points at the host before the lamp; on
+Windows, see the firewall section below.
 
 ## White-temperature mode reports RGB as black — never replay it
 
@@ -97,6 +99,27 @@ another, and intermittency is **per device**, so returning early after the
 first multicast hit silently treats "found a lamp" as "found every lamp" —
 a real bug, caught while hunting for a second lamp. Scan multicast first
 (fast, one packet), then **always** sweep unicast; never stop early.
+
+## Windows Firewall drops `devStatus` replies for a program without an Allow rule
+
+`devStatus` replies come from the lamp's ephemeral port to :4002, so to the
+host's firewall they are unsolicited inbound UDP. Windows gives a program
+path it has not seen before inbound **Block** rules the moment its firewall
+prompt appears, and flips them to Allow only when the user clicks Allow.
+Until then discovery still works (Windows lets unicast replies to a multicast
+scan through for about 3 s), but no state read does. Measured on a Windows box
+(psychodeli-webgl-port, 2026-10-17): 6 of 6 LAN lamps discovered, 0 of 36
+`devStatus` asks answered while blocked.
+
+This applies to Suffuse itself: the program the rule names is the `node`
+executable that runs the CLI or MCP server, so a new Node install or version
+manager path starts out blocked. The signature is **every lamp found, none
+captured**, which reads like a room of broken lamps and is the host instead.
+The firewall event log dates the rule:
+`Microsoft-Windows-Windows Firewall With Advanced Security/Firewall`, events
+2097/2099, where Action 2 is block and 3 is allow. Fix it with an inbound
+Allow rule for that `node` path (or by answering the prompt), then read
+again.
 
 ## One process owns the reply port
 
