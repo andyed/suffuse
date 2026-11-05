@@ -388,17 +388,47 @@ function localSubnet() {
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-/** Read onOff/brightness/color over LAN. This is the KEYLESS pre-write capture:
- * unlike the razer channel, devStatus genuinely answers. Capture happens before
- * any write — replies queue behind pending commands, so mid-write readback lies. */
-export async function lanDevStatus(ip, {
-  timeoutMs = 3000,
+/**
+ * One devStatus ask's answer window, and how many asks a read makes before it
+ * gives up. Worst case 3 × 900 ms = 2.7 s, inside the old single 3 s window; a
+ * lamp that answers in 40 ms still costs 40 ms, because the reply resolves the
+ * read the moment it lands.
+ *
+ * WHY MORE THAN ONE ASK (psychodeli-webgl-port, Windows box, 6 LAN lamps,
+ * 2026-10-17): a single 900 ms ask left 2 and then 5 of six lamps "offline" on
+ * the first room start after a launch. The same lamps had answered the
+ * discovery scan seconds before, and a second start always captured them. A
+ * UDP reply on Wi-Fi can be late or lost outright, and a longer single window
+ * does nothing for a lost packet; asking again does.
+ */
+export const STATUS_REPLY_MS = 900;
+export const STATUS_ASKS = 3;
+
+/**
+ * Read onOff/brightness/color over LAN, with the evidence of how it was read.
+ * This is the KEYLESS pre-write capture: unlike the razer channel, devStatus
+ * genuinely answers. Capture happens before any write — replies queue behind
+ * pending commands, so mid-write readback lies.
+ *
+ * Asks up to `asks` times, `replyMs` apart. A late reply to an EARLIER ask
+ * counts: nothing but devStatus goes to the lamp while it is read, so its
+ * state cannot have moved between asks. Returns `{ state, asks, answeredOnAsk,
+ * elapsedMs }` — `asks` is how many were sent, `answeredOnAsk` is how many had
+ * been sent when the reply landed (null if none did).
+ */
+export async function lanDevStatusRead(ip, {
+  asks = STATUS_ASKS,
+  replyMs = STATUS_REPLY_MS,
   replyPort = REPLY_PORT,
   commandPort = CMD_PORT
 } = {}) {
+  const maxAsks = Number.isInteger(asks) && asks > 0 ? asks : STATUS_ASKS;
+  const windowMs = Number.isFinite(replyMs) && replyMs > 0 ? replyMs : STATUS_REPLY_MS;
   const socket = await openReplySocket(replyPort);
+  const startedAt = Date.now();
+  let sent = 0;
   const state = await new Promise(resolve => {
-    const timer = setTimeout(() => resolve(null), timeoutMs);
+    let timer = null;
     socket.on('message', (buffer, rinfo) => {
       // :4002 is one shared reply port for EVERY device on the LAN, and a lamp
       // answering a stale or third-party poll is indistinguishable by payload
@@ -415,10 +445,25 @@ export async function lanDevStatus(ip, {
         }
       } catch { /* not ours */ }
     });
-    sendJson(socket, ip, commandPort, { msg: { cmd: 'devStatus', data: {} } });
+    const ask = () => {
+      sent += 1;
+      sendJson(socket, ip, commandPort, { msg: { cmd: 'devStatus', data: {} } });
+      timer = setTimeout(() => (sent < maxAsks ? ask() : resolve(null)), windowMs);
+    };
+    ask();
   });
   socket.close();
-  return state;
+  return {
+    state,
+    asks: sent,
+    answeredOnAsk: state ? sent : null,
+    elapsedMs: Date.now() - startedAt
+  };
+}
+
+/** The state alone; see lanDevStatusRead for the asks and the evidence. */
+export async function lanDevStatus(ip, options = {}) {
+  return (await lanDevStatusRead(ip, options)).state;
 }
 
 // ── Writes ──────────────────────────────────────────────────────────────────

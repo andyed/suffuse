@@ -787,7 +787,8 @@ async function lanPaint(args, lan) {
   // Keyless pre-write capture: devStatus answers over LAN (the razer channel does
   // not, but we are reading the documented state BEFORE painting over it). The
   // capture→restore mapping (CCT-mode trap included) lives in lanRestoreOperations.
-  const captured = await lan.lanDevStatus(ip);
+  const read = await lan.lanDevStatusRead(ip);
+  const captured = read.state;
   const restoreOperations = captured ? lan.lanRestoreOperations(ip, captured) : [];
   appendEvidence(evidence, {
     kind: 'query',
@@ -796,14 +797,18 @@ async function lanPaint(args, lan) {
     facts: {
       query: 'pre-write-whole-device-state',
       restoreOperationCount: restoreOperations.length,
-      segmentStateQueryable: false
+      segmentStateQueryable: false,
+      // A lamp that needed a second or third ask is the evidence behind the
+      // next "lamp offline" report; one that never answered says how hard we tried.
+      asksSent: read.asks,
+      ...(read.answeredOnAsk > 1 ? { answeredOnAsk: read.answeredOnAsk } : {})
     }
   });
   const restoreCoverage = {
     mode: 'capture',
     complete: mode === 'lan-solid' && restoreOperations.length > 1,
     warning: !captured
-      ? 'devStatus did not answer before the write; restoration will fall back to releasing the device to its own effects.'
+      ? `devStatus did not answer ${read.asks} ask(s) before the write; restoration will fall back to releasing the device to its own effects.`
       : mode === 'lan-per-led' && restoreOperations.length > 1
         ? 'devStatus reflects the whole-device state only; any prior per-LED look is not queryable and cannot be restored.'
         : restoreOperations.length > 1

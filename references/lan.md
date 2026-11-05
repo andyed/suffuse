@@ -52,6 +52,23 @@ could record the WRONG device's state as its restore point. `lanDevStatus`
 now drops any reply whose `rinfo.address` is not the polled device. The
 sender address is the only identity this channel has.
 
+## One `devStatus` ask is not enough
+
+A UDP reply on Wi-Fi can be late or lost outright. Measured on a Windows box
+with six LAN lamps (psychodeli-webgl-port, 2026-10-17): a capture that asked
+once and waited 900 ms came up with 2, and on another start 5, of the six
+lamps "offline". The same lamps had answered the discovery scan seconds
+before, and a second attempt always captured them. A longer single window
+does nothing for a lost packet.
+
+`lanDevStatusRead` therefore asks up to three times, 900 ms apart, and
+accepts a late reply to an earlier ask: nothing but `devStatus` goes to the
+lamp while it is read, so its state cannot have moved between asks. The read
+resolves the moment a reply lands, so a prompt lamp costs tens of
+milliseconds, and the worst case (2.7 s) is inside the old single 3 s window.
+The `lan paint` receipt's capture event records `asksSent`, and
+`answeredOnAsk` when a lamp needed more than one ask.
+
 ## White-temperature mode reports RGB as black — never replay it
 
 A device in CCT mode (the H608B at 3600 K in the same cold-room run) reports
