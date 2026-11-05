@@ -312,6 +312,52 @@ async function openReplySocket(replyPort = REPLY_PORT) {
   return socket;
 }
 
+/**
+ * One reply socket per port per PROCESS, shared by concurrent callers.
+ * Not-reuseAddr is only half the rule. The other half: two reads in this
+ * process that both bind first would either fail (the second gets EADDRINUSE
+ * and blames "another controller" for what is its own sibling) or, with
+ * reuseAddr, split the lamps' replies between two sockets so a capture reads
+ * a live lamp as silent (psychodeli-webgl-port, 2026-10-17). So concurrent
+ * first callers await ONE bind, each attaches its own listener (every reader
+ * already filters by command and sender), and the last one out closes it.
+ * Another PROCESS on the port still fails loudly, as above.
+ */
+const replyLeases = new Map();
+
+export async function acquireReplySocket(replyPort = REPLY_PORT) {
+  let lease = replyLeases.get(replyPort);
+  if (!lease) {
+    lease = { users: 0, socket: null, binding: null };
+    lease.binding = openReplySocket(replyPort).then(
+      socket => { lease.socket = socket; return socket; },
+      error => { replyLeases.delete(replyPort); throw error; }
+    );
+    replyLeases.set(replyPort, lease);
+  }
+  lease.users += 1;
+  let socket;
+  try {
+    socket = await lease.binding;
+  } catch (error) {
+    lease.users -= 1;
+    throw error;
+  }
+  let released = false;
+  return {
+    socket,
+    release() {
+      if (released) return;
+      released = true;
+      lease.users -= 1;
+      if (lease.users === 0 && replyLeases.get(replyPort) === lease) {
+        replyLeases.delete(replyPort);
+        socket.close();
+      }
+    }
+  };
+}
+
 // ── Discovery and state ─────────────────────────────────────────────────────
 
 /**
@@ -330,9 +376,9 @@ export async function lanScan({
   commandPort = CMD_PORT,
   multicastAddress = MULTICAST_ADDR
 } = {}) {
-  const socket = await openReplySocket(replyPort);
+  const { socket, release } = await acquireReplySocket(replyPort);
   const found = new Map();
-  socket.on('message', (buffer, rinfo) => {
+  const onMessage = (buffer, rinfo) => {
     try {
       const parsed = JSON.parse(buffer.toString('utf8').replace(/\0+$/, ''));
       const data = parsed?.msg?.data;
@@ -346,32 +392,36 @@ export async function lanScan({
         });
       }
     } catch { /* not ours */ }
-  });
-
-  const scan = { msg: { cmd: 'scan', data: { account_topic: 'reserve' } } };
-  if (includeMulticast) {
-    try {
-      socket.setBroadcast(true);
-      sendJson(socket, multicastAddress, scanPort, scan);
-    } catch { /* multicast unavailable; the sweep still runs */ }
-  }
-
-  const targets = Array.isArray(scanIps) ? scanIps : null;
-  if (targets) {
-    for (const ip of targets) {
-      sendJson(socket, ip, scanPort, scan);
-      if (commandPort !== scanPort) sendJson(socket, ip, commandPort, scan);
+  };
+  socket.on('message', onMessage);
+  try {
+    const scan = { msg: { cmd: 'scan', data: { account_topic: 'reserve' } } };
+    if (includeMulticast) {
+      try {
+        socket.setBroadcast(true);
+        sendJson(socket, multicastAddress, scanPort, scan);
+      } catch { /* multicast unavailable; the sweep still runs */ }
     }
-  } else {
-    const base = subnet ?? localSubnet();
-    for (let host = 1; base && host <= 254; host++) {
-      sendJson(socket, `${base}.${host}`, scanPort, scan);
-      sendJson(socket, `${base}.${host}`, commandPort, scan);
-      if (host % 32 === 0) await sleep(50);
+
+    const targets = Array.isArray(scanIps) ? scanIps : null;
+    if (targets) {
+      for (const ip of targets) {
+        sendJson(socket, ip, scanPort, scan);
+        if (commandPort !== scanPort) sendJson(socket, ip, commandPort, scan);
+      }
+    } else {
+      const base = subnet ?? localSubnet();
+      for (let host = 1; base && host <= 254; host++) {
+        sendJson(socket, `${base}.${host}`, scanPort, scan);
+        sendJson(socket, `${base}.${host}`, commandPort, scan);
+        if (host % 32 === 0) await sleep(50);
+      }
     }
+    await sleep(timeoutMs);
+  } finally {
+    socket.off('message', onMessage);
+    release();
   }
-  await sleep(timeoutMs);
-  socket.close();
   return [...found.values()];
 }
 
@@ -424,35 +474,43 @@ export async function lanDevStatusRead(ip, {
 } = {}) {
   const maxAsks = Number.isInteger(asks) && asks > 0 ? asks : STATUS_ASKS;
   const windowMs = Number.isFinite(replyMs) && replyMs > 0 ? replyMs : STATUS_REPLY_MS;
-  const socket = await openReplySocket(replyPort);
+  const { socket, release } = await acquireReplySocket(replyPort);
   const startedAt = Date.now();
   let sent = 0;
-  const state = await new Promise(resolve => {
-    let timer = null;
-    socket.on('message', (buffer, rinfo) => {
-      // :4002 is one shared reply port for EVERY device on the LAN, and a lamp
-      // answering a stale or third-party poll is indistinguishable by payload
-      // (devStatus carries no device id). Found by a cold-room agent 2026-08-18:
-      // sequential polls cross-attributed replies between fixtures, and because
-      // lan paint uses this capture, a receipt could record the WRONG device's
-      // state as its restore point. The sender address is the only identity.
-      if (rinfo.address !== ip) return;
-      try {
-        const parsed = JSON.parse(buffer.toString('utf8').replace(/\0+$/, ''));
-        if (parsed?.msg?.cmd === 'devStatus') {
-          clearTimeout(timer);
-          resolve(parsed.msg.data ?? null);
-        }
-      } catch { /* not ours */ }
+  let onMessage = null;
+  let timer = null;
+  let state;
+  try {
+    state = await new Promise(resolve => {
+      onMessage = (buffer, rinfo) => {
+        // :4002 is one shared reply port for EVERY device on the LAN, and a lamp
+        // answering a stale or third-party poll is indistinguishable by payload
+        // (devStatus carries no device id). Found by a cold-room agent 2026-08-18:
+        // sequential polls cross-attributed replies between fixtures, and because
+        // lan paint uses this capture, a receipt could record the WRONG device's
+        // state as its restore point. The sender address is the only identity.
+        if (rinfo.address !== ip) return;
+        try {
+          const parsed = JSON.parse(buffer.toString('utf8').replace(/\0+$/, ''));
+          if (parsed?.msg?.cmd === 'devStatus') {
+            clearTimeout(timer);
+            resolve(parsed.msg.data ?? null);
+          }
+        } catch { /* not ours */ }
+      };
+      socket.on('message', onMessage);
+      const ask = () => {
+        sent += 1;
+        sendJson(socket, ip, commandPort, { msg: { cmd: 'devStatus', data: {} } });
+        timer = setTimeout(() => (sent < maxAsks ? ask() : resolve(null)), windowMs);
+      };
+      ask();
     });
-    const ask = () => {
-      sent += 1;
-      sendJson(socket, ip, commandPort, { msg: { cmd: 'devStatus', data: {} } });
-      timer = setTimeout(() => (sent < maxAsks ? ask() : resolve(null)), windowMs);
-    };
-    ask();
-  });
-  socket.close();
+  } finally {
+    clearTimeout(timer);
+    if (onMessage) socket.off('message', onMessage);
+    release();
+  }
   return {
     state,
     asks: sent,

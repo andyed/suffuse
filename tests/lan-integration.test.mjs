@@ -168,3 +168,62 @@ test('devStatus gives up after the configured asks and reports none answered', a
     await fake.close();
   }
 });
+
+async function freeUdpPort() {
+  const probe = dgram.createSocket('udp4');
+  await new Promise(resolve => probe.bind(0, '127.0.0.1', resolve));
+  const { port } = probe.address();
+  await new Promise(resolve => probe.close(resolve));
+  return port;
+}
+
+test('concurrent first callers share one reply bind instead of failing as a second controller', async () => {
+  // A fixed reply port is the case that matters: before the shared lease, the
+  // second concurrent read got EADDRINUSE and blamed "another controller" for
+  // its own sibling in this process.
+  const fake = await startFakeDevice();
+  const replyPort = await freeUdpPort();
+  try {
+    const options = { replyMs: 200, replyPort, commandPort: fake.port };
+    const [a, b, scan] = await Promise.all([
+      lanDevStatusRead('127.0.0.1', options),
+      lanDevStatusRead('127.0.0.1', options),
+      lanScan({ timeoutMs: 80, scanIps: ['127.0.0.1'], includeMulticast: false, replyPort, scanPort: fake.port, commandPort: fake.port })
+    ]);
+    assert.equal(a.state.brightness, 42);
+    assert.equal(b.state.brightness, 42);
+    assert.equal(scan.length, 1);
+    // The last reader out closed the shared socket: the port is free again.
+    const after = dgram.createSocket('udp4');
+    await new Promise((resolve, reject) => {
+      after.once('error', reject);
+      after.bind(replyPort, resolve);
+    });
+    await new Promise(resolve => after.close(resolve));
+  } finally {
+    await fake.close();
+  }
+});
+
+test('another process on the reply port still fails loudly', async () => {
+  const replyPort = await freeUdpPort();
+  const squatter = dgram.createSocket('udp4');
+  await new Promise(resolve => squatter.bind(replyPort, resolve));
+  try {
+    await assert.rejects(
+      lanDevStatusRead('127.0.0.1', { replyMs: 50, replyPort, commandPort: 9 }),
+      error => error.code === 'reply-port-busy'
+    );
+    // A failed bind leaves no half-made lease behind for the next caller.
+    await new Promise(resolve => squatter.close(resolve));
+    const fake = await startFakeDevice();
+    try {
+      const read = await lanDevStatusRead('127.0.0.1', { replyMs: 200, replyPort, commandPort: fake.port });
+      assert.equal(read.state.brightness, 42);
+    } finally {
+      await fake.close();
+    }
+  } finally {
+    try { squatter.close(); } catch { /* already closed */ }
+  }
+});

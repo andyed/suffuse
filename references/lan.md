@@ -99,3 +99,12 @@ UDP 4002 is where every device replies. Two listeners silently steal each
 other's replies — measurements taken with a second controller running are
 invalid, and port sharing does not fix it. Fail loudly when 4002 is taken
 (`scripts/lan.mjs` does; so does the verification harness).
+
+The same rule holds inside one process. Two reads that each bind first
+either collide (the second fails and blames "another controller" for its own
+sibling) or, with `reuseAddr`, split the lamps' replies so a capture reads a
+live lamp as silent (psychodeli-webgl-port, 2026-10-17). `acquireReplySocket`
+gives concurrent callers in a process one shared bind; each attaches its own
+listener, and every reader already filters by command and sender address. The
+last caller out closes the socket. Another process on the port still fails
+loudly.
