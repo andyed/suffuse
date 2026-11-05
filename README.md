@@ -287,7 +287,9 @@ What makes this path different, and how Suffuse holds the line on each:
 - **Writers contend.** A whole-device color command repaints every pixel and
   flattens a live per-LED look (measured; last writer wins). While a hold is
   active, Suffuse refuses whole-device writes to that device with a structured
-  error instead of letting the two silently fight.
+  error instead of letting the two silently fight. `--hand-over` replaces a held
+  look with a solid on purpose: the keepalive stops and per-LED mode is left
+  before the write, with no restore pass in between.
 - **Restore still works, keyless.** `devStatus` answers over LAN, so pre-write
   whole-device state is captured into the receipt before painting, and
   `restore` replays it. Prior *per-LED* looks are not queryable on any channel;

@@ -58,7 +58,7 @@ function usage() {
   govee.mjs evidence --receipt FILE
   govee.mjs restore --receipt FILE --confirm-write
   govee.mjs lan scan [--subnet 192.168.1] [--timeout MS]
-  govee.mjs lan paint --score FILE [--ip ADDR] [--hold-seconds N]
+  govee.mjs lan paint --score FILE [--ip ADDR] [--hold-seconds N] [--hand-over]
                       [--confirm-write --receipt FILE --confirm-segments]
   govee.mjs lan release --ip ADDR --confirm-write
   govee.mjs lan holds
@@ -79,7 +79,7 @@ function parseArgs(argv) {
       continue;
     }
     const key = token.slice(2);
-    if (['confirm-write', 'confirm-segments', 'show-identifiers'].includes(key)) {
+    if (['confirm-write', 'confirm-segments', 'show-identifiers', 'hand-over'].includes(key)) {
       args[key] = true;
       continue;
     }
@@ -763,6 +763,9 @@ async function lanPaint(args, lan) {
     pixels: pixels ? pixels.length : null,
     chromaGamma: mode === 'lan-per-led' ? (profile.chromaGamma ?? null) : null,
     holdSeconds: mode === 'lan-per-led' ? holdSeconds : null,
+    // A solid over a live Suffuse hold is refused unless handed over on purpose;
+    // a new per-LED look always takes the hold over (see the write below).
+    handOver: args['hand-over'] === true,
     warnings
   };
 
@@ -824,7 +827,18 @@ async function lanPaint(args, lan) {
   };
   recordRestoreCoverage(evidence, restoreCoverage);
 
+  // A live hold on this lamp is a look someone asked to keep. A new per-LED look
+  // replaces it (its keepalive must stop, or it repaints the old frame over this
+  // one). A solid replaces it only on --hand-over; otherwise lanSetColor refuses.
+  // Either way there is no restore pass between the two looks.
+  const outcomes = [];
+  let handedOver = null;
   try {
+    const hold = await lan.readHold(ip);
+    if (hold && Date.now() < hold.expiresAt && (mode === 'lan-per-led' || plan.handOver)) {
+      handedOver = await lan.takeOverHold(ip);
+      if (handedOver) outcomes.push({ action: 'hold-handed-over', ok: true });
+    }
     if (mode === 'lan-per-led') {
       await lan.lanPaintPixels(ip, pixels);
       if (holdSeconds > 0) {
@@ -842,12 +856,17 @@ async function lanPaint(args, lan) {
         warnings.push('No hold requested: the device reverts to its own effects in roughly a minute (hardware dead-man).');
       }
     } else {
+      if (handedOver) {
+        // Leave per-LED mode before the whole-device command.
+        await lan.lanRazerDisable(ip);
+        outcomes.push({ action: 'razer-disable', ok: true });
+      }
       await lan.lanSetColor(ip, score.look.color, {
         brightness: score.look.brightness ?? null
       });
     }
   } catch (error) {
-    recordOutcomes(evidence, [{
+    recordOutcomes(evidence, [...outcomes, {
       action: mode === 'lan-per-led' ? 'razer-paint' : 'colorwc',
       ok: false,
       code: error.code ?? 'lan-write-failed',
@@ -859,6 +878,7 @@ async function lanPaint(args, lan) {
       status: 'partial-or-failed',
       transport: 'lan',
       plan,
+      ...(handedOver ? { handedOver: { label: handedOver.label ?? null, expiresAt: handedOver.expiresAt } } : {}),
       restoreOperations,
       restoreCoverage,
       evidence
@@ -866,7 +886,7 @@ async function lanPaint(args, lan) {
     throw error;
   }
 
-  recordOutcomes(evidence, [{
+  recordOutcomes(evidence, [...outcomes, {
     action: mode === 'lan-per-led' ? 'razer-paint' : 'colorwc',
     ok: true
   }], { transport: 'lan', source: 'govee-lan' });
@@ -878,6 +898,7 @@ async function lanPaint(args, lan) {
     status: 'applied',
     transport: 'lan',
     plan,
+    ...(handedOver ? { handedOver: { label: handedOver.label ?? null, expiresAt: handedOver.expiresAt } } : {}),
     restoreOperations,
     restoreCoverage,
     evidence
@@ -889,6 +910,7 @@ async function lanPaint(args, lan) {
     executionMode: mode,
     target: { sku, ip },
     holdSeconds: plan.holdSeconds,
+    handedOver: !!handedOver,
     receipt: args.receipt,
     restoreCoverage,
     warnings,

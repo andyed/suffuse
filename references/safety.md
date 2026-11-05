@@ -80,6 +80,19 @@ instead of rediscovering them.
   restored or the user explicitly discharges the debt.
 - When in doubt, keep the evidence.
 
+**Hand-over, not restore, for a direct colour over a live session**
+(psychodeli-webgl-port, 2026-10-17). A command that repaints power, colour and
+brightness does not restore-and-verify the lamps it is about to paint. Stop
+submissions, leave per-LED mode, send the command over the route the session
+already holds, and discharge each commanded lamp's debt from the journal at
+once, so a later stop or crash recovery cannot paint the pre-session state
+over the command. Power-only commands (on/off) keep the full restore, because
+they show the colour the restore puts back. Lamps the command does not cover,
+and any lamp whose command did not go out, keep the verified restore, and a
+failed restore still blocks every lamp not yet commanded. Measured on 6 LAN +
+1 BLE lamps: a colour while the room ran went from 41.7–42.2 s to 1.4 s.
+Suffuse's single-lamp form is `lan paint --hand-over`.
+
 **One writer per lamp, arbitrated once.** When a device answers on more than
 one transport, pick one owner up front rather than writing on both — two
 transports on one lamp is two writers fighting, and only some channels have

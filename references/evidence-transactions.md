@@ -53,6 +53,18 @@ a conservative transaction from its status, outcomes, sent records, restore
 operations, and coverage warning. Inferred events identify `legacy-receipt` as
 their source.
 
+## Hand-over
+
+Receipts stack per lamp: each captures the whole-device state just before its
+own write. A `lan paint` that replaces a live hold (a new gradient, or a solid
+with `--hand-over`) stops the hold's keepalive and, for a solid, leaves
+per-LED mode, then writes. No restore runs in between. The receipt carries
+`handedOver` (the replaced hold's label and expiry) and protocol events for
+`hold-handed-over` and, for a solid, `razer-disable`. Restoring it returns the
+lamp to the state captured just before it. On a lamp under a per-LED hold that
+is the state from before the hold, because `devStatus` never reflects per-LED
+output. The per-LED look that was replaced is not restorable on any channel.
+
 ## Read-only inspection
 
 ```bash

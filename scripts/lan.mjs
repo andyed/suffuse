@@ -643,8 +643,10 @@ export async function lanRazerDisable(ip) {
 // its TTL, then the light hands itself back. Deleting the hold file releases
 // early. The hold file doubles as the contention lock (lesson 3).
 
-const HOLDS_DIR = join(homedir(), '.suffuse', 'holds');
-const holdPath = ip => join(HOLDS_DIR, `${ip.replaceAll('.', '-')}.json`);
+// SUFFUSE_HOLDS_DIR relocates the hold files (tests, isolated runs). Read at
+// call time so the detached keepalive, which inherits the environment, agrees.
+const holdsDir = () => process.env.SUFFUSE_HOLDS_DIR || join(homedir(), '.suffuse', 'holds');
+const holdPath = ip => join(holdsDir(), `${ip.replaceAll('.', '-')}.json`);
 
 export function clampHoldSeconds(seconds) {
   const value = Number.isFinite(seconds) ? seconds : HOLD_DEFAULT_SECONDS;
@@ -666,15 +668,58 @@ async function refuseIfHeld(ip) {
     throw new GoveeSkillError(
       `Device ${ip} is held by a per-LED look until ${new Date(hold.expiresAt).toISOString()}; ` +
       'a whole-device color write would repaint every pixel and flatten it (last writer wins). ' +
-      'Release the hold first.',
+      'Release the hold first, or hand it over (--hand-over) to replace the look on purpose.',
       'device-held'
     );
   }
 }
 
 export async function writeHold(ip, { pid, expiresAt, label = null }) {
-  await mkdir(HOLDS_DIR, { recursive: true, mode: 0o700 });
+  await mkdir(holdsDir(), { recursive: true, mode: 0o700 });
   await writeFile(holdPath(ip), `${JSON.stringify({ ip, pid, expiresAt, label }, null, 2)}\n`, { mode: 0o600 });
+}
+
+/**
+ * Stop a hold's keepalive and wait for it to exit, without handing the lamp
+ * back. Only an UNEXPIRED hold's pid is signalled: past its expiry the loop has
+ * exited on its own, and the pid may belong to an unrelated process by now.
+ * Returns true when a keepalive was signalled.
+ */
+export async function stopKeepalive(hold, { waitMs = 1000 } = {}) {
+  const pid = Number(hold?.pid);
+  if (!Number.isInteger(pid) || pid <= 0 || pid === process.pid) return false;
+  if (!(Date.now() < Number(hold?.expiresAt))) return false;
+  try {
+    process.kill(pid, 'SIGTERM');
+  } catch {
+    return false;
+  }
+  const deadline = Date.now() + waitMs;
+  while (Date.now() < deadline) {
+    // ESRCH: gone. EPERM: the pid is no longer a process of ours to wait on.
+    try { process.kill(pid, 0); } catch { break; }
+    await sleep(20);
+  }
+  return true;
+}
+
+/**
+ * Hand a held lamp to a new write (psychodeli-webgl-port's direct-colour
+ * hand-over, 2026-10-17): stop submissions, then drop the hold, and run NO
+ * restore pass in between. Restoring first would flash the pre-hold colour and
+ * cost a capture/replay round trip only to paint over it a moment later. The
+ * keepalive is stopped BEFORE its hold file goes, so it cannot wake to a
+ * missing file and send its exit-time disable after the new write. Leaving
+ * per-LED mode is the caller's choice: a whole-device colour needs a razer
+ * disable first; a new per-LED frame does not. Returns the live hold that was
+ * taken over, or null.
+ */
+export async function takeOverHold(ip) {
+  const hold = await readHold(ip);
+  if (!hold) return null;
+  await stopKeepalive(hold);
+  await rm(holdPath(ip), { force: true });
+  return Date.now() < Number(hold.expiresAt) ? hold : null;
 }
 
 export async function releaseHold(ip) {
@@ -689,10 +734,11 @@ export async function releaseHold(ip) {
 
 export async function listHolds() {
   try {
-    const files = await readdir(HOLDS_DIR);
+    const dir = holdsDir();
+    const files = await readdir(dir);
     const holds = [];
     for (const file of files) {
-      try { holds.push(JSON.parse(await readFile(join(HOLDS_DIR, file), 'utf8'))); } catch { /* skip */ }
+      try { holds.push(JSON.parse(await readFile(join(dir, file), 'utf8'))); } catch { /* skip */ }
     }
     return holds;
   } catch {

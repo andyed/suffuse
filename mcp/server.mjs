@@ -237,18 +237,19 @@ export async function createMcpServer() {
 
   server.registerTool('govee_lan_paint', {
     title: 'Paint a LightScore over LAN',
-    description: 'Apply a gradient or solid LightScore over the local network — keyless, per-LED on profiled fixtures. Gradients require confirmSegments: the per-LED channel never acknowledges, so the result is only verifiable by eye. holdSeconds bounds how long the look persists (default 900, max 14400) before the device returns to its own effects; while held, whole-device writes to it are refused rather than allowed to flatten the look.',
+    description: 'Apply a gradient or solid LightScore over the local network — keyless, per-LED on profiled fixtures. Gradients require confirmSegments: the per-LED channel never acknowledges, so the result is only verifiable by eye. holdSeconds bounds how long the look persists (default 900, max 14400) before the device returns to its own effects; while held, whole-device writes to it are refused rather than allowed to flatten the look, unless handOver is true: then the hold\'s keepalive is stopped and per-LED mode left before the solid is written, with no restore pass in between. A new gradient always takes over an existing hold.',
     inputSchema: z.object({
       score: z.unknown(),
       confirmWrite: z.boolean(),
       receiptPath: z.string(),
       ip: z.string().optional(),
       holdSeconds: z.number().int().nonnegative().optional(),
-      confirmSegments: z.boolean().optional()
+      confirmSegments: z.boolean().optional(),
+      handOver: z.boolean().optional()
     }),
     outputSchema: OUTPUT_SCHEMA,
     annotations: annotations(false)
-  }, async ({ score, confirmWrite, receiptPath, ip, holdSeconds, confirmSegments }) => {
+  }, async ({ score, confirmWrite, receiptPath, ip, holdSeconds, confirmSegments, handOver }) => {
     requireWriteGate(confirmWrite);
     requireAbsoluteReceipt(receiptPath);
     return result(await withPrivateScore(score, path => {
@@ -256,6 +257,7 @@ export async function createMcpServer() {
       if (ip) args.push('--ip', ip);
       if (holdSeconds !== undefined) args.push('--hold-seconds', String(holdSeconds));
       if (confirmSegments === true) args.push('--confirm-segments');
+      if (handOver === true) args.push('--hand-over');
       return runCli(args);
     }));
   });
