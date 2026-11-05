@@ -5,7 +5,7 @@
 // ── Why this exists ─────────────────────────────────────────────────────────
 // The cloud Developer Platform has endpoint- and device-specific rate limits
 // and cannot address individual LEDs on most fixtures. The LAN API has no rate ceiling that
-// matters (razer measured at 40 Hz sustained with no device-side queue) and
+// matters (razer stop-tested clean at 60 Hz on the H608B and H61D3, no device-side queue) and
 // reaches per-LED on RGBIC hardware. It is also keyless — which cuts both
 // ways: no auth gate protects the user's lights, so every write here sits
 // behind the same confirm gates as the cloud path.
@@ -43,8 +43,13 @@ const MULTICAST_ADDR = '239.255.255.250';
 
 /** Documented-API pacing: colorwc drains at ~10-12 cmd/s and QUEUES (never drops). */
 export const COLORWC_MAX_HZ = 8;
-/** Razer channel: measured clean at 40 Hz; the true ceiling is above and unmeasured. */
-export const RAZER_MAX_HZ = 40;
+/**
+ * Razer channel roof: 60 Hz stop-tested clean on the H608B (2026-08-23, 480 frames,
+ * motion froze at a dead stop) and the H61D3 (2026-09-05). The true ceiling above 60
+ * is unmeasured. A SKU not stop-tested at 60 is held to its own RAZER_PROFILES.maxHz;
+ * this constant is the roof for the best-verified devices, not a per-SKU promise.
+ */
+export const RAZER_MAX_HZ = 60;
 /** Re-arm cadence for held looks — well inside the device's ~60s dead-man window. */
 export const HOLD_PERIOD_MS = 20000;
 /** Default and ceiling for how long a held look may persist. Bounded by design:
@@ -74,16 +79,32 @@ export const HOLD_MAX_SECONDS = 4 * 60 * 60;
 // mixed colour it shows. To measure: paint every pixel [255,0,25] (10% blue); a
 // linear fixture reads pink, a calibrated one red; then raise gamma on a red look
 // until the pink is gone without oranges and teals going thin.
+//
+// `frameHz` — measured SUSTAINED frame rate, or null when unmeasured. A consumer
+// may order fixtures by it (the fastest lamp takes the beat), so an unmeasured
+// SKU stays null rather than inheriting a plausible number: a guessed rate would
+// silently decide which lamp leads.
+// `maxHz` — per-SKU wire CAP: the highest rate whose stop-test froze instantly.
+// The stop-test (stream a travelling sweep N seconds, stop dead without a black
+// frame, watch for after-motion) is the queue oracle; see references/lan.md.
+// Sustained rate and ceiling are separate claims and neither inherits the other's
+// number without its own probe. A sender faster than maxHz must DROP frames
+// (min-gap), never queue them — razerMinFrameGapMs() below gives the gap.
+// Measured in psychodeli-webgl-port, 2026-08-23 unless noted.
 export const RAZER_PROFILES = Object.freeze({
   // chromaGamma 2: "pinkish" in the 2026-09-07 photo, milder than the H61D3/H612B;
   // isolated with a per-SKU override the same day, 2 read as an upgrade by eye.
-  H608B: Object.freeze({ pixels: 15, blend: 'discrete', verified: true, chromaGamma: 2 }),
+  // 60 Hz stop-test clean 2026-08-23: 480 frames, instant freeze. Above 60 unmeasured.
+  H608B: Object.freeze({ pixels: 15, blend: 'discrete', verified: true, frameHz: 60, maxHz: 60, chromaGamma: 2 }),
   // Community zone-probe (SignalRGB), 2026-08-16: 20 slots — 0-9 up the left bar,
   // 10-19 up the right — and the firmware remaps SHORTER packets unpredictably,
   // so always stream all 20. The earlier 8-zone "interpolating" reading described
   // short-packet behavior, not the addressing model. Unverified pending a
-  // discrete chase by eye.
-  H6047: Object.freeze({ pixels: 20, blend: 'discrete', verified: false, chromaGamma: null }),
+  // discrete chase by eye; the reference unit failed 2026-09-08, so the
+  // community count stands until another unit is tested.
+  // Never rate-probed: frameHz null so it is never picked as the fast lamp, and
+  // maxHz 30 is the rate it has shipped at, not a measured ceiling.
+  H6047: Object.freeze({ pixels: 20, blend: 'discrete', verified: false, frameHz: null, maxHz: 30, chromaGamma: null }),
   // Field-verified 2026-08-16: individual lights render at count=10 (a wrong
   // count renders nothing, so a rendering 10 IS the count). Govee's own product
   // DB says supportRazer: 0 for this SKU — that flag describes Desktop/Chroma
@@ -92,13 +113,15 @@ export const RAZER_PROFILES = Object.freeze({
   // the raw probe [255,0,25] read pink too. By eye: 2.2 helped a lot, 3 read redder; then
   // Golden Hour read pinkish under a scalar 3 (2026-09-08) — one exponent crushes green as
   // hard as blue. Per channel: 2.2 on red and green, 3 on blue keeps the gold.
-  H612B: Object.freeze({ pixels: 10, blend: 'discrete', verified: true, chromaGamma: [2.2, 2.2, 3] }),
+  // 40 Hz stop-test clean 2026-08-23 (320 frames, instant freeze); not yet probed at 60.
+  H612B: Object.freeze({ pixels: 10, blend: 'discrete', verified: true, frameHz: 40, maxHz: 40, chromaGamma: [2.2, 2.2, 3] }),
   // Floor Lamp 3 Lite — field-verified 2026-08-18: a one-hot red segment walked
   // all seven positions, index 0 bottom through index 6 top, with every other
   // region dark. A normal 30 Hz Electron stream then ran smoothly for 20 seconds,
   // stopped immediately with no visible backlog, and restored cleanly.
   // chromaGamma: LuminBlend+ — rendered the same Red Moon frames RED. Keep null.
-  H16C0: Object.freeze({ pixels: 7, blend: 'discrete', verified: true, chromaGamma: null }),
+  // 40 Hz stop-test clean 2026-08-23 (320 frames, instant freeze); not yet probed at 60.
+  H16C0: Object.freeze({ pixels: 7, blend: 'discrete', verified: true, frameHz: 40, maxHz: 40, chromaGamma: null }),
   // 3m Neon Rope Light 2 — 7 px field-verified 2026-09-05 (psychodeli-webgl-port):
   // a wrong count renders nothing, so a rendering 7 IS the count. The mined prior
   // said 15 (lanApi.segments) and at 15 the rope rendered ONE collapsed colour that
@@ -106,11 +129,25 @@ export const RAZER_PROFILES = Object.freeze({
   // SignalRGB's ledCount for the 5m H61D5 sibling is also 7, so this looks like a
   // fixed 7-segment architecture; treat lanApi.segments as suspect for H61D2-D6.
   // chromaGamma [2.2, 2.2, 3]: same evidence as the H612B (photo + eye, 2026-09-07/08).
-  H61D3: Object.freeze({ pixels: 7, blend: 'discrete', verified: true, chromaGamma: [2.2, 2.2, 3] })
+  // 60 Hz stop-test clean 2026-09-05 (480 frames, instant freeze).
+  H61D3: Object.freeze({ pixels: 7, blend: 'discrete', verified: true, frameHz: 60, maxHz: 60, chromaGamma: [2.2, 2.2, 3] })
 });
 
 export function razerProfile(sku) {
   return RAZER_PROFILES[String(sku ?? '').toUpperCase().trim()] ?? null;
+}
+
+/**
+ * Minimum gap between razer frames for a SKU (or a profile): its own maxHz,
+ * never above RAZER_MAX_HZ. A frame due sooner should be dropped, not queued.
+ * null for a SKU with no profile — it is not per-LED drivable at all.
+ */
+export function razerMinFrameGapMs(skuOrProfile) {
+  const profile = typeof skuOrProfile === 'object' && skuOrProfile !== null ? skuOrProfile : razerProfile(skuOrProfile);
+  if (!profile) return null;
+  const cap = Number(profile.maxHz);
+  const hz = Number.isFinite(cap) && cap > 0 ? Math.min(cap, RAZER_MAX_HZ) : RAZER_MAX_HZ;
+  return 1000 / hz;
 }
 
 // ── Razer frame encoding ────────────────────────────────────────────────────

@@ -17,6 +17,8 @@ import {
   HOLD_DEFAULT_SECONDS,
   HOLD_MAX_SECONDS,
   lanRestoreOperations,
+  RAZER_MAX_HZ,
+  razerMinFrameGapMs,
   razerProfile,
   RAZER_PROFILES
 } from '../scripts/lan.mjs';
@@ -202,4 +204,31 @@ test('restore replays a genuine RGB capture as hex with brightness', () => {
   });
   assert.equal(ops[1].color, '#ffff00');
   assert.equal(ops[1].brightness, 44);
+});
+
+test('per-SKU rates: measured or null, never above the roof, never inherited', () => {
+  for (const [sku, profile] of Object.entries(RAZER_PROFILES)) {
+    assert.ok(Number.isFinite(profile.maxHz) && profile.maxHz > 0, `${sku}: every drivable profile carries a wire cap`);
+    assert.ok(profile.maxHz <= RAZER_MAX_HZ, `${sku}: cap above the global roof`);
+    if (profile.frameHz !== null) {
+      assert.ok(profile.frameHz <= profile.maxHz, `${sku}: sustained rate above its own cap`);
+    }
+    // A consumer may hand the beat to the fastest lamp; an unverified fixture
+    // must not be picked on an invented number.
+    if (!profile.verified) assert.equal(profile.frameHz, null, `${sku}: unverified profile claims a rate`);
+  }
+  assert.equal(RAZER_PROFILES.H608B.maxHz, 60);
+  assert.equal(RAZER_PROFILES.H61D3.maxHz, 60);
+  assert.equal(RAZER_PROFILES.H612B.maxHz, 40);
+  assert.equal(RAZER_PROFILES.H16C0.maxHz, 40);
+  assert.equal(RAZER_PROFILES.H6047.maxHz, 30);
+});
+
+test('razer frame gap follows the SKU cap, and an unprofiled SKU has none', () => {
+  assert.equal(razerMinFrameGapMs('H608B'), 1000 / 60);
+  assert.equal(razerMinFrameGapMs('h612b'), 25);
+  assert.equal(razerMinFrameGapMs('H6047'), 1000 / 30);
+  assert.equal(razerMinFrameGapMs(RAZER_PROFILES.H16C0), 25);
+  assert.equal(razerMinFrameGapMs({ pixels: 3, maxHz: 500 }), 1000 / RAZER_MAX_HZ);
+  assert.equal(razerMinFrameGapMs('H0000'), null);
 });

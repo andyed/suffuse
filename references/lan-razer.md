@@ -79,6 +79,9 @@ probes exactly this with an 86-LED frame at every load.
 | Length field is 16-bit BE | OpenRGB source; 86-LED probe | Verified |
 | H608B renders 15 independent pixels | Hardware: discrete chase, every pixel counted (2026-08-15) | Verified |
 | 40 Hz sustained, no device-side queue | Hardware: 400 frames / 10.00 s, motion froze at stop (H608B) | Verified, this SKU |
+| 60 Hz sustained on the H608B and H61D3, no device-side queue | Hardware stop-test: 480 frames at 60 Hz, motion froze at a dead stop (H608B 2026-08-23, H61D3 2026-09-05; psychodeli-webgl-port). Above 60 unmeasured | Verified, these SKUs. `RAZER_MAX_HZ` |
+| H612B and H16C0 run clean at 40 Hz | Hardware stop-test: 320 frames at 40 Hz, instant freeze (2026-08-23). Not yet probed at 60 | Verified at 40 only. `RAZER_PROFILES.maxHz` holds them there |
+| Sustained rate and ceiling are separate claims | `frameHz` records a measured sustained rate, `maxHz` the highest rate whose stop froze instantly; neither inherits the other's number without its own probe. The H6047's `maxHz` 30 is the rate it shipped at, never probed, so its `frameHz` stays null | Rule |
 | Pixel count must match or the frame is silently ignored | Hardware: 2/10/30-pixel frames showed nothing on a 15-LED string; 15 split immediately | Verified, this SKU |
 | Mode byte: `0x01` spatial array, `0x00` first-triple solid | Hardware sweep of both values on H608B + H6047 | Verified; OpenRGB names it `gradient_off`, which is misleading |
 | Whole-device `colorwc` flattens a live per-LED look (last writer wins) | Hardware, both orderings | Verified — basis of the hold contention lock |

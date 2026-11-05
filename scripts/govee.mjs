@@ -667,7 +667,14 @@ async function lanCommand(args) {
         sku: device.sku,
         ip: device.ip,
         device: redactIdentifier(device.device),
-        perLed: device.razer ? { pixels: device.razer.pixels, blend: device.razer.blend, verified: device.razer.verified } : null
+        perLed: device.razer ? {
+          pixels: device.razer.pixels,
+          blend: device.razer.blend,
+          verified: device.razer.verified,
+          // Measured rates, null when unmeasured — never inherited (see RAZER_PROFILES).
+          frameHz: device.razer.frameHz ?? null,
+          maxHz: device.razer.maxHz ?? null
+        } : null
       }))
     });
     return;

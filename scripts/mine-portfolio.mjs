@@ -152,23 +152,27 @@ const entry = (sku) => {
 
 // ── Our hardware ground truth (the validation anchor; never overwritten by mining) ────
 const HARDWARE = {
-    H608B: { razer: { pixels: 15, blend: 'discrete', hz: 40, verified: '2026-08-15',
+    H608B: { razer: { pixels: 15, blend: 'discrete', frameHz: 60, maxHz: 60, verified: '2026-08-15',
+        rateVerified: '2026-08-23 — 60Hz stop-test clean, 480 frames, instant freeze (psychodeli-webgl-port); 40Hz/400 frames clean 2026-08-15',
         chromaGamma: 2, chromaGammaVerified: '2026-09-07 — "pinkish" under Red Moon, between the linear-drive H61D3/H612B and the calibrated H16C0; isolated with a per-SKU override, 2 read as an upgrade (eye)' }, colorwcDrainHz: '10-12' },
     H6009: { ble: { colorOpcode: '0x33 0x05 0x0D (RGBWW — NOT the published 0x02)', verified: '2026-08-09' } },
     H6047: { razer: { note: '12-stop chase read as one colour animating (2026-08-15) — consistent with signalrgb "shorter packets remap unpredictably, always stream 20"' } },
     // ⚠️ Direct contradiction of the mined govee.supportRazer:0 — the firmware honours razer
     // frames even though the flag says no. The flag describes Govee Desktop/Chroma app
     // support, NOT the LAN handler. Treat supportRazer:0 as "unknown", never "absent".
-    H612B: { razer: { pixels: 10, blend: 'discrete', verified: '2026-08-16 — individual lights rendered at count=10 despite product-DB supportRazer:0; stop test froze instantly (no queue, 30Hz streaming safe)',
+    H612B: { razer: { pixels: 10, blend: 'discrete', frameHz: 40, maxHz: 40, verified: '2026-08-16 — individual lights rendered at count=10 despite product-DB supportRazer:0; stop test froze instantly (no queue, 30Hz streaming safe)',
+        rateVerified: '2026-08-23 — 40Hz stop-test clean, 320 frames, instant freeze (psychodeli-webgl-port); not yet probed at 60',
         chromaGamma: [2.2, 2.2, 3], chromaGammaVerified: '2026-09-07 — Red Moon reds rendered PINK end to end (photo) while the H16C0 showed the same frames red; raw [255,0,25] read pink, pure [255,0,0] best; 2.2 helped, 3 read redder (eye). 2026-09-08 — Golden Hour pinkish under a scalar 3; per channel 2.2/2.2/3 kept the gold (eye)' } },
     H16C0: {
         platformApi: { segments: 7, segmentedBrightness: true, verified: '2026-08-18' },
         razer: {
             pixels: 7,
             blend: 'discrete',
-            frameHz: 30,
+            frameHz: 40,
+            maxHz: 40,
             orientation: 'index 0 bottom to index 6 top',
             verified: '2026-08-18 — one-hot local walk plus smooth 20s Electron 30Hz run; immediate stop with no visible backlog; restore passed',
+            rateVerified: '2026-08-23 — 40Hz stop-test clean, 320 frames, instant freeze (psychodeli-webgl-port); not yet probed at 60',
             // LuminBlend+ (gamma-calibrated): the frames that read pink on the H61D3/H612B read RED here. Never inherit a gamma.
             chromaGamma: null, chromaGammaVerified: '2026-09-07 — same Red Moon frames red (photo); keep null'
         }
@@ -176,7 +180,7 @@ const HARDWARE = {
     // The mined lanApi.segments prior said 15; at 15 the rope rendered ONE collapsed colour
     // that still tracked the palette — indistinguishable from a working whole-device lamp.
     // SignalRGB's ledCount for the 5m H61D5 sibling is also 7: a fixed 7-segment architecture.
-    H61D3: { razer: { pixels: 7, blend: 'discrete', hz: 60,
+    H61D3: { razer: { pixels: 7, blend: 'discrete', frameHz: 60, maxHz: 60,
         verified: '2026-09-05 — one-hot chase rendered at count=7 (a wrong count renders nothing); 60Hz stop-test clean, 480 frames, instant freeze (psychodeli-webgl-port)',
         chromaGamma: [2.2, 2.2, 3], chromaGammaVerified: '2026-09-07/08 — same evidence as the H612B: pink end to end in the photo, raw [255,0,25] pink, 3 read redder; per channel 2.2/2.2/3 kept Golden Hour gold (eye)' } }
 };
@@ -185,7 +189,7 @@ for (const [sku, hw] of Object.entries(HARDWARE)) entry(sku).ourHardware = hw;
 const result = {
     minedAt: new Date().toISOString(),
     sources: Object.fromEntries(Object.entries(REPOS).map(([k, repo]) => [k, `${repo}@${repoSha(k)}`])),
-    validation: 'H608B: signalrgb ledCount 15 + govee supportRazer:1 + lanApi segments 15 all match hardware (15 discrete @40Hz)',
+    validation: 'H608B: signalrgb ledCount 15 + govee supportRazer:1 + lanApi segments 15 all match hardware (15 discrete @60Hz)',
     devices: Object.fromEntries([...portfolio.entries()].sort(([a], [b]) => a.localeCompare(b)))
 };
 

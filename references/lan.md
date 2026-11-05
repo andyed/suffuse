@@ -25,8 +25,13 @@ unthrottled send loop doesn't look coarse — it puts the room progressively
 behind, potentially minutes. Hence a hard ~8 Hz ceiling plus change deadbands:
 the cheapest packet is the one never sent.
 
-Contrast with `razer` on the same socket: 40 Hz sustained, 400 frames, no
-backlog (H608B). The ceiling is a property of the *command*, not the hardware.
+Contrast with `razer` on the same socket: 60 Hz sustained, 480 frames, no
+backlog (H608B, 2026-08-23; H61D3, 2026-09-05). The ceiling is a property of
+the *command*, not the hardware. Razer rates are per SKU: the H612B and H16C0
+are stop-tested clean at 40 Hz and not yet probed at 60, so
+`RAZER_PROFILES.maxHz` holds each SKU at its own verified rate under the
+60 Hz roof (`RAZER_MAX_HZ`), and `razerMinFrameGapMs()` gives the gap a
+sender must keep. A frame due sooner is dropped, never queued.
 
 **The stop-test method** (how "no queue" is proven): stream a travelling hue
 sweep, count down, stop dead *without* sending a black frame. The last frame

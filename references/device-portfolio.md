@@ -25,7 +25,7 @@ prints the clone list; sources are read locally, never redistributed).
 Each mined snapshot pins the source commits (`sources` field) and records the
 validation check: the H608B's three independent mined claims (signalrgb
 ledCount 15, govee supportRazer 1, lanApi segments 15) all match the
-hardware-verified 15 discrete pixels at 40 Hz. A source that disagreed with a
+hardware-verified 15 discrete pixels (stop-tested at 60 Hz). A source that disagreed with a
 hardware-verified fact would be suspect for everything else it claims.
 
 ## The rules for reading it

@@ -6,7 +6,7 @@
   "localApi": "govee-local-api@a3fe441",
   "govee2mqtt": "govee2mqtt@6f5a844"
  },
- "validation": "H608B: signalrgb ledCount 15 + govee supportRazer:1 + lanApi segments 15 all match hardware (15 discrete @40Hz)",
+ "validation": "H608B: signalrgb ledCount 15 + govee supportRazer:1 + lanApi segments 15 all match hardware (15 discrete @60Hz)",
  "devices": {
   "H1232": {
    "sku": "H1232",
@@ -104,9 +104,11 @@
     "razer": {
      "pixels": 7,
      "blend": "discrete",
-     "frameHz": 30,
+     "frameHz": 40,
+     "maxHz": 40,
      "orientation": "index 0 bottom to index 6 top",
      "verified": "2026-08-18 — one-hot local walk plus smooth 20s Electron 30Hz run; immediate stop with no visible backlog; restore passed",
+     "rateVerified": "2026-08-23 — 40Hz stop-test clean, 320 frames, instant freeze (psychodeli-webgl-port); not yet probed at 60",
      "chromaGamma": null,
      "chromaGammaVerified": "2026-09-07 — same Red Moon frames red (photo); keep null"
     }
@@ -1381,8 +1383,10 @@
     "razer": {
      "pixels": 15,
      "blend": "discrete",
-     "hz": 40,
+     "frameHz": 60,
+     "maxHz": 60,
      "verified": "2026-08-15",
+     "rateVerified": "2026-08-23 — 60Hz stop-test clean, 480 frames, instant freeze (psychodeli-webgl-port); 40Hz/400 frames clean 2026-08-15",
      "chromaGamma": 2,
      "chromaGammaVerified": "2026-09-07 — \"pinkish\" under Red Moon, between the linear-drive H61D3/H612B and the calibrated H16C0; isolated with a per-SKU override, 2 read as an upgrade (eye)"
     },
@@ -1800,7 +1804,10 @@
     "razer": {
      "pixels": 10,
      "blend": "discrete",
+     "frameHz": 40,
+     "maxHz": 40,
      "verified": "2026-08-16 — individual lights rendered at count=10 despite product-DB supportRazer:0; stop test froze instantly (no queue, 30Hz streaming safe)",
+     "rateVerified": "2026-08-23 — 40Hz stop-test clean, 320 frames, instant freeze (psychodeli-webgl-port); not yet probed at 60",
      "chromaGamma": [
       2.2,
       2.2,
@@ -3057,7 +3064,8 @@
     "razer": {
      "pixels": 7,
      "blend": "discrete",
-     "hz": 60,
+     "frameHz": 60,
+     "maxHz": 60,
      "verified": "2026-09-05 — one-hot chase rendered at count=7 (a wrong count renders nothing); 60Hz stop-test clean, 480 frames, instant freeze (psychodeli-webgl-port)",
      "chromaGamma": [
       2.2,

@@ -22,6 +22,11 @@ test('hardware anchors agree with RAZER_PROFILES', async () => {
     if (profile.verified) {
       assert.equal(hw?.pixels, profile.pixels, `${sku}: portfolio hardware pixels != profile`);
     }
+    if (profile.frameHz !== null) {
+      assert.equal(hw?.frameHz, profile.frameHz, `${sku}: portfolio frameHz != profile`);
+      assert.equal(hw?.maxHz, profile.maxHz, `${sku}: portfolio maxHz != profile`);
+      assert.ok(hw?.rateVerified || /Hz/.test(hw?.verified ?? ''), `${sku}: a shipped rate needs its evidence`);
+    }
     if (profile.chromaGamma !== null) {
       assert.deepEqual(hw?.chromaGamma, profile.chromaGamma, `${sku}: portfolio chromaGamma != profile`);
       assert.ok(hw?.chromaGammaVerified, `${sku}: a shipped chromaGamma needs its evidence`);
