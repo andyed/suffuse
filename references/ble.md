@@ -109,6 +109,14 @@ colour path on the tested SKUs.
   Privacy ▸ Bluetooth only lists apps that have successfully *requested*
   access; a killed process never appears there, so there is nothing to
   toggle.
+- **Windows refuses a reconnect to a lamp that has not advertised since its
+  last link closed.** Seen in psychodeli-webgl-port (2026-10-17): after a BLE
+  bulb was handed straight from a running room to a direct colour, the next
+  room start reused the last discovery and Windows refused the connection.
+  Rescanning first fixed it. Suffuse's `bleResolve` scans fresh on every call
+  and keeps no peripheral between calls; a future session mode must do the
+  same after any hand-over or disconnect, rather than reconnecting to a cached
+  handle.
 - **Web Bluetooth in Electron is a dead end** on current macOS: returns no
   devices while Chrome on the same machine works
   ([electron/electron#47046](https://github.com/electron/electron/issues/47046)).

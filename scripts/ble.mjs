@@ -322,6 +322,12 @@ export async function bleSet(peripheral, { power = null, color = null, brightnes
 /**
  * Resolve one peripheral by id or name fragment, scanning until first match.
  * Ambiguity is an error, not a guess — same posture as the LAN path.
+ *
+ * Every resolve is a FRESH scan; never reuse a peripheral from an earlier
+ * discovery. Windows refused a reconnect to a bulb that had not advertised
+ * since its last link closed (psychodeli-webgl-port, after a BLE hand-over,
+ * 2026-10-17). A lamp that has not advertised again is not reachable yet,
+ * whatever a cached handle says.
  */
 export async function bleResolve({ id = null, name = null, timeoutMs = 8000, noble = null } = {}) {
   const wantId = id ? String(id).trim() : null;

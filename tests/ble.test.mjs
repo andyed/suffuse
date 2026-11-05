@@ -198,3 +198,17 @@ test('set disconnects even when discovery finds no control characteristic', asyn
   );
   assert.equal(peripheral.disconnects, 1);
 });
+
+test('resolve rescans every time: a lamp seen once and silent since is not reused', async () => {
+  // Windows refused a reconnect to a bulb that had not advertised since its
+  // last link closed (psychodeli-webgl-port, 2026-10-17). No cached handle.
+  const target = fakePeripheral({ id: 'a', name: 'ihoment_H6009_EED7' });
+  const advertising = [target];
+  const noble = fakeNoble(advertising);
+  assert.equal(await bleResolve({ id: 'a', timeoutMs: 30, noble }), target);
+  advertising.length = 0;
+  await assert.rejects(
+    bleResolve({ id: 'a', timeoutMs: 30, noble }),
+    error => error.code === 'device-not-found'
+  );
+});
