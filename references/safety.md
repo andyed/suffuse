@@ -69,6 +69,12 @@ instead of rediscovering them.
    recaptures records the crashed session's output as the thing to restore to.
 3. Stop submitting before restoring — a restore racing live writes loses
    (last writer wins), and on queueing channels the queue replays over it.
+4. A one-shot command clears any frame still waiting in a latest-value
+   streaming pump. Otherwise a room handed to a colour takes one last stream
+   frame after it (psychodeli-webgl-port, 2026-10-17). In Suffuse the pending
+   frame is a hold's keepalive: a release stops the keepalive and waits for it
+   to exit before the disable, and a keepalive whose hold now names another
+   process stops without a frame and without releasing the newer look.
 
 **Durable restore journal** (crash recovery for physical state):
 

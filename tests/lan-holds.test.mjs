@@ -74,3 +74,45 @@ test('a solid over a live hold is still refused unless handed over on purpose', 
     await rm(join(holdsDirectory, '127-0-0-24.json'), { force: true });
   }
 });
+
+test('holdOwner tells a released hold, our own, and a newer owner apart', async () => {
+  const { holdOwner } = await import('../scripts/lan.mjs');
+  assert.equal(holdOwner(null, 10), 'none');
+  assert.equal(holdOwner({ pid: 10 }, 10), 'self');
+  assert.equal(holdOwner({ pid: '10' }, 10), 'self');
+  assert.equal(holdOwner({ pid: 11 }, 10), 'other');
+});
+
+// The loop tests run the keepalive in-process against 127.0.0.1, so its razer
+// frames go to a local port with no listener; no lamp is painted.
+test('a superseded keepalive stops without repainting or releasing the newer hold', async () => {
+  const { runHoldLoop } = await import('../scripts/lan.mjs');
+  const ip = '127.0.0.1';
+  const startedAt = Date.now();
+  const loop = runHoldLoop(ip, [[1, 2, 3]], 5, { periodMs: 30 });
+  await new Promise(resolve => setTimeout(resolve, 120));
+  await writeHold(ip, { pid: 2 ** 22 + 11, expiresAt: Date.now() + 60_000, label: 'newer look' });
+  await loop;
+  assert.ok(Date.now() - startedAt < 2000, 'the old loop ran on toward its own TTL');
+  const hold = await readHold(ip);
+  assert.equal(hold?.label, 'newer look', 'the old loop deleted the newer hold');
+  await rm(join(holdsDirectory, '127-0-0-1.json'), { force: true });
+});
+
+test('a keepalive that reaches its TTL still hands the lamp back', async () => {
+  const { runHoldLoop } = await import('../scripts/lan.mjs');
+  await runHoldLoop('127.0.0.1', [[1, 2, 3]], 0.15, { periodMs: 30 });
+  assert.equal(await readHold('127.0.0.1'), null);
+});
+
+test('releaseHold stops the keepalive and waits for it before the disable', async () => {
+  const { releaseHold } = await import('../scripts/lan.mjs');
+  const ip = '127.0.0.1';
+  const { child, exited } = standInKeepalive();
+  await writeHold(ip, { pid: child.pid, expiresAt: Date.now() + 60_000, label: null });
+  const released = await releaseHold(ip);
+  assert.equal(released.pid, child.pid);
+  const outcome = await Promise.race([exited, new Promise(resolve => setTimeout(() => resolve(null), 500))]);
+  assert.equal(outcome?.signal, 'SIGTERM');
+  assert.equal(await readHold(ip), null);
+});

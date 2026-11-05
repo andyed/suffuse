@@ -724,12 +724,22 @@ export async function takeOverHold(ip) {
 
 export async function releaseHold(ip) {
   const hold = await readHold(ip);
+  // Stop the keepalive and let it exit BEFORE the disable, so no frame it was
+  // about to send lands after the release. Same rule as psychodeli-webgl-port's
+  // "a one-shot command clears the pending streaming frame" (2026-10-17).
+  await stopKeepalive(hold);
   await rm(holdPath(ip), { force: true });
-  if (hold?.pid) {
-    try { process.kill(hold.pid, 'SIGTERM'); } catch { /* already gone */ }
-  }
   await lanRazerDisable(ip);
   return hold;
+}
+
+/**
+ * Whose is this hold? 'none' (released), 'self', or 'other' (a newer write took
+ * the lamp over). Pure; the keepalive's only decision.
+ */
+export function holdOwner(hold, pid = process.pid) {
+  if (!hold) return 'none';
+  return Number(hold.pid) === pid ? 'self' : 'other';
 }
 
 export async function listHolds() {
@@ -748,20 +758,34 @@ export async function listHolds() {
 
 /**
  * The detached keepalive loop. Runs in its own process (spawned by the CLI),
- * repaints until TTL or until the hold file disappears, then disables razer so
- * the device returns to its own state. Exit is always a release.
+ * repaints until TTL or until the hold is no longer its own, then disables
+ * razer so the device returns to its own state.
+ *
+ * A hold that now names ANOTHER pid means a newer write took the lamp over.
+ * This loop then stops without a frame and without a release: repainting would
+ * put the old look back over the new one, and its exit-time rm + disable would
+ * delete the newer hold and switch off the newer look. Only the owner hands
+ * the lamp back.
  */
-export async function runHoldLoop(ip, colors, ttlSeconds) {
+export async function runHoldLoop(ip, colors, ttlSeconds, { periodMs = HOLD_PERIOD_MS } = {}) {
   const expiresAt = Date.now() + clampHoldSeconds(ttlSeconds) * 1000;
   await writeHold(ip, { pid: process.pid, expiresAt });
+  let superseded = false;
   try {
     while (Date.now() < expiresAt) {
-      if (!(await readHold(ip))) return; // released externally; releaseHold sent the disable
+      const owner = holdOwner(await readHold(ip));
+      if (owner === 'none') return; // released externally; releaseHold sent the disable
+      if (owner === 'other') {
+        superseded = true;
+        return;
+      }
       await lanPaintPixels(ip, colors);
-      await sleep(Math.min(HOLD_PERIOD_MS, Math.max(0, expiresAt - Date.now())));
+      await sleep(Math.min(periodMs, Math.max(0, expiresAt - Date.now())));
     }
   } finally {
-    await rm(holdPath(ip), { force: true });
-    await lanRazerDisable(ip);
+    if (!superseded && holdOwner(await readHold(ip)) !== 'other') {
+      await rm(holdPath(ip), { force: true });
+      await lanRazerDisable(ip);
+    }
   }
 }
