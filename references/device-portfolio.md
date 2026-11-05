@@ -44,6 +44,43 @@ hardware-verified fact would be suspect for everything else it claims.
 4. **`ourHardware` outranks every mined claim** for its SKU, and mining never
    overwrites it.
 
+## From a mined count to driving it: the qualification contract
+
+`priors()` can say a count is `corroborated`. That is a candidate, not a
+verdict: a wrong count can render nothing, and the per-LED channel has no
+readback to tell that from success. Suffuse's own `lan paint` therefore never
+drives a mined count; it refuses any SKU without a `RAZER_PROFILES` entry. A
+consumer that wants to use a corroborated count anyway (psychodeli-webgl-port
+does, `spatial-qualification.js`, 2026-10-13) follows this contract:
+
+1. **Precedence, most trustworthy first:** a `RAZER_PROFILES` entry (measured,
+   never re-asked); then a person's stored verdict for this install; then a
+   test the person asked for; otherwise a single whole-device colour.
+2. **States:** `untried` (a candidate exists; show ordinary colour) →
+   `trying` (the person asked for a test and frames are going out) →
+   `confirmed` or `rejected` (the person answered). Nothing drives per-LED
+   until a person has watched the test and answered.
+3. **The test is independent of the look.** Slow, strongly contrasting bands
+   (warm red, blue, green) stepped along the fixture every 500 ms, repeated
+   until answered. Not the palette, not audio: a test that moves with the
+   music cannot tell "the count is right" from "something is changing".
+4. **Only the explicit verdict persists.** Requests and attempts are
+   session-only; a crash or quit mid-test leaves the lamp `untried`, not
+   half-qualified. A `rejected` verdict keeps an explicit retry.
+5. **Key verdicts on the device id**, which survives DHCP, and record the SKU so
+   a second fixture of the same model can inherit the answer, except for
+   variable fixtures (cuttable strips, chainable panels), where the count
+   belongs to the install, not the model.
+6. **A fixture qualified by eye is not rate-probed.** Stream it at no more
+   than 20 Hz, below every rate a Govee fixture has been seen to sustain (see
+   `RAZER_PROFILES.maxHz`), and assume `discrete` blend: on an interpolating
+   fixture discrete stops still render, smoother than intended, while the
+   reverse assumption can render nothing.
+
+A confirmed verdict is still not `verified: true` in `RAZER_PROFILES` (rule 3
+above). It says one person saw one install light across the fixture;
+promotion still takes the discrete chase.
+
 ## Known upstream disagreement
 
 `govee-local-api` 3.0.1 states two different segment counts for the **H612D**: its

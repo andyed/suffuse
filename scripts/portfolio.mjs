@@ -12,6 +12,12 @@
  * offers, not what the firmware accepts (H612B: supportRazer 0, renders 10
  * discrete pixels). `priors()` below encodes this — it never returns
  * "unsupported", only "corroborated" or "unknown".
+ *
+ * And the second: "corroborated" is a CANDIDATE, never a drive decision. A
+ * consumer may drive a mined count only after a person watched a contrasting
+ * test and said it lit (the qualification contract in
+ * references/device-portfolio.md); Suffuse's own lan paint refuses any SKU
+ * without a RAZER_PROFILES entry.
  */
 
 import { readFile } from 'node:fs/promises';
