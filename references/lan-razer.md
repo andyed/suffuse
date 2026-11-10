@@ -54,6 +54,13 @@ read its silence as evidence the channel is unreal.
    protocol source (the enable constant appears verbatim in a dozen small repos, most
    unlicensed) and behavioral corroboration for device coverage and LED counts.
 
+6. **govee-lights-app** — [`SaarthurR/govee-lights-app`](https://github.com/SaarthurR/govee-lights-app)
+   (MIT), a Python LAN controller whose `docs/protocol.md` records bench notes from two
+   H805D strips (read at commit `1eec3c5`, 2026-11-09). It is the only source here for
+   that SKU, and two of its notes disagree with what this project measured on other
+   SKUs — see "H805D reports" below. Its figures are streaming slot counts, which its
+   own source says are not physical LED counts.
+
 A survey by the enable-packet fingerprint (base64 `uwABsQEK`, 2026-08-15) found ~36
 public files implementing this channel. None pair it with typed tools, write gates,
 receipts, or bounded holds — they are render loops. Suffuse's claim is not priority on
@@ -92,6 +99,29 @@ probes exactly this with an 86-LED frame at every load.
 | H61D3 Neon Rope Light 2 renders 7 discrete pixels; the mined `lanApi.segments` prior of 15 renders ONE collapsed colour that still tracks the palette | Hardware: discrete chase at 7, 60 Hz stop-test clean (psychodeli-webgl-port, 2026-09-05). At 15 the rope looked exactly like a working whole-device lamp — the same shape as the H6047 solid result | Verified; treat `lanApi.segments` as suspect for the H61D2–D6 range |
 | The H61D3 and H612B map bytes to LED duty roughly linearly, so minor-channel leakage in an sRGB-shaped pixel ([82,0,10]) lights PINK; the H16C0 (LuminBlend+, gamma-calibrated) shows the same bytes red | Photo + eye, 2026-09-07 (Red Moon): identical frames red on the H16C0, pink end to end on the H61D3/H612B, constant across brightness; raw probe [255,0,25] read pink on both, pure [255,0,0] read best; chroma gamma 2.2 helped, 3 read redder | Verified by eye; the gamma value is an eye measurement, not a photometric one. `RAZER_PROFILES.chromaGamma` |
 | Matrix devices (curtains, nets) have partial/first-N-pixel coverage | LedFx docs (H6811: first 224 pixels) | Reported, not reproduced here |
+| H805D takes 132 colours per frame, each slot its own colour, streamed at 12 Hz | govee-lights-app `docs/protocol.md`, two strips, 2026-11-07. Not a discrete chase by this project's method; no rate above 12 Hz reported | Reported, not reproduced here. Not in `RAZER_PROFILES` |
+| H805D sent 84 colours stretches them across the strip: the first 48 light 2 slots each, the last 36 light 1 each (48·2 + 36 = 132) | govee-lights-app, same test | Reported, not reproduced here. Differs from the H608B, where a wrong count renders nothing |
+| H805D renders a spatial array with mode byte `0x00` | govee-lights-app `server.py` builds every frame as `B0 00 <count> …` and its notes call `00` "no blend" | Reported, not reproduced here. Conflicts with the H608B + H6047 sweep above, where `0x00` paints the first triple solid |
+| Re-sending the enable frame while frames are streaming blacks the H805D out | govee-lights-app: enable is sent once after power-on and never on a timer | Reported, not reproduced here. `lanPaintPixels` sends enable before every frame, so a hold repaints with it every `HOLD_PERIOD_MS` |
+| After a power cut the H805D leaves per-LED mode and ignores frames until enable is sent again; `devStatus` shows the power change but not whether per-LED mode is on | govee-lights-app | Reported, not reproduced here. The `devStatus` half matches this project's finding that the channel is mute |
+| H619A takes 20 colour slots | govee-lights-app, citing OpenRGB's model table; its authors did not test it on hardware | Reported, **unverified**. `assets/device-portfolio.json` carries a SignalRGB `ledCount` of 30 for the same SKU, so the two community sources disagree |
+
+## H805D reports — what to check before driving one
+
+Nobody on this project has an H805D. The rows above come from one outside bench, and
+three of them bear on code that is already here:
+
+- **Mode byte.** Suffuse's encoder writes `0x01` for a spatial array because `0x00`
+  painted a solid on the H608B and H6047. The H805D bench got per-slot colour with
+  `0x00` and never tried `0x01`. The first probe on an H805D is the same two-value
+  sweep, not an assumption in either direction.
+- **Wrong count.** A short frame on the H805D reportedly renders, stretched, where the
+  H608B shows nothing. So "it lit up" does not confirm a count on this SKU, the same
+  hazard as the H6047 and H61D3. Only the discrete chase settles it.
+- **Enable on every repaint.** `lanPaintPixels` sends enable, waits 150 ms, then sends
+  the frame, and a hold calls it every 20 s. If the blackout report holds, a held look
+  on an H805D would blink or go dark at each repaint. Watch one full hold period on
+  the first H805D before trusting a hold there.
 
 ## Chroma gamma — when a fixture drives its LEDs linearly
 

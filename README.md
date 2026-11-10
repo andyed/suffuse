@@ -430,7 +430,10 @@ became public. [LedFx](https://github.com/LedFx/LedFx) (GPL-3.0) implemented it
 independently for audio-reactive rendering; SignalRGB's community `Govee.js`
 addons spread it through the ambient-lighting scene; and
 [LumiSync](https://github.com/Minlor/LumiSync) (MIT) published its own research
-and a permissively licensed implementation. Suffuse's implementation was
+and a permissively licensed implementation.
+[govee-lights-app](https://github.com/SaarthurR/govee-lights-app) (MIT), a
+browser controller shared on r/Govee, contributed the only bench notes Suffuse
+has for the H805D; they are recorded as reported, not reproduced. Suffuse's implementation was
 re-derived from the byte layout as protocol fact, hardware-verified, and adds
 what none of the roughly three dozen public implementations carry: typed tools,
 write gates, receipts, bounded holds, and evidence-classed claims. The full

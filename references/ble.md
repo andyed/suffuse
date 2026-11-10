@@ -130,6 +130,7 @@ colour path on the tested SKUs.
 | [`chvolkmann/govee_btled`](https://github.com/chvolkmann/govee_btled) | Working BLE bulb control (H6001), Python |
 | [`homebridge-govee`](https://github.com/homebridge-plugins/homebridge-govee) | Actively maintained; ships BLE control alongside cloud and LAN, inside Homebridge |
 | [`wez/govee2mqtt`](https://github.com/wez/govee2mqtt) | `ptReal` and the scene-code pipeline |
+| [`SaarthurR/govee-lights-app`](https://github.com/SaarthurR/govee-lights-app) | Reports that BLE on the H805D addresses 33 groups of 4 slots against 132 over LAN `razer`, with an acknowledgement per command. Reported, not reproduced here |
 
 Take the protocol research, keep your own implementation — the pacing,
 recovery, and release semantics above are what the generic clients do not
