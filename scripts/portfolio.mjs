@@ -51,7 +51,8 @@ export function priors(entry) {
     razerVotes.push({ source: 'hardware', pixels: entry.ourHardware.razer.pixels, note: entry.ourHardware.razer.verified });
   }
   if (entry.signalrgb?.supportRazer) {
-    razerVotes.push({ source: 'signalrgb', pixels: entry.signalrgb.ledCount ?? null });
+    // A subdivided fixture carries its count as totalLeds and a ledCount of 0 (H6047: 20, H6056: 6).
+    razerVotes.push({ source: 'signalrgb', pixels: entry.signalrgb.totalLeds || entry.signalrgb.ledCount || null });
   }
   if (entry.govee?.supportRazer) {
     razerVotes.push({ source: 'govee-product-db', pixels: null });

@@ -28,7 +28,8 @@ the cheapest packet is the one never sent.
 Contrast with `razer` on the same socket: 60 Hz sustained, 480 frames, no
 backlog (H608B, 2026-08-23; H61D3, 2026-09-05). The ceiling is a property of
 the *command*, not the hardware. Razer rates are per SKU: the H612B and H16C0
-are stop-tested clean at 40 Hz and not yet probed at 60, so
+are stop-tested clean at 40 Hz and not yet probed at 60, and the H6056 is capped at 40
+by a camera stop-test in which 60 Hz settled about 0.3 s late (2026-11-11), so
 `RAZER_PROFILES.maxHz` holds each SKU at its own verified rate under the
 60 Hz roof (`RAZER_MAX_HZ`), and `razerMinFrameGapMs()` gives the gap a
 sender must keep. A frame due sooner is dropped, never queued.
@@ -88,6 +89,16 @@ reporting their prior value across multiple distinct requests — either those
 SKUs ignore the LAN brightness command in CCT mode or devStatus reports a
 different channel; the mute-channel rule applies (only eyes can promote
 either reading to fact).
+
+Follow-up, 2026-11-11, which favours a third reading — the commands were dropped.
+On six lamps (H608B, H612B, H16C0, H61D3, H610A, H6056) `colorwc` and `brightness`
+sent 0.3 s apart and then read back with `devStatus` matched on every lamp, in RGB
+and in Kelvin mode, over dozens of writes; a lamp that did not match was resent and
+then did. The same commands sent back to back did not: after a colour, power,
+brightness burst, 1 of 5 lamps reported what was sent. So `devStatus` does report
+LAN brightness on the H608B, and a value that "kept its prior" is more likely a
+command the lamp never took than one it ignored. The enable frame is lost the same
+way; see the evidence table in [lan-razer.md](lan-razer.md).
 
 ## Multicast discovery is intermittent — per device
 

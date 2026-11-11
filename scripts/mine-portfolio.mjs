@@ -189,7 +189,7 @@ const HARDWARE = {
     H6056: { razer: { pixels: 12, blend: 'discrete', frameHz: null, maxHz: 40,
         rateVerified: '2026-11-11 — camera stop-test with razer-probe rate (150 ms sampling, one run each): 240 frames at 30 Hz and 320 at 40 Hz both reached their final look within about 0.4 s of the last frame, the same at both rates; 480 frames at 60 Hz took about 0.3 s longer. Not an eye check, and it cannot see a queue shorter than the camera lag.',
         orientation: 'two bars, 6 slots each: indices 0-5 on one bar, 6-11 on the other, outer end to inner end on both as mounted on the test desk',
-        verified: '2026-11-11 — one-hot walk at count=12 by webcam (Wi-Fi fw 1.00.16, mode byte 0x01, 12 Hz), each slot differenced against a baseline frame taken just before it: every slot lit exactly one bar, slots 0-5 stepped across one bar and 6-11 across the other in six distinct, ordered positions each (psychodeli-webgl-port tools/room-lights/captures/h6056-walk/). At count=6 (the mined SignalRGB total) the bars render, each colour stretched over two segments; at count=24 they go dark. No chromaGamma measurement.' } }
+        verified: '2026-11-11 — one-hot walk at count=12 by webcam (Wi-Fi fw 1.00.16, mode byte 0x01, 12 Hz), each slot differenced against a baseline frame taken just before it: every slot lit exactly one bar, slots 0-5 stepped across one bar and 6-11 across the other in six distinct, ordered positions each (references/device-evidence.md). At count=6 (the mined SignalRGB total) the bars render, each colour stretched over two segments; at count=24 they go dark. No chromaGamma measurement.' } }
 };
 for (const [sku, hw] of Object.entries(HARDWARE)) entry(sku).ourHardware = hw;
 

@@ -269,10 +269,13 @@ What makes this path different, and how Suffuse holds the line on each:
   the length field is 16-bit big-endian, which every prose description of this
   protocol gets wrong), and reports `verified: false` on every per-LED result:
   it claims what was sent, never that the device obeyed.
-- **The pixel count must match the fixture exactly.** A wrong count is silently
-  ignored and reads as an unsupported device, so only hardware-verified SKU
-  profiles compile to per-LED (H608B: 15 pixels, chase-verified). Unknown SKUs
-  refuse rather than guess.
+- **The pixel count must match the fixture exactly.** A wrong count has shown
+  three faces on real hardware: nothing at all (H608B), one collapsed colour
+  that still tracks the palette (H61D3), and a working look at half resolution
+  (H6056). Two of those pass a glance, so only hardware-verified SKU profiles
+  compile to per-LED (H608B: 15 pixels, chase-verified; the H6056's 12 were
+  counted by camera after the mined 6 rendered). Unknown SKUs refuse rather
+  than guess.
 - **Gradient bands are the only per-LED authoring surface — deliberately.**
   Bands compile to pixels in authored order, so adjacent pixels stay adjacent
   in hue by construction. Fixtures with fewer zones than pixels interpolate

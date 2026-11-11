@@ -41,6 +41,8 @@ test('a measured count outranks a mined one that renders (H6056: 6 stretches, 12
   assert.equal(p.razer.status, 'verified');
   assert.deepEqual(p.razer.votes[0].source, 'hardware');
   assert.equal(p.razer.votes[0].pixels, 12);
+  // The mined vote stays visible beside it, as the total across subdevices, not a 0.
+  assert.deepEqual(p.razer.votes.find((v) => v.source === 'signalrgb'), { source: 'signalrgb', pixels: 6 });
   // Promoted on a differenced one-hot walk that counted all 12 positions. The cap is
   // from a camera stop-test; no sustained rate is claimed without an eye-watched stop.
   assert.equal(RAZER_PROFILES.H6056.pixels, 12);

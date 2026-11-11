@@ -71,7 +71,9 @@ change against the dark baseline, inside the fixture's ROI, as index → (x, y) 
 frame pixels (`zonemap` in `--json`). It is a layout record, not a verdict.
 Correlation says the lit pixel tracks the commanded index; the map says where
 each index sits, so it learns LED order on layouts one axis cannot describe,
-such as indices running up one bar and then up a second (the H6047). Same
+such as indices running up one bar and then up a second (the H6047), or along
+one bar and then the other from the opposite end (the H6056 as mounted for its
+count: 0–5 right to left on the right bar, 6–11 left to right on the left). Same
 method as psychodeli-webgl-port's camera zone map (2026-10): light one index at
 a time, subtract a dark baseline, take the centroid of the brightest change.
 The chase lights full white, so the centroid uses only pixels at or above half

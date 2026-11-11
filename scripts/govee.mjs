@@ -740,7 +740,7 @@ async function lanPaint(args, lan) {
   if (score.look.kind === 'gradient') {
     if (!profile) {
       throw new GoveeSkillError(
-        `No verified per-LED profile for sku ${sku ?? '(unknown)'}; a wrong pixel count is silently ignored by the device, so Suffuse refuses to guess. Use a solid look, or the cloud path.`,
+        `No verified per-LED profile for sku ${sku ?? '(unknown)'}; a wrong pixel count fails with no error (nothing, one flat colour, or a stretched look), so Suffuse refuses to guess. Use a solid look, or the cloud path.`,
         'no-razer-profile'
       );
     }

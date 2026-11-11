@@ -53,7 +53,7 @@ body:
     id: visible
     attributes:
       label: Visible result
-      description: What the hardware actually did. "Uniform / unchanged" is a valid and valuable answer — negative evidence for the tested unit, not a SKU blacklist.
+      description: What the hardware actually did. "Uniform / unchanged" is a valid and valuable answer — negative evidence for the tested unit, not a SKU blacklist. For per-LED tests, say which of these you saw — each slot its own colour; one flat colour; the pattern stretched (each colour covering more than one segment); or dark — and which pixel counts you tried.
     validations:
       required: true
   - type: textarea

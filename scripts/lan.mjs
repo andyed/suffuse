@@ -62,7 +62,8 @@ export const HOLD_MAX_SECONDS = 4 * 60 * 60;
 // `verified` means the pixel count was confirmed against physical hardware by
 // a discrete chase (every pixel individually lit and counted). An unverified
 // profile compiles with a warning: its count is community-sourced, and on this
-// mute channel a wrong count is silently ignored — only eyes can promote it.
+// mute channel a wrong count fails without a word (dark, one collapsed colour, or a
+// stretched look, by SKU) — only eyes or a camera can promote it.
 // Rule for mined capability flags (learned on the H612B): a mined POSITIVE is
 // trustworthy, a mined NEGATIVE is only "unknown" — vendor flags describe app
 // support, not what the LAN firmware accepts.
