@@ -130,7 +130,15 @@ export const RAZER_PROFILES = Object.freeze({
   // fixed 7-segment architecture; treat lanApi.segments as suspect for H61D2-D6.
   // chromaGamma [2.2, 2.2, 3]: same evidence as the H612B (photo + eye, 2026-09-07/08).
   // 60 Hz stop-test clean 2026-09-05 (480 frames, instant freeze).
-  H61D3: Object.freeze({ pixels: 7, blend: 'discrete', verified: true, frameHz: 60, maxHz: 60, chromaGamma: [2.2, 2.2, 3] })
+  H61D3: Object.freeze({ pixels: 7, blend: 'discrete', verified: true, frameHz: 60, maxHz: 60, chromaGamma: [2.2, 2.2, 3] }),
+  // Flow Plus Light Bars — 12 px, 6 per bar, camera-verified 2026-11-11: a one-hot
+  // walk at count=12, each slot differenced against its own baseline frame. Every
+  // slot lit exactly one bar; 0-5 stepped across one bar, 6-11 across the other.
+  // The mined SignalRGB total is 6, and 6 RENDERS — each colour stretched over two
+  // segments — so an eye check at 6 passes at half resolution. 24 goes dark.
+  // Streamed at 12 Hz only: frameHz null, and maxHz 20 is the unprobed-fixture rate
+  // from the qualification contract, not a measured ceiling. chromaGamma unmeasured.
+  H6056: Object.freeze({ pixels: 12, blend: 'discrete', verified: true, frameHz: null, maxHz: 20, chromaGamma: null })
 });
 
 export function razerProfile(sku) {

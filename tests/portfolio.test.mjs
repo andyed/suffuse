@@ -41,8 +41,12 @@ test('a measured count outranks a mined one that renders (H6056: 6 stretches, 12
   assert.equal(p.razer.status, 'verified');
   assert.deepEqual(p.razer.votes[0].source, 'hardware');
   assert.equal(p.razer.votes[0].pixels, 12);
-  // Measured, but not promoted: the walk left one bar short of a clean count.
-  assert.equal(RAZER_PROFILES.H6056, undefined);
+  // Promoted on a differenced one-hot walk that counted all 12 positions. Count only:
+  // never rate-probed, so no sustained rate is claimed and the cap is the unprobed one.
+  assert.equal(RAZER_PROFILES.H6056.pixels, 12);
+  assert.equal(RAZER_PROFILES.H6056.verified, true);
+  assert.equal(RAZER_PROFILES.H6056.frameHz, null);
+  assert.equal(RAZER_PROFILES.H6056.maxHz, 20);
 });
 
 test('mined negatives read as unknown, never unsupported (H612B rule)', async () => {

@@ -89,7 +89,7 @@ ways, and neither failure looked like one:
 | SKU | Mined | Measured | What the mined count rendered |
 | --- | --- | --- | --- |
 | H61D3 | 15 (`lanApi.segments`) | 7 | One collapsed colour that still tracked the palette, like a working whole-device lamp |
-| H6056 | 6 (`signalrgb` total of two 3-LED subdevices) | 12 | A working per-LED look at half resolution: each colour stretched over two segments |
+| H6056 | 6 (`signalrgb` total of two 3-LED subdevices) | 12 (one-hot walk, 2026-11-11) | A working per-LED look at half resolution: each colour stretched over two segments |
 
 Both passed a glance. That is the case for rule 3 and for the qualification contract
 above, and it is why this table is published as candidates for owners to check rather
