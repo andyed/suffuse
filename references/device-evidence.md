@@ -63,20 +63,27 @@ other, outer end to inner end on both as this pair was mounted.
 colour stretched over two segments: one lit slot of a 6-slot frame was twice as wide as
 one of a 12-slot frame. Sent 24, the bars went dark. A one-colour frame filled both bars.
 
-**Rate.** The stop-test described in [lan.md](lan.md) (a travelling blob, 12 slots, 8 s), webcam frames every
-150 ms across the stop, each compared with the run's last frame (mean absolute difference
-inside the two bar boxes; still-frame floor 2.1–2.9):
+**Rate.** The stop-test described in [lan.md](lan.md) (a travelling blob, 12 slots, 8 s),
+webcam frames every 150 ms across the stop. "Settled" is the first frame from which the bars
+stay within 1.25× the still-frame noise of the run's final frame; about 0.3 s of every figure
+is the camera.
 
-| Rate | Frames sent | Last frame clearly different from the final look |
+A first pass ran each rate once and read 60 Hz as settling 0.3 s later than 30 and 40. That
+was scatter. Repeated the same day through two native transports (psychodeli-webgl-port's
+Swift and Android razer transports, driven from a desk), each value one run:
+
+| Transport | 40 Hz | 60 Hz |
 | --- | --- | --- |
-| 30 Hz | 240 | +0.36 s after the last frame was sent |
-| 40 Hz | 320 | +0.35 s |
-| 60 Hz | 480 | +0.67 s |
+| Swift | 0.45, 0.34, 1.43, 0.41, 0.41, 0.25, 0.57, 0.62 | 0.35, 0.81, 0.29, 0.48, 0.39, 0.38, 0.41, 0.41, 0.78, 0.35 |
+| Android | 0.95, 0.73, 0.94 | 0.84, 0.85, 0.92, 0.13, 0.60 |
 
-30 and 40 Hz settle alike; that ~0.4 s is camera lag plus the bars' own settling. 60 Hz
-takes about 0.3 s longer. One run each. A camera cannot see a queue shorter than its own
-lag, so this supports `maxHz: 40` and nothing finer; `frameHz` stays null until someone
-watches a stop.
+There is no difference between 40 and 60 Hz. What stands out is that the bars' settle time
+is erratic at every rate, 0.13 to 1.43 s, and ran longer in the Android runs. That is not
+explained; three other lamps in the room changed brightness partway through, which may have
+moved the camera's exposure under the later runs. On the same camera the H61D3 and H608B
+settled in 0.14 to 0.40 s at both rates. So `maxHz: 40` for the H6056 is the lower figure,
+not a measured ceiling, and one run per rate cannot rank rates on this fixture. `frameHz`
+stays null until someone watches a stop.
 
 Not measured: chroma gamma, a second unit, other firmware.
 

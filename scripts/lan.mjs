@@ -137,9 +137,11 @@ export const RAZER_PROFILES = Object.freeze({
   // slot lit exactly one bar; 0-5 stepped across one bar, 6-11 across the other.
   // The mined SignalRGB total is 6, and 6 RENDERS — each colour stretched over two
   // segments — so an eye check at 6 passes at half resolution. 24 goes dark.
-  // maxHz 40: camera stop-test 2026-11-11 (150 ms sampling, one run each) — 30 and
-  // 40 Hz reached their final look within the same ~0.4 s of the last frame, 60 Hz
-  // about 0.3 s later. No eye-watched stop, so frameHz stays null. chromaGamma unmeasured.
+  // maxHz 40 is the lower figure, NOT a measured ceiling. A one-run-per-rate camera
+  // stop-test read 60 Hz as 0.3 s late; repeated runs the same day did not (medians
+  // 0.41 s at 40 Hz, 0.39 s at 60) and showed the settle time is erratic at every rate,
+  // 0.13 to 1.43 s, unexplained. No eye-watched stop, so frameHz stays null.
+  // chromaGamma unmeasured.
   H6056: Object.freeze({ pixels: 12, blend: 'discrete', verified: true, frameHz: null, maxHz: 40, chromaGamma: null })
 });
 

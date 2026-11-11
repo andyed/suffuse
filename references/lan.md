@@ -28,11 +28,25 @@ the cheapest packet is the one never sent.
 Contrast with `razer` on the same socket: 60 Hz sustained, 480 frames, no
 backlog (H608B, 2026-08-23; H61D3, 2026-09-05). The ceiling is a property of
 the *command*, not the hardware. Razer rates are per SKU: the H612B and H16C0
-are stop-tested clean at 40 Hz and not yet probed at 60, and the H6056 is capped at 40
-by a camera stop-test in which 60 Hz settled about 0.3 s late (2026-11-11), so
+are stop-tested clean at 40 Hz and not yet probed at 60, and the H6056 is held at 40 as
+the lower figure (repeated camera stop-tests on 2026-11-11 found no difference between 40
+and 60 Hz, and an erratic settle time at both; see [device-evidence.md](device-evidence.md)), so
 `RAZER_PROFILES.maxHz` holds each SKU at its own verified rate under the
 60 Hz roof (`RAZER_MAX_HZ`), and `razerMinFrameGapMs()` gives the gap a
 sender must keep. A frame due sooner is dropped, never queued.
+
+**Gate on a schedule, not on time since the last send.** A sender that drops a frame when
+less than the gap has passed since its last send loses about 40% of its frames once its
+renderer ticks at the fixture's own rate, because every late tick makes the next one look
+early. Measured 2026-11-11 on two native transports: 18.5 Hz delivered from a 30 Hz loop at a
+30 Hz cap, 35.7 from 60 at 60. Giving each fixture a schedule (next slot = this slot + gap)
+and letting a frame arrive a quarter gap early delivered 30.0 and 59.7–60.0, with no two
+frames closer than three quarters of the gap. `razerMinFrameGapMs()` is the gap; how a sender
+keeps it is the sender's choice, and this is the choice that works.
+
+**Run a stop-test more than once.** On the H6056 a single run per rate ranked 60 Hz as
+slower than 40; twenty-six more runs, across two transports, did not. A fixture whose settle time scatters needs
+repeats before one rate is called worse than another.
 
 **The stop-test method** (how "no queue" is proven): stream a travelling hue
 sweep, count down, stop dead *without* sending a black frame. The last frame
