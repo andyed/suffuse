@@ -182,7 +182,14 @@ const HARDWARE = {
     // SignalRGB's ledCount for the 5m H61D5 sibling is also 7: a fixed 7-segment architecture.
     H61D3: { razer: { pixels: 7, blend: 'discrete', frameHz: 60, maxHz: 60,
         verified: '2026-09-05 — one-hot chase rendered at count=7 (a wrong count renders nothing); 60Hz stop-test clean, 480 frames, instant freeze (psychodeli-webgl-port)',
-        chromaGamma: [2.2, 2.2, 3], chromaGammaVerified: '2026-09-07/08 — same evidence as the H612B: pink end to end in the photo, raw [255,0,25] pink, 3 read redder; per channel 2.2/2.2/3 kept Golden Hour gold (eye)' } }
+        chromaGamma: [2.2, 2.2, 3], chromaGammaVerified: '2026-09-07/08 — same evidence as the H612B: pink end to end in the photo, raw [255,0,25] pink, 3 read redder; per channel 2.2/2.2/3 kept Golden Hour gold (eye)' } },
+    // The mined SignalRGB total is 6 (two 3-LED subdevices). Six RENDERS, which is the
+    // trap: each colour is stretched over two segments, so an eye check at 6 passes. The
+    // bars address 12. Not in RAZER_PROFILES: the walk left one bar short of a clean
+    // count, and nothing but the count was measured.
+    H6056: { razer: { pixels: 12, blend: 'discrete',
+        orientation: 'two bars, 6 slots each: indices 0-5 on one bar, 6-11 on the other; which bar and which end depends on how the pair is mounted',
+        verified: '2026-11-11 — one-hot walk at count=12 by webcam (Wi-Fi fw 1.00.16, mode byte 0x01): six separate positions on one bar; on the other the lit slot moved end to end over six frames but glare kept adjacent positions from separating cleanly. At count=6 (the mined SignalRGB total) the bars render, each colour stretched over two segments; at count=24 they go dark. Not rate-probed, no chromaGamma measurement.' } }
 };
 for (const [sku, hw] of Object.entries(HARDWARE)) entry(sku).ourHardware = hw;
 

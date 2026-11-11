@@ -881,6 +881,14 @@
     "lanApiCapable": true,
     "bleOnly": false,
     "avoidPlatformApi": false
+   },
+   "ourHardware": {
+    "razer": {
+     "pixels": 12,
+     "blend": "discrete",
+     "orientation": "two bars, 6 slots each: indices 0-5 on one bar, 6-11 on the other; which bar and which end depends on how the pair is mounted",
+     "verified": "2026-11-11 — one-hot walk at count=12 by webcam (Wi-Fi fw 1.00.16, mode byte 0x01): six separate positions on one bar; on the other the lit slot moved end to end over six frames but glare kept adjacent positions from separating cleanly. At count=6 (the mined SignalRGB total) the bars render, each colour stretched over two segments; at count=24 they go dark. Not rate-probed, no chromaGamma measurement."
+    }
    }
   },
   "H6057": {

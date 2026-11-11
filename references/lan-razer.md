@@ -59,7 +59,10 @@ read its silence as evidence the channel is unreal.
    H805D strips (read at commit `1eec3c5`, 2026-11-09). It is the only source here for
    that SKU, and two of its notes disagree with what this project measured on other
    SKUs — see "H805D reports" below. Its figures are streaming slot counts, which its
-   own source says are not physical LED counts.
+   own source says are not physical LED counts. On 2026-11-11 the app was run against
+   this project's lamps (H608B, H612B, H16C0, H61D3, H6056); the dated rows in the
+   evidence table come from that bench, and the counts went back upstream as
+   [pull request #1](https://github.com/SaarthurR/govee-lights-app/pull/1).
 
 A survey by the enable-packet fingerprint (base64 `uwABsQEK`, 2026-08-15) found ~36
 public files implementing this channel. None pair it with typed tools, write gates,
@@ -90,7 +93,7 @@ probes exactly this with an 86-LED frame at every load.
 | H612B and H16C0 run clean at 40 Hz | Hardware stop-test: 320 frames at 40 Hz, instant freeze (2026-08-23). Not yet probed at 60 | Verified at 40 only. `RAZER_PROFILES.maxHz` holds them there |
 | Sustained rate and ceiling are separate claims | `frameHz` records a measured sustained rate, `maxHz` the highest rate whose stop froze instantly; neither inherits the other's number without its own probe. The H6047's `maxHz` 30 is the rate it shipped at, never probed, so its `frameHz` stays null | Rule |
 | Pixel count must match or the frame is silently ignored | Hardware: 2/10/30-pixel frames showed nothing on a 15-LED string; 15 split immediately | Verified, this SKU |
-| Mode byte: `0x01` spatial array, `0x00` first-triple solid | Hardware sweep of both values on H608B + H6047 | Verified; OpenRGB names it `gradient_off`, which is misleading |
+| Mode byte: `0x01` is a spatial array on every SKU tried; what `0x00` does is **in dispute** | Two dated sweeps. 2026-08-15, H608B + H6047: `0x00` painted the first triple solid. 2026-11-11, by webcam, each lamp taken from a solid colour, enabled, then streamed half red / half blue with one mode byte only: `0x00` showed both colours on the H608B (fw 1.01.17), H612B (1.06.24), H16C0 (1.01.14) and H61D3 (1.06.24), the same as `0x01`. The H608B was read from two visible lights and its wall wash, not a full view. Firmware was not recorded in August; the H6047 was not retested | `0x01` verified. `0x00` conflicting on the H608B, cause unknown. Suffuse writes `0x01`, so no code here depends on the disputed half. OpenRGB names the byte `gradient_off`, which is misleading |
 | Whole-device `colorwc` flattens a live per-LED look (last writer wins) | Hardware, both orderings | Verified — basis of the hold contention lock |
 | ~60 s dead-man without LED data, device reverts to own effects | OpenRGB write-up; consistent with our observations | Corroborated |
 | H6047 has 20 slots — 0-9 up the left bar, 10-19 up the right; firmware remaps shorter packets unpredictably, so always stream all 20 | SignalRGB community zone-probe, mined 2026-08-16. Explains the earlier "8 interpolating zones" reading: short packets get remapped, which renders as interpolation | Corroborated; **unverified** by discrete chase |
@@ -104,6 +107,11 @@ probes exactly this with an 86-LED frame at every load.
 | H805D renders a spatial array with mode byte `0x00` | govee-lights-app `server.py` builds every frame as `B0 00 <count> …` and its notes call `00` "no blend" | Reported, not reproduced here. Conflicts with the H608B + H6047 sweep above, where `0x00` paints the first triple solid |
 | Re-sending the enable frame while frames are streaming blacks the H805D out | govee-lights-app: enable is sent once after power-on and never on a timer | Reported, not reproduced here. `lanPaintPixels` sends enable before every frame, so a hold repaints with it every `HOLD_PERIOD_MS` |
 | After a power cut the H805D leaves per-LED mode and ignores frames until enable is sent again; `devStatus` shows the power change but not whether per-LED mode is on | govee-lights-app | Reported, not reproduced here. The `devStatus` half matches this project's finding that the channel is mute |
+| An enable sent back to back with other commands is often dropped; the lamp then ignores every frame and keeps its previous solid colour, and nothing reports it | Hardware, 2026-11-11, through govee-lights-app, which sent `turn`, `brightness` and enable with no gap. H608B, H612B, H16C0 and H61D3, each showing a solid colour first, checked by eye and webcam: with no gap per-LED mode came on in 5 of 12 lamp-runs; with 0.12 s or 0.25 s between commands, 12 of 12 | Verified, these SKUs. `lanPaintPixels` waits 150 ms after enable, inside the range that worked |
+| Back-to-back `colorwc` and `brightness` are dropped too | Same bench, `devStatus` read back from five lamps after an add-then-set burst: no gap, 1 of 5 lamps matched what was sent; 0.12 s, 3 of 5; 0.25 s, 3 of 5 then 5 of 5 | Verified as a loss; small n. A gap helps and is not sufficient: read `devStatus` back and resend |
+| A single enable re-sent while frames are streaming does not black out the H608B, H612B, H16C0 or H61D3 | Hardware, 2026-11-11: one enable to each lamp mid-stream at 12 Hz (mode `0x01`); webcam frames 0.4 s and 2.4 s later were unchanged | Verified, these SKUs. The H805D blackout report is not reproduced on any SKU here |
+| H6056 Flow Plus bars address 12 slots, 6 per bar. Sent 6, each colour is stretched over two segments; sent 24, the bars go dark | Hardware, 2026-11-11, webcam (fw 1.00.16): one-hot walk at count 12, six separate positions on one bar; on the other the lit slot moved end to end over six frames but glare kept adjacent positions from separating. One lit slot at 12 was half as wide as one lit slot at 6. The mined SignalRGB total is 6 | Measured; one bar short of a clean count, so `ourHardware` only, not in `RAZER_PROFILES`. The second SKU, after the H805D report, where a short frame stretches instead of going dark |
+| govee-lights-app's encoder (mode `0x00`, 12 Hz, enable once) drives the H608B, H612B, H16C0, H61D3 and H6056 per-LED once it has their counts | Hardware, 2026-11-11, the app at commit `1eec3c5` plus a command gap and the counts, webcam | Verified here. Its bench is no longer H805D-only |
 | H619A takes 20 colour slots | govee-lights-app, citing OpenRGB's model table; its authors did not test it on hardware | Reported, **unverified**. `assets/device-portfolio.json` carries a SignalRGB `ledCount` of 30 for the same SKU, so the two community sources disagree |
 
 ## H805D reports — what to check before driving one
@@ -112,16 +120,20 @@ Nobody on this project has an H805D. The rows above come from one outside bench,
 three of them bear on code that is already here:
 
 - **Mode byte.** Suffuse's encoder writes `0x01` for a spatial array because `0x00`
-  painted a solid on the H608B and H6047. The H805D bench got per-slot colour with
-  `0x00` and never tried `0x01`. The first probe on an H805D is the same two-value
-  sweep, not an assumption in either direction.
+  painted a solid on the H608B and H6047 in August. The H805D bench got per-slot colour
+  with `0x00` and never tried `0x01`, and on 2026-11-11 `0x00` rendered spatially on four
+  SKUs here, the H608B among them. So `0x00` is no longer a known solid anywhere; `0x01`
+  has been spatial every time it was tried. The first probe on an H805D is still the
+  two-value sweep, not an assumption in either direction.
 - **Wrong count.** A short frame on the H805D reportedly renders, stretched, where the
-  H608B shows nothing. So "it lit up" does not confirm a count on this SKU, the same
-  hazard as the H6047 and H61D3. Only the discrete chase settles it.
+  H608B shows nothing. The H6056 does the same thing on this project's own bench: 6
+  renders, 12 is the count. So "it lit up" does not confirm a count on either SKU, the
+  same hazard as the H6047 and H61D3. Only the discrete chase settles it.
 - **Enable on every repaint.** `lanPaintPixels` sends enable, waits 150 ms, then sends
   the frame, and a hold calls it every 20 s. If the blackout report holds, a held look
-  on an H805D would blink or go dark at each repaint. Watch one full hold period on
-  the first H805D before trusting a hold there.
+  on an H805D would blink or go dark at each repaint. A re-sent enable did not black out
+  the four SKUs tested here, which says nothing about the H805D. Watch one full hold
+  period on the first H805D before trusting a hold there.
 
 ## Chroma gamma — when a fixture drives its LEDs linearly
 

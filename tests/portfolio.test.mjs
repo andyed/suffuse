@@ -34,6 +34,17 @@ test('hardware anchors agree with RAZER_PROFILES', async () => {
   }
 });
 
+test('a measured count outranks a mined one that renders (H6056: 6 stretches, 12 is the count)', async () => {
+  const entry = await portfolioEntry('H6056');
+  assert.equal(entry.signalrgb.totalLeds, 6); // the mined count renders, at half resolution
+  const p = priors(entry);
+  assert.equal(p.razer.status, 'verified');
+  assert.deepEqual(p.razer.votes[0].source, 'hardware');
+  assert.equal(p.razer.votes[0].pixels, 12);
+  // Measured, but not promoted: the walk left one bar short of a clean count.
+  assert.equal(RAZER_PROFILES.H6056, undefined);
+});
+
 test('mined negatives read as unknown, never unsupported (H612B rule)', async () => {
   const entry = await portfolioEntry('H612B');
   assert.equal(entry.govee.supportRazer, false); // Govee's own DB denies it...

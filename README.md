@@ -433,7 +433,9 @@ addons spread it through the ambient-lighting scene; and
 and a permissively licensed implementation.
 [govee-lights-app](https://github.com/SaarthurR/govee-lights-app) (MIT), a
 browser controller shared on r/Govee, contributed the only bench notes Suffuse
-has for the H805D; they are recorded as reported, not reproduced. Suffuse's implementation was
+has for the H805D; they are recorded as reported, not reproduced. Run against
+Suffuse's own lamps on 2026-11-11, it drove five more models once given their
+counts, which went back to it as a pull request. Suffuse's implementation was
 re-derived from the byte layout as protocol fact, hardware-verified, and adds
 what none of the roughly three dozen public implementations carry: typed tools,
 write gates, receipts, bounded holds, and evidence-classed claims. The full

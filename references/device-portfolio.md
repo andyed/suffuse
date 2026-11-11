@@ -81,6 +81,23 @@ A confirmed verdict is still not `verified: true` in `RAZER_PROFILES` (rule 3
 above). It says one person saw one install light across the fixture;
 promotion still takes the discrete chase.
 
+## Mined counts that hardware corrected
+
+Two of the mined counts checked against a real fixture were wrong, in two different
+ways, and neither failure looked like one:
+
+| SKU | Mined | Measured | What the mined count rendered |
+| --- | --- | --- | --- |
+| H61D3 | 15 (`lanApi.segments`) | 7 | One collapsed colour that still tracked the palette, like a working whole-device lamp |
+| H6056 | 6 (`signalrgb` total of two 3-LED subdevices) | 12 | A working per-LED look at half resolution: each colour stretched over two segments |
+
+Both passed a glance. That is the case for rule 3 and for the qualification contract
+above, and it is why this table is published as candidates for owners to check rather
+than held back until someone has measured all of it. The same counts are offered for
+checking in [govee-lights-app](https://github.com/SaarthurR/govee-lights-app/pull/1)
+(`models.json`, with a switch to try an untested model and a report form). A count
+corrected there belongs here too, as an `ourHardware` entry or a named outside report.
+
 ## Known upstream disagreement
 
 `govee-local-api` 3.0.1 states two different segment counts for the **H612D**: its
