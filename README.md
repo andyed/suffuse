@@ -401,11 +401,21 @@ See [palette authoring](references/palettes.md) and
 [color theory](references/color-theory.md) when a task actually needs custom
 color work.
 
-## Psychodeli+
+## Genealogy and related projects
+
+Two lineages meet here, and crediting both keeps the project honest about what
+it invented — which is neither the protocol nor the colour science, but the
+contract around them. A third project now takes Suffuse's data onward.
+
+### Psychodeli+ — where the control discipline comes from
 
 Suffuse grew out of Room Lights for [Psychodeli+](https://psychodeli.com), a
 live music visualizer that lets compatible Govee lights join the screen's
-evolving palette.
+evolving palette. A year of driving real fixtures there over cloud, LAN, and BLE
+is where the hard lessons were measured — commands that queue rather than drop,
+devices that fail without a word when a pixel count is wrong, writers that
+flatten each other's work, restores that cannot be captured on a mute channel.
+Suffuse is those lessons extracted, given a schema, and pointed at agents.
 
 | Platform | Current availability |
 | --- | --- |
@@ -418,13 +428,9 @@ Suffuse is a separate developer tool, not the real-time Psychodeli+ rendering
 engine. High-rate music- or screen-reactive lighting belongs in a dedicated
 local runtime, not a cloud API request loop.
 
-## Genealogy
+### The per-LED channel — where the protocol comes from
 
-Two lineages meet here, and crediting both keeps the project honest about what
-it invented — which is neither the protocol nor the colour science, but the
-contract around them.
-
-**The per-LED channel** originated as a proprietary integration: Govee firmware
+The channel originated as a proprietary integration: Govee firmware
 implementing a private protocol for Razer Synapse's Chroma ecosystem, later
 used by Govee's own Desktop app. Adam Honse reverse-engineered it for
 [OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB/-/merge_requests/2172)
@@ -433,24 +439,58 @@ became public. [LedFx](https://github.com/LedFx/LedFx) (GPL-3.0) implemented it
 independently for audio-reactive rendering; SignalRGB's community `Govee.js`
 addons spread it through the ambient-lighting scene; and
 [LumiSync](https://github.com/Minlor/LumiSync) (MIT) published its own research
-and a permissively licensed implementation.
-[govee-lights-app](https://github.com/SaarthurR/govee-lights-app) (MIT), a
-browser controller shared on r/Govee, contributed the only bench notes Suffuse
-has for the H805D; they are recorded as reported, not reproduced. Run against
-Suffuse's own lamps on 2026-11-11, it drove five more models once given their
-counts, which went back to it as a pull request. Suffuse's implementation was
+and a permissively licensed implementation. Suffuse's implementation was
 re-derived from the byte layout as protocol fact, hardware-verified, and adds
 what none of the roughly three dozen public implementations carry: typed tools,
 write gates, receipts, bounded holds, and evidence-classed claims. The full
 chain, with each claim tagged by its source, is
 [references/lan-razer.md](references/lan-razer.md).
 
-**The control discipline** comes from [Psychodeli+](https://psychodeli.com)'s
-Room Lights: a year of driving real fixtures over cloud, LAN, and BLE is where
-the hard lessons were measured — commands that queue rather than drop, devices
-that fail silently when a pixel count is wrong, writers that flatten each
-other's work, restores that cannot be captured on a mute channel. Suffuse is
-those lessons extracted, given a schema, and pointed at agents.
+### govee-lights-app — where the device table goes next
+
+[govee-lights-app](https://github.com/SaarthurR/govee-lights-app) (MIT) is a
+browser app for moving, bulb-by-bulb effects on Govee lights over the LAN,
+shared on r/Govee. It and Suffuse now trade evidence in both directions:
+
+- **From it:** the only bench notes Suffuse has for the H805D, recorded in the
+  evidence table as reported, not reproduced.
+- **To it:** run against Suffuse's reference lamps on 2026-11-11, it drove five
+  more models per-LED once given their counts (H608B, H612B, H16C0, H61D3,
+  H6056). Those counts, two fixes found along the way, and a `models.json` drawn
+  from Suffuse's [device portfolio](references/device-portfolio.md) are proposed
+  there in [pull request #1](https://github.com/SaarthurR/govee-lights-app/pull/1):
+  bulb counts for 101 models, each marked tested or untested with its source,
+  and a switch so an owner can try an unconfirmed count and report what it did.
+
+Most of that table is unconfirmed, and two entries that were checked were wrong
+in ways that still lit the fixture. If you confirm or correct a count, in either
+project, a [compatibility report](https://github.com/andyed/suffuse/issues/new?template=compatibility-report.yml)
+here keeps the portfolio honest.
+
+### Projects on GitHub
+
+What Suffuse reads, credits, or sits beside. Detail and boundaries for each are
+in [references/ecosystem.md](references/ecosystem.md).
+
+| Project | What it is to Suffuse |
+| --- | --- |
+| [SaarthurR/govee-lights-app](https://github.com/SaarthurR/govee-lights-app) | Per-bulb LAN app; H805D bench notes in, device table out (above) |
+| [LedFx/LedFx](https://github.com/LedFx/LedFx) | Independent per-LED implementation with per-model notes. GPL-3.0: read, never copied |
+| [Minlor/LumiSync](https://github.com/Minlor/LumiSync) | Independent per-LED implementation and research write-up. MIT; a cross-check |
+| [RobThePCGuy/SignalRGB-Govee-Network-Plugin](https://github.com/RobThePCGuy/SignalRGB-Govee-Network-Plugin) | Community LED counts and subdevice layouts, mined into the portfolio |
+| [fu-raz/signalrgb-govee-direct-connect](https://github.com/fu-raz/signalrgb-govee-direct-connect) | A dump of Govee's own product database: names and `supportRazer` flags |
+| [Galorhallen/govee-local-api](https://github.com/Galorhallen/govee-local-api) | Home Assistant's LAN backend: which models speak the LAN API, and segment counts |
+| [wez/govee2mqtt](https://github.com/wez/govee2mqtt) | Device quirks for the portfolio; the best candidate for a future execution backend |
+| [wez/govee-lan-hass](https://github.com/wez/govee-lan-hass) | Earlier LAN discovery and control behaviour for Home Assistant |
+| [homebridge-plugins/homebridge-govee](https://github.com/homebridge-plugins/homebridge-govee) | BLE protocol prior art |
+| [chvolkmann/govee_btled](https://github.com/chvolkmann/govee_btled) | BLE protocol prior art |
+| [egold555/Govee-Reverse-Engineering](https://github.com/egold555/Govee-Reverse-Engineering) | BLE protocol prior art |
+| [danjam/mcp-govee](https://github.com/danjam/mcp-govee) | Another Govee MCP server: cloud API or direct LAN |
+| [evefromwayback/govee-mcp](https://github.com/evefromwayback/govee-mcp) | Another Govee MCP server: merged cloud and LAN registry |
+| [joeynyc/Govee-MCP](https://github.com/joeynyc/Govee-MCP) | Another Govee MCP server: allowlists, dry-run, rate limiting |
+| [RishaanJ/govee-mcp](https://github.com/RishaanJ/govee-mcp) | macOS BLE daemon plus MCP |
+
+OpenRGB, where the per-LED write-up lives, is on GitLab (linked above).
 
 ## Evidence and boundaries
 
