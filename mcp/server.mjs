@@ -18,7 +18,7 @@ import {
 
 const execFileAsync = promisify(execFile);
 const CLI_PATH = fileURLToPath(new URL('../scripts/govee.mjs', import.meta.url));
-const VERSION = '0.6.0';
+const VERSION = '0.7.0';
 const OUTPUT_SCHEMA = z.object({ result: z.unknown() });
 
 export const MCP_TOOL_METADATA = Object.freeze([
