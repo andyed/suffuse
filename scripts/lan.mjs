@@ -136,9 +136,10 @@ export const RAZER_PROFILES = Object.freeze({
   // slot lit exactly one bar; 0-5 stepped across one bar, 6-11 across the other.
   // The mined SignalRGB total is 6, and 6 RENDERS — each colour stretched over two
   // segments — so an eye check at 6 passes at half resolution. 24 goes dark.
-  // Streamed at 12 Hz only: frameHz null, and maxHz 20 is the unprobed-fixture rate
-  // from the qualification contract, not a measured ceiling. chromaGamma unmeasured.
-  H6056: Object.freeze({ pixels: 12, blend: 'discrete', verified: true, frameHz: null, maxHz: 20, chromaGamma: null })
+  // maxHz 40: camera stop-test 2026-11-11 (150 ms sampling, one run each) — 30 and
+  // 40 Hz reached their final look within the same ~0.4 s of the last frame, 60 Hz
+  // about 0.3 s later. No eye-watched stop, so frameHz stays null. chromaGamma unmeasured.
+  H6056: Object.freeze({ pixels: 12, blend: 'discrete', verified: true, frameHz: null, maxHz: 40, chromaGamma: null })
 });
 
 export function razerProfile(sku) {
