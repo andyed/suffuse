@@ -93,7 +93,7 @@ probes exactly this with an 86-LED frame at every load.
 | H612B and H16C0 run clean at 40 Hz | Hardware stop-test: 320 frames at 40 Hz, instant freeze (2026-08-23). Not yet probed at 60 | Verified at 40 only. `RAZER_PROFILES.maxHz` holds them there |
 | Sustained rate and ceiling are separate claims | `frameHz` records a measured sustained rate, `maxHz` the highest rate whose stop froze instantly; neither inherits the other's number without its own probe. The H6047's `maxHz` 30 is the rate it shipped at, never probed, so its `frameHz` stays null | Rule |
 | Pixel count must match or the frame is silently ignored | Hardware: 2/10/30-pixel frames showed nothing on a 15-LED string; 15 split immediately | Verified, this SKU |
-| Mode byte: `0x01` is a spatial array on every SKU tried; what `0x00` does is **in dispute** | Two dated sweeps. 2026-08-15, H608B + H6047: `0x00` painted the first triple solid. 2026-11-11, by webcam, each lamp taken from a solid colour, enabled, then streamed half red / half blue with one mode byte only: `0x00` showed both colours on the H608B (fw 1.01.17), H612B (1.06.24), H16C0 (1.01.14) and H61D3 (1.06.24), the same as `0x01`. The H608B was read from two visible lights and its wall wash, not a full view. Firmware was not recorded in August; the H6047 was not retested | `0x01` verified. `0x00` conflicting on the H608B, cause unknown. Suffuse writes `0x01`, so no code here depends on the disputed half. OpenRGB names the byte `gradient_off`, which is misleading |
+| Mode byte: `0x01` is a spatial array on every SKU tried. `0x00` is **not** a solid mode | 2026-08-15: `0x00` was tried on the H6047 only, with a short frame, and painted it solid red; the H608B cell of that sweep was left empty, and this row then claimed both SKUs. 2026-11-11, by webcam, each lamp taken from a solid colour, enabled, then streamed with one mode byte only: `0x00` rendered a half red / half blue array spatially on the H608B (fw 1.01.17), H612B (1.06.24), H16C0 (1.01.14) and H61D3 (1.06.24), the same as `0x01` (the H608B read from two visible lights and its wall wash). A one-triple frame filled the H6056 bars in either mode and did not show its colour on the other four | `0x01` verified. The August solid is best explained as short-frame stretch on a fixture that stretches, like the H6056; the H6047 was not retested (the unit failed). Suffuse writes `0x01` and never sends a one-triple frame. OpenRGB names the byte `gradient_off`, which is misleading |
 | Whole-device `colorwc` flattens a live per-LED look (last writer wins) | Hardware, both orderings | Verified — basis of the hold contention lock |
 | ~60 s dead-man without LED data, device reverts to own effects | OpenRGB write-up; consistent with our observations | Corroborated |
 | H6047 has 20 slots — 0-9 up the left bar, 10-19 up the right; firmware remaps shorter packets unpredictably, so always stream all 20 | SignalRGB community zone-probe, mined 2026-08-16. Explains the earlier "8 interpolating zones" reading: short packets get remapped, which renders as interpolation | Corroborated; **unverified** by discrete chase |
@@ -104,7 +104,7 @@ probes exactly this with an 86-LED frame at every load.
 | Matrix devices (curtains, nets) have partial/first-N-pixel coverage | LedFx docs (H6811: first 224 pixels) | Reported, not reproduced here |
 | H805D takes 132 colours per frame, each slot its own colour, streamed at 12 Hz | govee-lights-app `docs/protocol.md`, two strips, 2026-11-07. Not a discrete chase by this project's method; no rate above 12 Hz reported | Reported, not reproduced here. Not in `RAZER_PROFILES` |
 | H805D sent 84 colours stretches them across the strip: the first 48 light 2 slots each, the last 36 light 1 each (48·2 + 36 = 132) | govee-lights-app, same test | Reported, not reproduced here. Differs from the H608B, where a wrong count renders nothing |
-| H805D renders a spatial array with mode byte `0x00` | govee-lights-app `server.py` builds every frame as `B0 00 <count> …` and its notes call `00` "no blend" | Reported, not reproduced here. Conflicts with the H608B + H6047 sweep above, where `0x00` paints the first triple solid |
+| H805D renders a spatial array with mode byte `0x00` | govee-lights-app `server.py` builds every frame as `B0 00 <count> …` and its notes call `00` "no blend" | Reported, not reproduced on an H805D. Consistent with the 2026-11-11 sweep above, where `0x00` rendered spatially on four SKUs |
 | Re-sending the enable frame while frames are streaming blacks the H805D out | govee-lights-app: enable is sent once after power-on and never on a timer | Reported, not reproduced here. `lanPaintPixels` sends enable before every frame, so a hold repaints with it every `HOLD_PERIOD_MS` |
 | After a power cut the H805D leaves per-LED mode and ignores frames until enable is sent again; `devStatus` shows the power change but not whether per-LED mode is on | govee-lights-app | Reported, not reproduced here. The `devStatus` half matches this project's finding that the channel is mute |
 | An enable sent back to back with other commands is often dropped; the lamp then ignores every frame and keeps its previous solid colour, and nothing reports it | Hardware, 2026-11-11, through govee-lights-app, which sent `turn`, `brightness` and enable with no gap. H608B, H612B, H16C0 and H61D3, each showing a solid colour first, checked by eye and webcam: with no gap per-LED mode came on in 5 of 12 lamp-runs; with 0.12 s or 0.25 s between commands, 12 of 12 | Verified, these SKUs. `lanPaintPixels` waits 150 ms after enable, inside the range that worked |
@@ -119,12 +119,13 @@ probes exactly this with an 86-LED frame at every load.
 Nobody on this project has an H805D. The rows above come from one outside bench, and
 three of them bear on code that is already here:
 
-- **Mode byte.** Suffuse's encoder writes `0x01` for a spatial array because `0x00`
-  painted a solid on the H608B and H6047 in August. The H805D bench got per-slot colour
-  with `0x00` and never tried `0x01`, and on 2026-11-11 `0x00` rendered spatially on four
-  SKUs here, the H608B among them. So `0x00` is no longer a known solid anywhere; `0x01`
-  has been spatial every time it was tried. The first probe on an H805D is still the
-  two-value sweep, not an assumption in either direction.
+- **Mode byte.** Suffuse's encoder writes `0x01` for a spatial array. The belief that
+  `0x00` paints a solid came from one short frame on the H6047 in August; it was never
+  measured on the H608B. The H805D bench got per-slot colour with `0x00` and never tried
+  `0x01`, and on 2026-11-11 `0x00` rendered spatially on four SKUs here, the H608B among
+  them. So the H805D report no longer conflicts with anything measured here. `0x01` has
+  been spatial every time it was tried; the first probe on an H805D is still the
+  two-value sweep.
 - **Wrong count.** A short frame on the H805D reportedly renders, stretched, where the
   H608B shows nothing. The H6056 does the same thing on this project's own bench: 6
   renders, 12 is the count. So "it lit up" does not confirm a count on either SKU, the
